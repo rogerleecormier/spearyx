@@ -49,7 +49,7 @@ function App() {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Target className="w-5 h-5" />
                 <span className="text-sm font-semibold tracking-wide">
-                  COMING SOON
+                  COMING SOON - TARGETTING 2026 Q1
                 </span>
               </div>
               <p className="text-sm text-red-100">
