@@ -1,12 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, X } from "lucide-react";
-import {
-  Hero,
-  Body,
-  Overline,
-  Headline,
-} from "@/components/Typography";
+import { Hero, Body, Overline, Headline } from "@/components/Typography";
 
 export const Route = createFileRoute("/")({ component: App });
 
@@ -52,14 +47,23 @@ function App() {
       {/* Hero Section */}
       <section className="relative py-24 px-4 bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <Overline className="text-red-600 mb-4">AI-Powered Project Management</Overline>
-          
+          <Overline className="text-red-600 mb-4">
+            AI-Powered Project Management
+          </Overline>
+
           <Hero className="text-black mb-6">
-            Precision Project Management,<br />Powered by AI
+            Precision Project Management,
+            <br />
+            Powered by AI
           </Hero>
 
-          <Body size="lg" className="text-slate-700 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Stop juggling spreadsheets. Start executing with precision. Spearyx delivers AI-powered tools that project managers need to define scope, manage risk, and communicate strategy with absolute clarity.
+          <Body
+            size="lg"
+            className="text-slate-700 mb-12 max-w-2xl mx-auto leading-relaxed"
+          >
+            Stop juggling spreadsheets. Start executing with precision. Spearyx
+            delivers AI-powered tools that project managers need to define
+            scope, manage risk, and communicate strategy with absolute clarity.
           </Body>
 
           {/* CTA Buttons */}
@@ -90,8 +94,12 @@ function App() {
       <section className="py-24 px-4 bg-slate-50 border-b border-slate-200">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <Overline className="text-red-600 mb-4">Why Project Managers Choose Spearyx</Overline>
-            <Headline className="text-black mb-4">AI-Enhanced Tools for Strategic Excellence</Headline>
+            <Overline className="text-red-600 mb-4">
+              Why Project Managers Choose Spearyx
+            </Overline>
+            <Headline className="text-black mb-4">
+              AI-Enhanced Tools for Strategic Excellence
+            </Headline>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -102,7 +110,9 @@ function App() {
                 Save 10+ Hours Weekly
               </Headline>
               <Body size="sm" className="text-slate-600">
-                AI-powered generators handle the heavy lifting. Create comprehensive project documents in minutes with intelligent assistance, not hours of manual work.
+                AI-powered generators handle the heavy lifting. Create
+                comprehensive project documents in minutes with intelligent
+                assistance, not hours of manual work.
               </Body>
             </div>
 
@@ -113,7 +123,9 @@ function App() {
                 Eliminate Ambiguity
               </Headline>
               <Body size="sm" className="text-slate-600">
-                Define roles, risks, and communication strategies upfront. Reduce scope creep and stakeholder confusion with structured clarity.
+                Define roles, risks, and communication strategies upfront.
+                Reduce scope creep and stakeholder confusion with structured
+                clarity.
               </Body>
             </div>
 
@@ -124,7 +136,8 @@ function App() {
                 Deliver on Time
               </Headline>
               <Body size="sm" className="text-slate-600">
-                Strategic planning prevents delays. Better upfront planning leads to better execution and on-time delivery.
+                Strategic planning prevents delays. Better upfront planning
+                leads to better execution and on-time delivery.
               </Body>
             </div>
           </div>
@@ -136,9 +149,12 @@ function App() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <Overline className="text-red-600 mb-4">AI-Powered Tools</Overline>
-            <Headline className="text-black mb-4">Your AI-Augmented Project Management Arsenal</Headline>
+            <Headline className="text-black mb-4">
+              Your AI-Augmented Project Management Arsenal
+            </Headline>
             <Body size="lg" className="text-slate-600 max-w-2xl mx-auto">
-              Six intelligent AI-powered generators designed to cover every critical phase of project planning and execution
+              Six intelligent AI-powered generators designed to cover every
+              critical phase of project planning and execution
             </Body>
           </div>
 
@@ -149,7 +165,10 @@ function App() {
                 className="bg-white border border-slate-200 rounded-xl p-6 hover:border-red-300 hover:shadow-md transition-all duration-300 group"
               >
                 <div className="text-4xl mb-3">{tool.icon}</div>
-                <Headline as="h3" className="text-black mb-2 text-base group-hover:text-red-600 transition-colors">
+                <Headline
+                  as="h3"
+                  className="text-black mb-2 text-base group-hover:text-red-600 transition-colors"
+                >
                   {tool.title}
                 </Headline>
                 <Body size="sm" className="text-slate-600">
@@ -165,21 +184,27 @@ function App() {
       <section className="py-24 px-4 bg-slate-50 border-b border-slate-200">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <Headline className="text-black mb-4">How AI-Powered Spearyx Works</Headline>
+            <Headline className="text-black mb-4">
+              How AI-Powered Spearyx Works
+            </Headline>
           </div>
 
           <div className="space-y-8">
             {/* Step 1 */}
             <div className="flex gap-6">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                  1
+                </div>
               </div>
               <div className="flex-1">
                 <Headline as="h3" className="text-black mb-2 text-lg">
                   Answer Key Questions
                 </Headline>
                 <Body size="base" className="text-slate-600">
-                  Tell us about your project scope, team, timeline, and goals. Our AI system analyzes your requirements and context intelligently.
+                  Tell us about your project scope, team, timeline, and goals.
+                  Our AI system analyzes your requirements and context
+                  intelligently.
                 </Body>
               </div>
             </div>
@@ -187,14 +212,18 @@ function App() {
             {/* Step 2 */}
             <div className="flex gap-6">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                  2
+                </div>
               </div>
               <div className="flex-1">
                 <Headline as="h3" className="text-black mb-2 text-lg">
                   AI Generates Instantly
                 </Headline>
                 <Body size="base" className="text-slate-600">
-                  Our AI creates professionally formatted documents, charts, and plans using best practices. Ready to share with your team immediately.
+                  Our AI creates professionally formatted documents, charts, and
+                  plans using best practices. Ready to share with your team
+                  immediately.
                 </Body>
               </div>
             </div>
@@ -202,14 +231,17 @@ function App() {
             {/* Step 3 */}
             <div className="flex gap-6">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                  3
+                </div>
               </div>
               <div className="flex-1">
                 <Headline as="h3" className="text-black mb-2 text-lg">
                   Execute with Clarity
                 </Headline>
                 <Body size="base" className="text-slate-600">
-                  Keep your team aligned with crystal-clear documentation. Reduce ambiguity, prevent delays, and deliver on time.
+                  Keep your team aligned with crystal-clear documentation.
+                  Reduce ambiguity, prevent delays, and deliver on time.
                 </Body>
               </div>
             </div>
@@ -220,9 +252,12 @@ function App() {
       {/* Final CTA */}
       <section className="py-24 px-4 bg-white">
         <div className="max-w-2xl mx-auto text-center">
-          <Headline className="text-black mb-4">Ready for AI-Powered Project Management?</Headline>
+          <Headline className="text-black mb-4">
+            Ready for AI-Powered Project Management?
+          </Headline>
           <Body size="lg" className="text-slate-600 mb-8">
-            Join hundreds of project managers waiting for Spearyx. Be among the first to experience AI-augmented clarity, precision, and control.
+            Join hundreds of project managers waiting for Spearyx. Be among the
+            first to experience AI-augmented clarity, precision, and control.
           </Body>
 
           <button
@@ -240,7 +275,11 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/images/spearyx-logo.svg" alt="Spearyx" className="h-6 w-auto" />
+              <img
+                src="/images/spearyx-logo.svg"
+                alt="Spearyx"
+                className="h-6 w-auto"
+              />
               <Body size="sm" className="text-slate-600">
                 © 2025 Spearyx. All rights reserved.
               </Body>
@@ -266,12 +305,17 @@ function App() {
             </div>
 
             <Body size="base" className="text-slate-600 mb-8">
-              Spearyx is launching in <span className="font-bold text-red-600">Q1 2026</span>. We're building the AI-powered tools project managers have been waiting for.
+              Spearyx is launching in{" "}
+              <span className="font-bold text-red-600">Q1 2026</span>. We're
+              building the AI-powered tools project managers have been waiting
+              for.
             </Body>
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-8">
               <Body size="sm" className="text-slate-600">
-                <span className="font-semibold text-black">AI-Powered Tools Coming:</span>
+                <span className="font-semibold text-black">
+                  AI-Powered Tools Coming:
+                </span>
                 <ul className="mt-3 space-y-2">
                   <li>✓ AI RACI Chart Generator</li>
                   <li>✓ AI Project Charter Builder</li>
@@ -314,7 +358,11 @@ function App() {
                   The Problem
                 </Headline>
                 <Body size="base" className="text-slate-600">
-                  Project managers spend hours creating the same documents every project: RACI charts, project charters, risk registers, communication plans. These foundational documents are critical to success, yet they're tedious to create and often incomplete.
+                  Project managers spend hours creating the same documents every
+                  project: RACI charts, project charters, risk registers,
+                  communication plans. These foundational documents are critical
+                  to success, yet they're tedious to create and often
+                  incomplete.
                 </Body>
               </div>
 
@@ -323,7 +371,11 @@ function App() {
                   The Solution
                 </Headline>
                 <Body size="base" className="text-slate-600">
-                  Spearyx uses AI to generate professional, comprehensive project documents in minutes. Our AI-powered tools guide you through the right questions and produce publication-ready outputs that keep your team aligned and your stakeholders informed.
+                  Spearyx uses AI to generate professional, comprehensive
+                  project documents in minutes. Our AI-powered tools guide you
+                  through the right questions and produce publication-ready
+                  outputs that keep your team aligned and your stakeholders
+                  informed.
                 </Body>
               </div>
 
@@ -345,7 +397,12 @@ function App() {
 
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <Body size="sm" className="text-slate-700">
-                  <span className="font-semibold text-red-600">Perfect for:</span> Program managers, project leads, scrum masters, PMO teams, and anyone responsible for defining project scope and managing stakeholder expectations.
+                  <span className="font-semibold text-red-600">
+                    Perfect for:
+                  </span>{" "}
+                  Program managers, project leads, scrum masters, PMO teams, and
+                  anyone responsible for defining project scope and managing
+                  stakeholder expectations.
                 </Body>
               </div>
             </div>
