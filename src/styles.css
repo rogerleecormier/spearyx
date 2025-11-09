@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate";
+/* Register the animate plugin in tailwind.config.js instead of using an unsupported @plugin at-rule
+   Example (tailwind.config.js):
+   // module.exports = {
+   //   // ...
+   //   plugins: [
+   //     require('tailwindcss-animate'),
+   //   ],
+   // }
+*/
 
-@custom-variant dark (&:is(.dark *));
+/* Use Tailwind's built-in dark mode instead of the unsupported @custom-variant at-rule:
+   set `darkMode: 'class'` in tailwind.config.js and use the `dark:` variant in your templates.
+*/
 
 /* Force scrollbar to always be present to prevent layout shift */
 html {
@@ -61,7 +71,7 @@ html {
 }
 
 body {
-  @apply m-0;
+  margin: 0;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -74,7 +84,7 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-@theme inline {
+:root {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -148,9 +158,46 @@ code {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+@layer components {
+  /* Text Color Variants */
+  .text-primary-light {
+    color: rgb(239 68 68 / 0.7);
+  }
+
+  .text-primary-muted {
+    color: rgb(239 68 68 / 0.5);
+  }
+
+  .text-accent-light {
+    color: rgb(34 197 94 / 0.7);
+  }
+
+  .text-accent-muted {
+    color: rgb(34 197 94 / 0.5);
+  }
+
+  .text-neutral-dark {
+    color: theme("colors.slate.900");
+  }
+
+  .text-neutral {
+    color: theme("colors.slate.600");
+  }
+
+  .text-neutral-light {
+    color: theme("colors.slate.500");
+  }
+
+  .text-neutral-lighter {
+    color: theme("colors.slate.400");
   }
 }

@@ -32,6 +32,13 @@ import {
   SkeletonCard,
   EmptyStateCard,
 } from "../components/Cards";
+import {
+  Display,
+  Headline,
+  Title,
+  Body,
+  Overline,
+} from "../components/Typography";
 
 export const Route = createFileRoute("/cards")({
   component: CardsLibrary,
@@ -45,17 +52,13 @@ function CardsLibrary() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
             <Package className="w-8 h-8 text-red-500" />
-            <span className="text-sm font-semibold text-red-500 uppercase tracking-wide">
-              Component Library
-            </span>
+            <Overline className="text-red-500">Component Library</Overline>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
-            Card Library
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl">
+          <Display className="mb-3">Card Library</Display>
+          <Body size="lg" className="text-neutral max-w-2xl">
             A comprehensive collection of reusable card components. Each card
             type is fully modular and customizable for your application.
-          </p>
+          </Body>
         </div>
       </section>
 
@@ -66,12 +69,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Grid className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Basic Card</h2>
+              <Headline>Basic Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               The fundamental card component. Perfect for displaying simple
               content with a title and description.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <BasicCard
@@ -94,14 +97,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Featured Card
-              </h2>
+              <Headline>Featured Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Eye-catching card with optional icon and colored left border.
               Perfect for highlighting important features.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FeaturedCard
@@ -124,12 +125,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Stat Card</h2>
+              <Headline>Stat Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display metrics and statistics with optional trend indicators.
               Perfect for dashboards and analytics pages.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
@@ -164,14 +165,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <MessageCircle className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Testimonial Card
-              </h2>
+              <Headline>Testimonial Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Showcase customer feedback with quotes, avatars, and star ratings.
               Great for social proof.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TestimonialCard
@@ -210,19 +209,17 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Grid className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Image Card</h2>
+              <Headline>Image Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Cards with featured images. Available in standard layout or with
               hover overlay effect.
-            </p>
+            </Body>
           </div>
 
           {/* Standard Layout */}
           <div className="mb-16">
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">
-              Standard Layout
-            </h3>
+            <Title>Standard Layout</Title>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ImageCard
                 image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop"
@@ -244,9 +241,7 @@ function CardsLibrary() {
 
           {/* Overlay Variant */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">
-              Overlay Variant (Hover)
-            </h3>
+            <Title>Overlay Variant (Hover)</Title>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ImageCard
                 image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop"
@@ -275,14 +270,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Call-to-Action Card
-              </h2>
+              <Headline>Call-to-Action Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Encourage user engagement with action-oriented cards. Perfect for
               promotions and next steps.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CTACard
@@ -307,14 +300,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Pricing Card
-              </h2>
+              <Headline>Pricing Card</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display pricing tiers with features and CTA buttons. Perfect for
               product pricing pages.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <PricingCard
@@ -374,14 +365,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <AlertCircle className="w-6 h-6 text-blue-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Alert & Info Cards
-              </h2>
+              <Headline>Alert & Info Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display important information, warnings, errors, and success
               messages with contextual styling.
-            </p>
+            </Body>
           </div>
           <div className="space-y-4">
             <AlertCard
@@ -407,9 +396,7 @@ function CardsLibrary() {
           </div>
 
           <div className="mt-12 pt-8 border-t">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">
-              Dismissible Alerts
-            </h3>
+            <Title>Dismissible Alerts</Title>
             <div className="space-y-4">
               <AlertCard
                 variant="success"
@@ -429,9 +416,7 @@ function CardsLibrary() {
           </div>
 
           <div className="mt-12 pt-8 border-t">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">
-              With Additional Content
-            </h3>
+            <Title>With Additional Content</Title>
             <AlertCard
               variant="info"
               title="System Maintenance"
@@ -451,14 +436,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Palette className="w-6 h-6 text-purple-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Color Variant Cards
-              </h2>
+              <Headline>Color Variant Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Cards with 9 different color themes. Use color to organize,
               categorize, or highlight different content types.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ColorVariantCard
@@ -536,14 +519,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <ShoppingBag className="w-6 h-6 text-blue-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Product Cards
-              </h2>
+              <Headline>Product Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Perfect for e-commerce, portfolios, and product showcases with
               ratings, pricing, and cart functionality.
-            </p>
+            </Body>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ProductCard
@@ -592,20 +573,16 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Users className="w-6 h-6 text-green-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Profile Cards
-              </h2>
+              <Headline>Profile Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display user profiles with avatars, roles, bios, and action
               buttons. Available in vertical and horizontal layouts.
-            </p>
+            </Body>
           </div>
 
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Vertical Layout
-            </h3>
+            <Title>Vertical Layout</Title>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ProfileCard
                 avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
@@ -643,9 +620,7 @@ function CardsLibrary() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Horizontal Layout
-            </h3>
+            <Title>Horizontal Layout</Title>
             <div className="space-y-4">
               <ProfileCard
                 layout="horizontal"
@@ -679,14 +654,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <ProgressIcon className="w-6 h-6 text-purple-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Progress Cards
-              </h2>
+              <Headline>Progress Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display progress in multiple formats: linear bars, circular
               indicators, and step-based tracking.
-            </p>
+            </Body>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -750,14 +723,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Clock className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Timeline Cards
-              </h2>
+              <Headline>Timeline Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display activity feeds, project history, and event timelines with
               status indicators.
-            </p>
+            </Body>
           </div>
 
           <TimelineCard
@@ -803,14 +774,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <LoadingIcon className="w-6 h-6 text-indigo-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Skeleton Cards
-              </h2>
+              <Headline>Skeleton Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Use skeleton cards as loading placeholders to maintain layout
               stability while content loads.
-            </p>
+            </Body>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -820,9 +789,7 @@ function CardsLibrary() {
           </div>
 
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Other Variants
-            </h3>
+            <Title>Other Variants</Title>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SkeletonCard variant="profile" />
               <SkeletonCard variant="feature" />
@@ -835,14 +802,12 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Inbox className="w-6 h-6 text-pink-500" />
-              <h2 className="text-3xl font-bold text-slate-900">
-                Empty State Cards
-              </h2>
+              <Headline>Empty State Cards</Headline>
             </div>
-            <p className="text-slate-600">
+            <Body className="text-neutral">
               Display when there's no content to show. Provides guidance and
               action options to users.
-            </p>
+            </Body>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -883,12 +848,10 @@ function CardsLibrary() {
 
         {/* Usage Guide */}
         <section className="mb-24 border-t pt-16">
-          <h2 className="text-3xl font-bold text-slate-900 mb-8">How to Use</h2>
+          <Headline className="mb-8">How to Use</Headline>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Import Cards
-              </h3>
+              <Title>Import Cards</Title>
               <div className="bg-slate-900 rounded-lg p-6 overflow-x-auto">
                 <pre className="text-slate-100 text-sm font-mono">
                   {`import {
@@ -912,9 +875,7 @@ function CardsLibrary() {
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Use in Components
-              </h3>
+              <Title>Use in Components</Title>
               <div className="bg-slate-900 rounded-lg p-6 overflow-x-auto">
                 <pre className="text-slate-100 text-sm font-mono">
                   {`<BasicCard
@@ -935,7 +896,7 @@ function CardsLibrary() {
 
         {/* Features */}
         <section className="bg-slate-50 rounded-xl p-8 md:p-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">Features</h2>
+          <Headline className="mb-8">Features</Headline>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex gap-4">
               <div className="flex-shrink-0">

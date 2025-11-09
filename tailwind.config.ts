@@ -708,6 +708,271 @@ const config: Config = {
           "background-clip": "text",
           "-webkit-text-fill-color": "transparent",
         },
+
+        // === MODERN TYPOGRAPHY VARIANTS ===
+        // Hero
+        ".text-hero": {
+          fontSize: "4.5rem",
+          fontWeight: "700",
+          lineHeight: "1",
+          letterSpacing: "-0.025em",
+        },
+        ".text-hero-semibold": {
+          fontSize: "4.5rem",
+          fontWeight: "600",
+          lineHeight: "1",
+          letterSpacing: "-0.025em",
+        },
+
+        // Display
+        ".text-display": {
+          fontSize: "3rem",
+          fontWeight: "700",
+          lineHeight: "1.1",
+          letterSpacing: "-0.02em",
+        },
+        ".text-display-semibold": {
+          fontSize: "3rem",
+          fontWeight: "600",
+          lineHeight: "1.1",
+          letterSpacing: "-0.02em",
+        },
+
+        // Headline
+        ".text-headline": {
+          fontSize: "2.25rem",
+          fontWeight: "700",
+          lineHeight: "1.2",
+          letterSpacing: "-0.015em",
+        },
+        ".text-headline-semibold": {
+          fontSize: "2.25rem",
+          fontWeight: "600",
+          lineHeight: "1.2",
+          letterSpacing: "-0.015em",
+        },
+
+        // Title
+        ".text-title": {
+          fontSize: "1.5rem",
+          fontWeight: "700",
+          lineHeight: "1.3",
+        },
+        ".text-title-semibold": {
+          fontSize: "1.5rem",
+          fontWeight: "600",
+          lineHeight: "1.3",
+        },
+
+        // Subtitle
+        ".text-subtitle": {
+          fontSize: "1.125rem",
+          fontWeight: "600",
+          lineHeight: "1.35",
+        },
+        ".text-subtitle-regular": {
+          fontSize: "1.125rem",
+          fontWeight: "400",
+          lineHeight: "1.35",
+        },
+
+        // Body Large
+        ".text-body-lg": {
+          fontSize: "1.25rem",
+          fontWeight: "400",
+          lineHeight: "1.7",
+        },
+        ".text-body-lg-semibold": {
+          fontSize: "1.25rem",
+          fontWeight: "600",
+          lineHeight: "1.7",
+        },
+
+        // Body Regular
+        ".text-body": {
+          fontSize: "1rem",
+          fontWeight: "400",
+          lineHeight: "1.6",
+        },
+        ".text-body-semibold": {
+          fontSize: "1rem",
+          fontWeight: "600",
+          lineHeight: "1.6",
+        },
+        ".text-body-medium": {
+          fontSize: "1rem",
+          fontWeight: "500",
+          lineHeight: "1.6",
+        },
+
+        // Body Small
+        ".text-body-sm": {
+          fontSize: "0.875rem",
+          fontWeight: "400",
+          lineHeight: "1.6",
+        },
+        ".text-body-sm-semibold": {
+          fontSize: "0.875rem",
+          fontWeight: "600",
+          lineHeight: "1.6",
+        },
+
+        // Caption
+        ".text-caption": {
+          fontSize: "0.875rem",
+          fontWeight: "400",
+          lineHeight: "1.4",
+        },
+        ".text-caption-semibold": {
+          fontSize: "0.875rem",
+          fontWeight: "600",
+          lineHeight: "1.4",
+        },
+
+        // Label
+        ".text-label": {
+          fontSize: "0.75rem",
+          fontWeight: "500",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        },
+        ".text-label-semibold": {
+          fontSize: "0.75rem",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        },
+
+        // Overline
+        ".text-overline": {
+          fontSize: "0.75rem",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        },
+
+        // === TEXT COLOR VARIANTS ===
+        // Primary text colors
+        ".text-primary-light": {
+          color: "rgb(106 157 255 / 0.7)",
+        },
+        ".text-primary-muted": {
+          color: "rgb(106 157 255 / 0.5)",
+        },
+
+        // Accent text colors
+        ".text-accent-light": {
+          color: "rgb(34 197 94 / 0.7)",
+        },
+        ".text-accent-muted": {
+          color: "rgb(34 197 94 / 0.5)",
+        },
+
+        // Semantic text colors
+        ".text-success": {
+          color: "#14b8a6",
+        },
+        ".text-success-light": {
+          color: "rgb(20 184 166 / 0.7)",
+        },
+        ".text-warning": {
+          color: "#f59e0b",
+        },
+        ".text-warning-light": {
+          color: "rgb(245 158 11 / 0.7)",
+        },
+        ".text-error": {
+          color: "#ff6b85",
+        },
+        ".text-error-light": {
+          color: "rgb(255 107 133 / 0.7)",
+        },
+
+        // Neutral text colors
+        ".text-neutral-dark": {
+          color: "rgb(17 24 39)",
+        },
+        ".text-neutral": {
+          color: "rgb(107 114 128)",
+        },
+        ".text-neutral-light": {
+          color: "rgb(156 163 175)",
+        },
+        ".text-neutral-lighter": {
+          color: "rgb(209 213 219)",
+        },
+
+        // === FONT WEIGHT SHORTCUTS ===
+        ".font-thin": {
+          fontWeight: "100",
+        },
+        ".font-extralight": {
+          fontWeight: "200",
+        },
+        ".font-light": {
+          fontWeight: "300",
+        },
+        ".font-normal": {
+          fontWeight: "400",
+        },
+        ".font-medium": {
+          fontWeight: "500",
+        },
+        ".font-semibold": {
+          fontWeight: "600",
+        },
+        ".font-bold": {
+          fontWeight: "700",
+        },
+        ".font-extrabold": {
+          fontWeight: "800",
+        },
+        ".font-black": {
+          fontWeight: "900",
+        },
+
+        // === LETTER SPACING VARIANTS ===
+        ".tracking-ultra-tight": {
+          letterSpacing: "-0.1em",
+        },
+        ".tracking-tighter": {
+          letterSpacing: "-0.05em",
+        },
+        ".tracking-tight": {
+          letterSpacing: "-0.025em",
+        },
+        ".tracking-normal": {
+          letterSpacing: "0em",
+        },
+        ".tracking-wide": {
+          letterSpacing: "0.025em",
+        },
+        ".tracking-wider": {
+          letterSpacing: "0.05em",
+        },
+        ".tracking-widest": {
+          letterSpacing: "0.1em",
+        },
+
+        // === LINE HEIGHT VARIANTS ===
+        ".leading-tight-xs": {
+          lineHeight: "1",
+        },
+        ".leading-tight": {
+          lineHeight: "1.2",
+        },
+        ".leading-snug": {
+          lineHeight: "1.35",
+        },
+        ".leading-normal": {
+          lineHeight: "1.5",
+        },
+        ".leading-relaxed": {
+          lineHeight: "1.65",
+        },
+        ".leading-loose": {
+          lineHeight: "2",
+        },
       };
       addUtilities(newUtilities);
     },
