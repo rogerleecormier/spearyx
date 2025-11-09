@@ -1,22 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Target } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center">
-          <img
-            src="/images/spearyx-logo.svg"
-            alt="Spearyx Logo"
-            className="h-10 w-auto"
-          />
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-24 sm:py-32">
         <div className="text-center max-w-2xl">
@@ -59,41 +55,56 @@ function App() {
           {/* Divider */}
           <div className="my-12 h-1 w-16 bg-gradient-to-r from-primary-500 to-slate-400 rounded mx-auto"></div>
 
-          {/* Value Props */}
+          {/* Value Props - Using shadcn Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16">
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="text-3xl font-bold text-primary-500 mb-2">✓</div>
-              <h3 className="font-semibold text-slate-900 mb-2">
-                Crystal Clear
-              </h3>
-              <p className="text-sm text-slate-600">
-                Clarity in every action, complete transparency in every project
-              </p>
-            </div>
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="text-3xl font-bold text-accent-500 mb-2">🎯</div>
-              <h3 className="font-semibold text-slate-900 mb-2">
-                Precision-Focused
-              </h3>
-              <p className="text-sm text-slate-600">
-                Target your goals with laser-sharp accuracy and strategic
-                planning
-              </p>
-            </div>
-            <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="text-3xl font-bold text-accent-500 mb-2">⚡</div>
-              <h3 className="font-semibold text-slate-900 mb-2">Razor Sharp</h3>
-              <p className="text-sm text-slate-600">
-                Cut through complexity with focused tools designed for
-                excellence
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-3xl font-bold text-primary-500 mb-2">
+                  ✓
+                </div>
+                <CardTitle>Crystal Clear</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Clarity in every action, complete transparency in every
+                  project
+                </CardDescription>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="text-3xl font-bold text-accent-500 mb-2">
+                  🎯
+                </div>
+                <CardTitle>Precision-Focused</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Target your goals with laser-sharp accuracy and strategic
+                  planning
+                </CardDescription>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="text-3xl font-bold text-accent-500 mb-2">
+                  ⚡
+                </div>
+                <CardTitle>Razor Sharp</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Cut through complexity with focused tools designed for
+                  excellence
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-100 border-t border-slate-200 py-8 mt-12">
+      <footer className="border-t border-slate-200 py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-slate-600 text-sm">
             © 2025 Spearyx. Precision project management, coming your way.
