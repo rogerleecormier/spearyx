@@ -15,7 +15,9 @@ export function Caption({
 }: CaptionProps) {
   const fontWeight = variant === "semibold" ? "font-semibold" : "font-normal";
   return (
-    <Component className={`block text-sm ${fontWeight} leading-snug ${className}`}>
+    <Component
+      className={`block text-sm ${fontWeight} leading-snug ${className}`}
+    >
       {children}
     </Component>
   );

@@ -33,9 +33,7 @@ export function PrimaryCard({
           {icon && <div className="flex-shrink-0 text-2xl mt-1">{icon}</div>}
           <div className="flex-1">
             <CardTitle className="text-primary-500">{title}</CardTitle>
-            {description && (
-              <CardDescription>{description}</CardDescription>
-            )}
+            {description && <CardDescription>{description}</CardDescription>}
           </div>
         </div>
       </CardHeader>
@@ -69,9 +67,7 @@ export function SecondaryCard({
           {icon && <div className="flex-shrink-0 text-2xl mt-1">{icon}</div>}
           <div className="flex-1">
             <CardTitle className="text-secondary-500">{title}</CardTitle>
-            {description && (
-              <CardDescription>{description}</CardDescription>
-            )}
+            {description && <CardDescription>{description}</CardDescription>}
           </div>
         </div>
       </CardHeader>
@@ -123,14 +119,10 @@ export function ToolCard({
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1">
-            {icon && (
-              <div className="flex-shrink-0 text-2xl mt-1">{icon}</div>
-            )}
+            {icon && <div className="flex-shrink-0 text-2xl mt-1">{icon}</div>}
             <div className="flex-1">
               <CardTitle>{title}</CardTitle>
-              <CardDescription className="mt-1">
-                {description}
-              </CardDescription>
+              <CardDescription className="mt-1">{description}</CardDescription>
             </div>
           </div>
           <Badge className={`flex-shrink-0 ${config.color}`}>
@@ -169,9 +161,7 @@ export function ComingSoonCard({
       <CardHeader>
         <div className="flex items-start gap-4">
           {icon && (
-            <div className="flex-shrink-0 text-3xl mt-1 opacity-50">
-              {icon}
-            </div>
+            <div className="flex-shrink-0 text-3xl mt-1 opacity-50">{icon}</div>
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -244,9 +234,7 @@ export function StatsCard({
             {label}
           </CardTitle>
           {icon && (
-            <div className={`text-xl ${colorClasses[accentColor]}`}>
-              {icon}
-            </div>
+            <div className={`text-xl ${colorClasses[accentColor]}`}>{icon}</div>
           )}
         </div>
       </CardHeader>

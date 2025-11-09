@@ -18,49 +18,84 @@ export const Route = createFileRoute("/typography")({
 
 function TypographyLibrary() {
   const colors = {
-    primary: { name: "Primary Red", class: "text-red-500", hex: "#ef4444", description: "Brand primary color - use for main actions" },
+    primary: {
+      name: "Primary Red",
+      class: "text-red-500",
+      hex: "#ef4444",
+      description: "Brand primary color - use for main actions",
+    },
     "primary-light": {
       name: "Primary Light",
       class: "text-red-400",
       hex: "#f87171",
       description: "Lighter red for hover and active states",
     },
-    secondary: { name: "Secondary Indigo", class: "text-indigo-500", hex: "#6366f1", description: "Professional secondary color - use for visual hierarchy" },
+    secondary: {
+      name: "Secondary Indigo",
+      class: "text-indigo-500",
+      hex: "#6366f1",
+      description: "Professional secondary color - use for visual hierarchy",
+    },
     "secondary-light": {
       name: "Secondary Light",
       class: "text-indigo-400",
       hex: "#818cf8",
       description: "Lighter indigo for secondary actions",
     },
-    accent: { name: "Accent Emerald", class: "text-emerald-500", hex: "#22c55e", description: "Success and positive indicators" },
+    accent: {
+      name: "Accent Emerald",
+      class: "text-emerald-500",
+      hex: "#22c55e",
+      description: "Success and positive indicators",
+    },
     "accent-light": {
       name: "Accent Light",
       class: "text-emerald-400",
       hex: "#4ade80",
       description: "Lighter emerald for accents",
     },
-    info: { name: "Info Blue", class: "text-blue-500", hex: "#3b82f6", description: "Informational messages and secondary actions" },
+    info: {
+      name: "Info Blue",
+      class: "text-blue-500",
+      hex: "#3b82f6",
+      description: "Informational messages and secondary actions",
+    },
     "info-light": {
       name: "Info Light",
       class: "text-blue-400",
       hex: "#60a5fa",
       description: "Lighter blue for info states",
     },
-    success: { name: "Success Teal", class: "text-teal-500", hex: "#14b8a6", description: "Successful operations" },
+    success: {
+      name: "Success Teal",
+      class: "text-teal-500",
+      hex: "#14b8a6",
+      description: "Successful operations",
+    },
     "success-light": {
       name: "Success Light",
       class: "text-teal-400",
       hex: "#2dd4bf",
       description: "Lighter teal for success states",
     },
-    warning: { name: "Warning Amber", class: "text-amber-500", hex: "#f59e0b", description: "Warnings and caution" },
+    warning: {
+      name: "Warning Amber",
+      class: "text-amber-500",
+      hex: "#f59e0b",
+      description: "Warnings and caution",
+    },
     "warning-light": {
       name: "Warning Light",
       class: "text-amber-400",
       hex: "#fbbf24",
       description: "Lighter amber for warnings",
     },
-    error: { name: "Error Rose", class: "text-rose-500", hex: "#ff6b85", description: "Errors and critical alerts" },
+    error: {
+      name: "Error Rose",
+      class: "text-rose-500",
+      hex: "#ff6b85",
+      description: "Errors and critical alerts",
+    },
     "error-light": {
       name: "Error Light",
       class: "text-rose-400",
@@ -402,39 +437,58 @@ function TypographyLibrary() {
             {/* Card Example 1 */}
             <div className="bg-white rounded-lg border border-slate-200 p-8 hover-lift">
               <Overline className="text-red-500 mb-2">Primary Brand</Overline>
-              <Headline className="text-red-500 mb-2">Primary Showcase</Headline>
+              <Headline className="text-red-500 mb-2">
+                Primary Showcase
+              </Headline>
               <Body className="text-neutral mb-4">
-                This card demonstrates the primary red color system for main actions and brand elements.
+                This card demonstrates the primary red color system for main
+                actions and brand elements.
               </Body>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-8 bg-red-500 rounded-sm"></div>
-                <Body className="text-red-500 font-semibold">Primary Action</Body>
+                <Body className="text-red-500 font-semibold">
+                  Primary Action
+                </Body>
               </div>
             </div>
 
             {/* Card Example 2 */}
             <div className="bg-white rounded-lg border border-indigo-200 p-8 hover-lift">
-              <Overline className="text-indigo-500 mb-2">Secondary Hierarchy</Overline>
-              <Headline className="text-indigo-500 mb-2">Secondary Showcase</Headline>
+              <Overline className="text-indigo-500 mb-2">
+                Secondary Hierarchy
+              </Overline>
+              <Headline className="text-indigo-500 mb-2">
+                Secondary Showcase
+              </Headline>
               <Body className="text-neutral mb-4">
-                Secondary indigo provides professional hierarchy and supporting actions across the interface.
+                Secondary indigo provides professional hierarchy and supporting
+                actions across the interface.
               </Body>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-8 bg-indigo-500 rounded-sm"></div>
-                <Body className="text-indigo-500 font-semibold">Secondary Action</Body>
+                <Body className="text-indigo-500 font-semibold">
+                  Secondary Action
+                </Body>
               </div>
             </div>
 
             {/* Card Example 3 */}
             <div className="bg-white rounded-lg border border-emerald-200 p-8 hover-lift">
-              <Overline className="text-emerald-600 mb-2">Growth & Success</Overline>
-              <Headline className="text-emerald-600 mb-2">Accent Colors</Headline>
+              <Overline className="text-emerald-600 mb-2">
+                Growth & Success
+              </Overline>
+              <Headline className="text-emerald-600 mb-2">
+                Accent Colors
+              </Headline>
               <Body className="text-neutral mb-4">
-                Emerald accent conveys growth, success, and positive actions throughout the design.
+                Emerald accent conveys growth, success, and positive actions
+                throughout the design.
               </Body>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-8 bg-emerald-500 rounded-sm"></div>
-                <Body className="text-emerald-600 font-semibold">Success State</Body>
+                <Body className="text-emerald-600 font-semibold">
+                  Success State
+                </Body>
               </div>
             </div>
 
@@ -443,7 +497,8 @@ function TypographyLibrary() {
               <Overline className="text-blue-600 mb-2">Information</Overline>
               <Headline className="text-blue-600 mb-2">Info System</Headline>
               <Body className="text-neutral mb-4">
-                Blue provides informational context, tips, and secondary communication throughout UI.
+                Blue provides informational context, tips, and secondary
+                communication throughout UI.
               </Body>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-8 bg-blue-500 rounded-sm"></div>
@@ -456,24 +511,30 @@ function TypographyLibrary() {
           <div className="mb-12">
             <Overline className="mb-6 text-red-500">Advanced Styling</Overline>
             <Headline className="mb-8">Gradient Text Utilities</Headline>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
-                <Headline className="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">Primary Gradient</Headline>
+                <Headline className="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">
+                  Primary Gradient
+                </Headline>
                 <Body size="sm" className="text-slate-600">
                   Bold red gradient for emphasis and brand moments
                 </Body>
               </div>
-              
+
               <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
-                <Headline className="bg-gradient-to-r from-indigo-500 to-indigo-700 bg-clip-text text-transparent mb-4">Secondary Gradient</Headline>
+                <Headline className="bg-gradient-to-r from-indigo-500 to-indigo-700 bg-clip-text text-transparent mb-4">
+                  Secondary Gradient
+                </Headline>
                 <Body size="sm" className="text-slate-600">
                   Professional indigo gradient for key highlights
                 </Body>
               </div>
-              
+
               <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
-                <Headline className="bg-gradient-to-r from-emerald-500 to-emerald-700 bg-clip-text text-transparent mb-4">Accent Gradient</Headline>
+                <Headline className="bg-gradient-to-r from-emerald-500 to-emerald-700 bg-clip-text text-transparent mb-4">
+                  Accent Gradient
+                </Headline>
                 <Body size="sm" className="text-slate-600">
                   Emerald gradient for success and growth moments
                 </Body>

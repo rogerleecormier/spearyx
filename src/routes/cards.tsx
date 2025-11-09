@@ -106,7 +106,10 @@ function CardsLibrary() {
               <Headline>Specialized Cards</Headline>
             </div>
             <Body className="text-neutral">
-              Modern, purpose-built cards for specific use cases: Primary/Secondary for hierarchy, Tool cards for feature showcase, Coming Soon cards for announcements, Stats cards for metrics, and Interactive cards for engagement.
+              Modern, purpose-built cards for specific use cases:
+              Primary/Secondary for hierarchy, Tool cards for feature showcase,
+              Coming Soon cards for announcements, Stats cards for metrics, and
+              Interactive cards for engagement.
             </Body>
           </div>
 

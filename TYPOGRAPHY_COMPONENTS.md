@@ -1,14 +1,8 @@
 # Typography Components Library# Typography Component Library
 
-
-
 A comprehensive collection of **9 semantic typography components** built with React, TypeScript, and Tailwind CSS. Provides a complete typographic scale from Hero (72px) down to Overline (12px).A comprehensive, reusable typography system built with React and Tailwind CSS. This library provides semantic, composable text components that handle font sizing, weight, spacing, and color management automatically.
 
-
-
 ## Table of Contents## Table of Contents
-
-
 
 1. [Overview](#overview)- [Quick Start](#quick-start)
 
@@ -24,25 +18,19 @@ A comprehensive collection of **9 semantic typography components** built with Re
 
 7. [Usage Examples](#usage-examples)- [Component Reference](#component-reference)
 
-
-
 ---## Quick Start
 
-
-
 ## Overview### Import Components
-
-
 
 ### Typography Hierarchy```tsx
 
 import {
 
-All typography components are semantically named and sized for clear visual hierarchy:  Hero,
+All typography components are semantically named and sized for clear visual hierarchy: Hero,
 
-  Display,
+Display,
 
-```  Headline,
+````Headline,
 
 Hero (72px)      — Page-level brand statements  Title,
 
@@ -100,7 +88,7 @@ All typography components support:<Body size="lg">Large body text</Body>
 
 - ✅ **Accessibility**: Proper semantic HTML (h1-h6, p, span)<Overline>SECTION MARKER</Overline>
 
-```
+````
 
 ---
 
@@ -114,13 +102,13 @@ All typography components are built using pure **Tailwind CSS utility classes**,
 
 ### Hero
 
-```tsx**Purpose**: Large display heading for main page titles and hero sections.
+````tsx**Purpose**: Large display heading for main page titles and hero sections.
 
 import {
 
-  Hero,**Default Size**: `text-7xl` (56px)  
+  Hero,**Default Size**: `text-7xl` (56px)
 
-  Display,**Line Height**: `tight` (1.25)  
+  Display,**Line Height**: `tight` (1.25)
 
   Headline,**Letter Spacing**: `-tracking-wider` (-0.05em)
 
@@ -150,21 +138,17 @@ import {
 
 import { Hero, Display, Body } from "@/components/Typography";---
 
-```
+````
 
 ### Display
 
 ---**Purpose**: Prominent heading for major sections and feature titles.
 
+## Typography Scale**Default Size**: `text-5xl` (48px)
 
-
-## Typography Scale**Default Size**: `text-5xl` (48px)  
-
-**Line Height**: `snug` (1.375)  
+**Line Height**: `snug` (1.375)
 
 ### Complete Size Reference**Letter Spacing**: `tracking-tight` (-0.025em)
-
-
 
 | Component | Size | Line Height | Letter Spacing | Weight | Use Case |```tsx
 
@@ -196,17 +180,13 @@ import { Hero, Display, Body } from "@/components/Typography";---
 
 ## Components Reference**Purpose**: Medium heading for section titles and subsections.
 
+### 1. Hero**Default Size**: `text-4xl` (36px)
 
-
-### 1. Hero**Default Size**: `text-4xl` (36px)  
-
-**Line Height**: `snug` (1.375)  
+**Line Height**: `snug` (1.375)
 
 The largest and most prominent typography component. Use for brand statements and page-level headlines.**Letter Spacing**: `tracking-tight` (-0.025em)
 
-
-
-```tsx```tsx
+`tsx`tsx
 
 <Hero>Welcome to Spearyx</Hero><Headline>Section Heading</Headline>
 
@@ -218,7 +198,7 @@ The largest and most prominent typography component. Use for brand statements an
 
 **Props:**
 
-```typescript**Props:**
+````typescript**Props:**
 
 interface HeroProps {- `variant?: "bold" | "semibold"` — Font weight (default: "bold")
 
@@ -238,7 +218,7 @@ interface HeroProps {- `variant?: "bold" | "semibold"` — Font weight (default:
 
 **Use for:** Page titles, brand statements, hero sections
 
-**Default Size**: `text-2xl` (24px)  
+**Default Size**: `text-2xl` (24px)
 
 ---**Line Height**: `tight` (1.25)
 
@@ -276,7 +256,7 @@ Major section headings. Use for prominent section titles and key messaging.<Titl
 
 ### 3. Headline
 
-**Default Size**: `text-lg` (18px)  
+**Default Size**: `text-lg` (18px)
 
 Section titles and card headers. Highly versatile component for content organization.**Line Height**: `snug` (1.375)
 
@@ -288,9 +268,7 @@ Section titles and card headers. Highly versatile component for content organiza
 
 <Headline>Our Team</Headline><Subtitle variant="regular">Regular Subtitle</Subtitle>
 
-``````
-
-
+````
 
 **Size:** 36px | **Weight:** 700 | **Spacing:** -0.025em**Props:**
 
@@ -310,9 +288,7 @@ Section titles and card headers. Highly versatile component for content organiza
 
 Component and card titles. Perfect for headers within cards and containers.**Purpose**: Main body text with flexible sizing and weight options.
 
-
-
-```tsx**Sizes**:
+````tsx**Sizes**:
 
 <Title>Feature Title</Title>- `lg` — `text-xl` (20px), `leading-relaxed` (1.65)
 
@@ -340,9 +316,7 @@ interface TitleProps {```tsx
 
 }<Body className="text-neutral">Custom color</Body>
 
-``````
-
-
+````
 
 **Size:** 24px | **Weight:** 700/600**Props:**
 
@@ -354,11 +328,7 @@ interface TitleProps {```tsx
 
 ---- `className?: string` — Additional Tailwind classes
 
-
-
 ### 5. Subtitle---
-
-
 
 Supporting headings and descriptive text. Use for secondary hierarchy below titles.### Caption
 
@@ -366,13 +336,13 @@ Supporting headings and descriptive text. Use for secondary hierarchy below titl
 
 ```tsx
 
-<Subtitle>Precision Project Management</Subtitle>**Default Size**: `text-sm` (14px)  
+<Subtitle>Precision Project Management</Subtitle>**Default Size**: `text-sm` (14px)
 
 <Subtitle variant="regular">Supporting Text</Subtitle>**Line Height**: `snug` (1.375)
 
 ```
 
-```tsx
+````tsx
 
 **Props:**<Caption>Supporting text</Caption>
 
@@ -404,11 +374,11 @@ interface SubtitleProps {<Caption className="text-neutral-light">Subtle text</Ca
 
 ---
 
-**Default Size**: `text-xs` (12px)  
+**Default Size**: `text-xs` (12px)
 
-### 6. Body**Line Height**: N/A (implicit)  
+### 6. Body**Line Height**: N/A (implicit)
 
-**Text Transform**: `uppercase`  
+**Text Transform**: `uppercase`
 
 Main content text. Most frequently used component with multiple size variants.**Letter Spacing**: `tracking-wider` (0.05em)
 
@@ -424,7 +394,7 @@ Main content text. Most frequently used component with multiple size variants.**
 
 <Body weight="semibold">Bold body text</Body>```
 
-```
+````
 
 **Props:**
 
@@ -434,23 +404,23 @@ Main content text. Most frequently used component with multiple size variants.**
 
 interface BodyProps {- `className?: string` — Additional Tailwind classes
 
-  children: React.ReactNode;
+children: React.ReactNode;
 
-  size?: "sm" | "base" | "lg";---
+size?: "sm" | "base" | "lg";---
 
-  weight?: "normal" | "medium" | "semibold";
+weight?: "normal" | "medium" | "semibold";
 
-  className?: string;### Overline
+className?: string;### Overline
 
-  as?: "p" | "span" | "div";**Purpose**: Small uppercase text for section markers and category labels.
+as?: "p" | "span" | "div";**Purpose**: Small uppercase text for section markers and category labels.
 
 }
 
-```**Default Size**: `text-xs` (12px)  
+```**Default Size**: `text-xs` (12px)
 
-**Text Transform**: `uppercase`  
+**Text Transform**: `uppercase`
 
-**Sizes:****Letter Spacing**: `tracking-widest` (0.1em)  
+**Sizes:\*\***Letter Spacing\*\*: `tracking-widest` (0.1em)
 
 - `sm` - 14px (supporting text)**Font Weight**: `semibold` (600)
 
@@ -462,7 +432,7 @@ interface BodyProps {- `className?: string` — Additional Tailwind classes
 
 **Use for:** Paragraphs, descriptions, main content<Overline className="text-red-500">Category</Overline>
 
-```
+````
 
 ---
 
@@ -576,9 +546,9 @@ interface LabelProps {
 
 Section overlines and metadata text. Use for category labels and section markers.<Body className="text-neutral-lighter">Lighter neutral</Body>
 
-```
+````
 
-```tsx
+````tsx
 
 <Overline>Section Marker</Overline>## Usage Examples
 
@@ -604,7 +574,7 @@ interface OverlineProps {  <Overline className="text-red-500 mb-4">Documentation
 
 ```</section>
 
-```
+````
 
 **Size:** 12px | **Weight:** 600 | **Spacing:** 0.1em (wide)
 
@@ -612,7 +582,7 @@ interface OverlineProps {  <Overline className="text-red-500 mb-4">Documentation
 
 **Use for:** Section overlines, metadata, category labels
 
-```tsx
+````tsx
 
 ---<div className="bg-white rounded-lg p-6 border border-slate-200">
 
@@ -752,9 +722,9 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 ### 2. Color for Meaning<Body>This jumps hierarchy</Body>
 
-```
+````
 
-```tsx
+````tsx
 
 // ✅ Good - Colors have meaning### 2. Combine Components Meaningfully
 
@@ -768,7 +738,7 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 <Body className="text-purple-500">This is body text</Body><Body className="text-neutral">Manage your account preferences</Body>
 
-```
+````
 
 // ❌ Avoid redundancy
 
@@ -776,17 +746,17 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 <Title>Manage your account preferences</Title>
 
-```tsx```
+`tsx`
 
 // ✅ Good - Adapts to screen size
 
 <Hero className="text-5xl md:text-6xl lg:text-7xl">### 3. Use Size and Weight Variants
 
-  Responsive Hero
+Responsive Hero
 
 </Hero>```tsx
 
-```// ✅ Good - Appropriate size for context
+````// ✅ Good - Appropriate size for context
 
 <Body size="lg">Important announcement</Body>
 
@@ -828,13 +798,9 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 </div><Body className="text-yellow-200">Poor contrast</Body>
 
-``````
-
-
+````
 
 ---### 5. Leverage Custom Classes
-
-
 
 ## Usage Examples```tsx
 
@@ -842,9 +808,9 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 ### Example 1: Page Headerconst SectionHeader = ({ title, description }) => (
 
-  <>
+<>
 
-```tsx    <Overline className="text-red-500 mb-2">Section</Overline>
+````tsx <Overline className="text-red-500 mb-2">Section</Overline>
 
 <div className="text-center py-12">    <Headline className="mb-3">{title}</Headline>
 
@@ -866,9 +832,9 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 ### Example 2: Feature Showcase/>
 
-```
+````
 
-```tsx
+````tsx
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">### 6. Compose for Specific Use Cases
 
@@ -898,7 +864,7 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
   </div><Subtitle className="text-red-500">Premium Feature</Subtitle>
 
-  ```
+````
 
   <div>
 
@@ -914,7 +880,7 @@ Use gradient text for visual impact:  <Subtitle className="mb-3 mt-8">Section He
 
 </div>import {
 
-```  Hero,
+````Hero,
 
   Display,
 
@@ -997,7 +963,7 @@ interface LabelProps extends CommonProps {
 interface OverlineProps extends CommonProps {
   // No variants
 }
-```
+````
 
 ## File Structure
 
@@ -1025,16 +991,19 @@ Visit `/typography` route to see all typography components in action with intera
 ## Troubleshooting
 
 ### Text not displaying correct size?
+
 - Ensure you're using the component, not a plain `<p>` or `<h*>` tag
 - Check that Tailwind CSS is properly imported and compiled
 - Verify no conflicting CSS classes are overriding the typography styles
 
 ### Colors not applying?
+
 - Use valid Tailwind color classes (e.g., `text-red-500`, `text-slate-700`)
 - For custom colors, ensure they're defined in `tailwind.config.ts`
 - Check CSS specificity if colors aren't overriding
 
 ### Component not found?
+
 - Verify the import path matches your project structure
 - Ensure components are exported from `index.ts`
 - Check that TypeScript paths are configured correctly in `tsconfig.json`

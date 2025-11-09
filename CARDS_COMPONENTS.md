@@ -1,21 +1,14 @@
 # Card Components Library# Card Components Library
 
-
-
 A comprehensive collection of **21 reusable card components** built with React, TypeScript, and Tailwind CSS. Includes both classic and modern specialized card types designed for various use cases.A comprehensive collection of **21 reusable card components** built with React, TypeScript, and Tailwind CSS. Includes both classic and modern specialized card types designed for various use cases.
 
-
-
 ## Table of Contents## Table of Contents
-
-
 
 1. [Overview](#overview)1. [Installation](#installation)
 
 2. [Installation & Import](#installation--import)2. [Basic Usage](#basic-usage)
 
 3. [Card Catalog](#card-catalog)3. [Card Types](#card-types)
-
    - [Core Components](#core-components)4. [Best Practices](#best-practices)
 
    - [Specialized Cards](#specialized-cards)5. [Patterns & Examples](#patterns--examples)
@@ -34,7 +27,7 @@ All card components are located in `src/components/Cards/` and can be imported f
 
 ## Overview
 
-```tsx
+````tsx
 
 ### What's Includedimport {
 
@@ -134,9 +127,9 @@ import {import { BasicCard } from "@/components/Cards";
 
 } from "@/components/Cards";**Props:**
 
-```
+````
 
-```typescript
+````typescript
 
 ### Import Individual Cardsinterface BasicCardProps {
 
@@ -244,13 +237,11 @@ Activity feeds and event timelines.  accentColor?: "primary" | "accent" | "slate
 
 Loading placeholders to maintain layout stability.}
 
-```
+````
 
 #### 15. EmptyStateCard
 
 Display when no content is available with action guidance.**Examples:**
-
-
 
 ---```tsx
 
@@ -258,15 +249,13 @@ Display when no content is available with action guidance.**Examples:**
 
 ### Specialized Cards (6 NEW Types)<FeaturedCard
 
-  title="Critical Update"
+title="Critical Update"
 
-#### 16. PrimaryCard **NEW**  description="Important changes to our service"
+#### 16. PrimaryCard **NEW** description="Important changes to our service"
 
-  accentColor="primary"
+accentColor="primary"
 
 Emphasizes primary actions with red accent and professional design./>
-
-
 
 ```tsx// Green accent (accent)
 
@@ -286,15 +275,15 @@ Emphasizes primary actions with red accent and professional design./>
 
 **Features:**<FeaturedCard
 
-- Red left border accent (#ef4444)  title="General Info"
+- Red left border accent (#ef4444) title="General Info"
 
-- Primary color title styling  description="Standard information"
+- Primary color title styling description="Standard information"
 
-- Icon support for visual hierarchy  accentColor="slate"
+- Icon support for visual hierarchy accentColor="slate"
 
 - Professional appearance/>
 
-```
+````
 
 **Use for:** Main actions, primary features, hero content
 
@@ -350,13 +339,13 @@ Professional secondary actions with indigo accent for visual hierarchy.
 
 #### 18. ToolCard **NEW**}
 
-```
+````
 
 Feature showcase with dynamic status indicators.
 
 **Examples:**
 
-```tsx
+````tsx
 
 <ToolCard```tsx
 
@@ -416,9 +405,7 @@ Elevated card for announcing upcoming features with premium styling.
 
 />/>
 
-``````
-
-
+````
 
 **Features:**---
 
@@ -444,31 +431,27 @@ Elevated card for announcing upcoming features with premium styling.
 
 #### 20. StatsCard **NEW**- Rating displays
 
-
-
 Metrics display with trend indicators and color-coded accents.**Props:**
 
-
-
-```tsx```typescript
+`tsx`typescript
 
 <StatsCardinterface TestimonialCardProps {
 
-  label="Active Projects"  quote: string;
+label="Active Projects" quote: string;
 
-  value="24"  authorName: string;
+value="24" authorName: string;
 
-  icon="📊"  authorRole?: string;
+icon="📊" authorRole?: string;
 
-  accentColor="primary"  rating?: number;
+accentColor="primary" rating?: number;
 
-  trend="up"  avatarImage?: string;
+trend="up" avatarImage?: string;
 
-  trendValue="+12% from last month"  className?: string;
+trendValue="+12% from last month" className?: string;
 
 />}
 
-``````
+````
 
 
 
@@ -2152,3 +2135,4 @@ These card components are part of the Spearyx project.
 - [Tailwind CSS](https://tailwindcss.com)
 - [shadcn/ui](https://ui.shadcn.com)
 - [Lucide Icons](https://lucide.dev)
+````
