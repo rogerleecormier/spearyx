@@ -1,615 +1,1227 @@
-# Card Components Library
+# Card Components Library# Card Components Library
 
-A comprehensive collection of 15 reusable card components built with React, TypeScript, and Tailwind CSS. Perfect for building modern, consistent user interfaces across your application.
 
-## Table of Contents
 
-1. [Installation](#installation)
-2. [Basic Usage](#basic-usage)
-3. [Card Types](#card-types)
-4. [Best Practices](#best-practices)
-5. [Patterns & Examples](#patterns--examples)
+A comprehensive collection of **21 reusable card components** built with React, TypeScript, and Tailwind CSS. Includes both classic and modern specialized card types designed for various use cases.A comprehensive collection of **21 reusable card components** built with React, TypeScript, and Tailwind CSS. Includes both classic and modern specialized card types designed for various use cases.
 
----
+
+
+## Table of Contents## Table of Contents
+
+
+
+1. [Overview](#overview)1. [Installation](#installation)
+
+2. [Installation & Import](#installation--import)2. [Basic Usage](#basic-usage)
+
+3. [Card Catalog](#card-catalog)3. [Card Types](#card-types)
+
+   - [Core Components](#core-components)4. [Best Practices](#best-practices)
+
+   - [Specialized Cards](#specialized-cards)5. [Patterns & Examples](#patterns--examples)
+
+4. [Color System](#color-system)
+
+5. [Best Practices](#best-practices)---
+
+6. [Component Reference](#component-reference)
 
 ## Installation
 
+---
+
 All card components are located in `src/components/Cards/` and can be imported from the index:
 
+## Overview
+
 ```tsx
-import {
+
+### What's Includedimport {
+
   BasicCard,
-  FeaturedCard,
-  StatCard,
-  TestimonialCard,
-  ImageCard,
-  CTACard,
+
+| Category | Count | Components |  FeaturedCard,
+
+|----------|-------|------------|  StatCard,
+
+| **Core Cards** | 15 | BasicCard, FeaturedCard, StatCard, TestimonialCard, ImageCard, CTACard, PricingCard, AlertCard, ColorVariantCard, ProductCard, ProfileCard, ProgressCard, TimelineCard, SkeletonCard, EmptyStateCard |  TestimonialCard,
+
+| **Specialized Cards** | 6 | PrimaryCard, SecondaryCard, ToolCard, ComingSoonCard, StatsCard, InteractiveCard |  ImageCard,
+
+| **Total** | **21** | Fully typed and production-ready |  CTACard,
+
   PricingCard,
-  AlertCard,
+
+### Design System Integration  AlertCard,
+
   ColorVariantCard,
-  ProductCard,
-  ProfileCard,
-  ProgressCard,
-  TimelineCard,
-  SkeletonCard,
-  EmptyStateCard,
+
+All cards support:  ProductCard,
+
+- ✅ **Color System**: Primary Red (#ef4444), Secondary Indigo (#6366f1), Accent Emerald (#22c55e), Info Blue (#3b82f6), Status Colors  ProfileCard,
+
+- ✅ **Micro-interactions**: Hover effects, glow, glass morphism  ProgressCard,
+
+- ✅ **Responsive Design**: Mobile-first, works on all screen sizes  TimelineCard,
+
+- ✅ **Dark Mode**: Automatic with OKLch color space  SkeletonCard,
+
+- ✅ **Accessibility**: WCAG AA compliant with proper contrast and semantic HTML  EmptyStateCard,
+
 } from "@/components/Cards";
+
+---```
+
+
+
+## Installation & Import---
+
+
+
+### Import All Cards## Basic Usage
+
+
+
+```tsx```tsx
+
+import {import { BasicCard } from "@/components/Cards";
+
+  // Core Components
+
+  BasicCard,export function MyComponent() {
+
+  FeaturedCard,  return (
+
+  StatCard,    <BasicCard title="Hello World" description="This is a basic card example" />
+
+  TestimonialCard,  );
+
+  ImageCard,}
+
+  CTACard,```
+
+  PricingCard,
+
+  AlertCard,---
+
+  ColorVariantCard,
+
+  ProductCard,## Card Types
+
+  ProfileCard,
+
+  ProgressCard,### 1. BasicCard
+
+  TimelineCard,
+
+  SkeletonCard,The simplest card component. Perfect for displaying basic information with title and description.
+
+  EmptyStateCard,
+
+  // Specialized Cards**When to use:**
+
+  PrimaryCard,
+
+  SecondaryCard,- Displaying simple information blocks
+
+  ToolCard,- Feature lists
+
+  ComingSoonCard,- Quick informational cards
+
+  StatsCard,- Default card container
+
+  InteractiveCard,
+
+} from "@/components/Cards";**Props:**
+
 ```
-
----
-
-## Basic Usage
-
-```tsx
-import { BasicCard } from "@/components/Cards";
-
-export function MyComponent() {
-  return (
-    <BasicCard title="Hello World" description="This is a basic card example" />
-  );
-}
-```
-
----
-
-## Card Types
-
-### 1. BasicCard
-
-The simplest card component. Perfect for displaying basic information with title and description.
-
-**When to use:**
-
-- Displaying simple information blocks
-- Feature lists
-- Quick informational cards
-- Default card container
-
-**Props:**
 
 ```typescript
-interface BasicCardProps {
+
+### Import Individual Cardsinterface BasicCardProps {
+
   title: string;
-  description?: string;
-  className?: string;
-  children?: React.ReactNode;
+
+```tsx  description?: string;
+
+import { BasicCard, FeaturedCard } from "@/components/Cards";  className?: string;
+
+```  children?: React.ReactNode;
+
 }
-```
 
-**Examples:**
+---```
 
-```tsx
+
+
+## Card Catalog**Examples:**
+
+
+
+### Core Components (15 Types)```tsx
+
 // Simple card
-<BasicCard
-  title="Welcome"
+
+#### 1. BasicCard<BasicCard
+
+The foundational card component. Perfect for simple information display.  title="Welcome"
+
   description="Get started with our platform"
-/>
+
+#### 2. FeaturedCard/>
+
+Eye-catching card with colored left border and optional icon.
 
 // With custom content
-<BasicCard
-  title="Features"
-  description="Check out what we offer"
->
-  <ul className="list-disc list-inside space-y-2">
-    <li>Feature one</li>
-    <li>Feature two</li>
-    <li>Feature three</li>
-  </ul>
-</BasicCard>
-```
 
----
+#### 3. StatCard<BasicCard
+
+Display metrics with trend indicators.  title="Features"
+
+  description="Check out what we offer"
+
+#### 4. TestimonialCard>
+
+Showcase customer feedback with ratings and avatars.  <ul className="list-disc list-inside space-y-2">
+
+    <li>Feature one</li>
+
+#### 5. ImageCard    <li>Feature two</li>
+
+Cards with featured images and optional overlay effects.    <li>Feature three</li>
+
+  </ul>
+
+#### 6. CTACard</BasicCard>
+
+Call-to-action cards with action buttons.```
+
+
+
+#### 7. PricingCard---
+
+Tiered pricing display with features and CTA.
 
 ### 2. FeaturedCard
 
-A card with a colored left border accent. Great for highlighting important information.
+#### 8. AlertCard
 
-**When to use:**
+Contextual alerts for messages and notifications (success, info, warning, error).A card with a colored left border accent. Great for highlighting important information.
+
+
+
+#### 9. ColorVariantCard**When to use:**
+
+Cards with 9 color theme options for organization.
 
 - Highlighting important content
-- Categorizing items by color
-- Featured items in lists
+
+#### 10. ProductCard- Categorizing items by color
+
+E-commerce product display with ratings and cart functionality.- Featured items in lists
+
 - Visual hierarchy emphasis
 
-**Props:**
+#### 11. ProfileCard
 
-```typescript
-interface FeaturedCardProps {
+User profile display in vertical or horizontal layout.**Props:**
+
+
+
+#### 12. ProgressCard```typescript
+
+Progress indicators in multiple formats (linear, circular, steps).interface FeaturedCardProps {
+
   title: string;
-  description?: string;
-  accentColor?: "primary" | "accent" | "slate";
+
+#### 13. TimelineCard  description?: string;
+
+Activity feeds and event timelines.  accentColor?: "primary" | "accent" | "slate";
+
   className?: string;
-  children?: React.ReactNode;
-}
+
+#### 14. SkeletonCard  children?: React.ReactNode;
+
+Loading placeholders to maintain layout stability.}
+
 ```
 
-**Examples:**
+#### 15. EmptyStateCard
 
-```tsx
+Display when no content is available with action guidance.**Examples:**
+
+
+
+---```tsx
+
 // Red accent (primary)
-<FeaturedCard
-  title="Critical Update"
-  description="Important changes to our service"
-  accentColor="primary"
-/>
 
-// Green accent (accent)
-<FeaturedCard
-  title="New Feature"
-  description="We just launched something new"
-  accentColor="accent"
-/>
+### Specialized Cards (6 NEW Types)<FeaturedCard
+
+  title="Critical Update"
+
+#### 16. PrimaryCard **NEW**  description="Important changes to our service"
+
+  accentColor="primary"
+
+Emphasizes primary actions with red accent and professional design./>
+
+
+
+```tsx// Green accent (accent)
+
+<PrimaryCard<FeaturedCard
+
+  title="Primary Action"  title="New Feature"
+
+  description="Main call-to-action content"  description="We just launched something new"
+
+  icon="⚡"  accentColor="accent"
+
+/>/>
+
+```
 
 // Gray accent (slate)
-<FeaturedCard
-  title="General Info"
-  description="Standard information"
-  accentColor="slate"
-/>
+
+**Features:**<FeaturedCard
+
+- Red left border accent (#ef4444)  title="General Info"
+
+- Primary color title styling  description="Standard information"
+
+- Icon support for visual hierarchy  accentColor="slate"
+
+- Professional appearance/>
+
 ```
+
+**Use for:** Main actions, primary features, hero content
+
+---
 
 ---
 
 ### 3. StatCard
 
+#### 17. SecondaryCard **NEW**
+
 Display key metrics with trend indicators and icons.
 
+Professional secondary actions with indigo accent for visual hierarchy.
+
 **When to use:**
 
-- Dashboard metrics
-- KPIs and analytics
-- Statistics display
-- Numerical data highlighting
+```tsx
 
-**Props:**
+<SecondaryCard- Dashboard metrics
 
-```typescript
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon?: React.ReactNode;
+  title="Secondary Action"- KPIs and analytics
+
+  description="Supporting action content"- Statistics display
+
+  icon="💡"- Numerical data highlighting
+
+/>
+
+```**Props:**
+
+
+
+**Features:**```typescript
+
+- Indigo left border accent (#6366f1)interface StatCardProps {
+
+- Secondary color styling  title: string;
+
+- Perfect for supporting actions  value: string | number;
+
+- Maintains visual hierarchy  icon?: React.ReactNode;
+
   trend?: {
-    direction: "up" | "down";
+
+**Use for:** Supporting actions, secondary hierarchy, alternative CTAs    direction: "up" | "down";
+
     value: number | string;
-  };
+
+---  };
+
   className?: string;
-}
+
+#### 18. ToolCard **NEW**}
+
 ```
+
+Feature showcase with dynamic status indicators.
 
 **Examples:**
 
 ```tsx
-import { TrendingUp } from 'lucide-react'
 
-// Simple stat
-<StatCard
-  title="Total Users"
-  value="12,345"
+<ToolCard```tsx
+
+  title="RACI Chart Generator"import { TrendingUp } from 'lucide-react'
+
+  description="Define roles and responsibilities"
+
+  icon="📊"// Simple stat
+
+  status="coming-soon"<StatCard
+
+/>  title="Total Users"
+
+```  value="12,345"
+
 />
 
-// With trend
-<StatCard
-  title="Monthly Revenue"
+**Status Options:**
+
+- `available` - Green badge, available now// With trend
+
+- `coming-soon` - Orange badge, upcoming feature<StatCard
+
+- `beta` - Blue badge, beta testing  title="Monthly Revenue"
+
   value="$45,678"
-  icon={<DollarSign className="w-6 h-6" />}
+
+**Use for:** Feature/tool showcase, product features, coming soon items  icon={<DollarSign className="w-6 h-6" />}
+
   trend={{
-    direction: 'up',
+
+---    direction: 'up',
+
     value: '12%'
-  }}
+
+#### 19. ComingSoonCard **NEW**  }}
+
 />
+
+Elevated card for announcing upcoming features with premium styling.
 
 // Negative trend
-<StatCard
-  title="Churn Rate"
-  value="2.3%"
-  trend={{
-    direction: 'down',
-    value: '0.5%'
-  }}
-/>
-```
 
----
+```tsx<StatCard
 
-### 4. TestimonialCard
+<ComingSoonCard  title="Churn Rate"
 
-Display customer testimonials with ratings and avatars.
+  title="Advanced Analytics"  value="2.3%"
+
+  subtitle="Game-changing insights"  trend={{
+
+  description="Deep analytics and reporting"    direction: 'down',
+
+  icon="📈"    value: '0.5%'
+
+  eta="Q2 2026"  }}
+
+/>/>
+
+``````
+
+
+
+**Features:**---
+
+- Dashed border design
+
+- Gradient background### 4. TestimonialCard
+
+- ETA timeline display
+
+- Premium appearanceDisplay customer testimonials with ratings and avatars.
+
+- Eye-catching presentation
 
 **When to use:**
+
+**Use for:** Feature announcements, beta signup, roadmap showcase
 
 - Customer testimonials
-- User reviews
+
+---- User reviews
+
 - Social proof
-- Rating displays
 
-**Props:**
+#### 20. StatsCard **NEW**- Rating displays
 
-```typescript
-interface TestimonialCardProps {
-  quote: string;
-  authorName: string;
-  authorRole?: string;
-  rating?: number;
-  avatarImage?: string;
-  className?: string;
-}
-```
 
-**Examples:**
 
-```tsx
-<TestimonialCard
-  quote="This product transformed the way we work. Highly recommended!"
-  authorName="Sarah Johnson"
+Metrics display with trend indicators and color-coded accents.**Props:**
+
+
+
+```tsx```typescript
+
+<StatsCardinterface TestimonialCardProps {
+
+  label="Active Projects"  quote: string;
+
+  value="24"  authorName: string;
+
+  icon="📊"  authorRole?: string;
+
+  accentColor="primary"  rating?: number;
+
+  trend="up"  avatarImage?: string;
+
+  trendValue="+12% from last month"  className?: string;
+
+/>}
+
+``````
+
+
+
+**Accent Colors:****Examples:**
+
+- `primary` - Primary red (#ef4444)
+
+- `secondary` - Secondary indigo (#6366f1)```tsx
+
+- `accent` - Accent emerald (#22c55e)<TestimonialCard
+
+- `success` - Success teal (#14b8a6)  quote="This product transformed the way we work. Highly recommended!"
+
+- `warning` - Warning amber (#f59e0b)  authorName="Sarah Johnson"
+
   authorRole="CEO at TechCorp"
-  rating={5}
+
+**Trend Options:** `up` | `down` | `neutral`  rating={5}
+
   avatarImage="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
-/>
 
-<TestimonialCard
+**Use for:** KPIs, metrics, dashboard stats, analytics/>
+
+
+
+---<TestimonialCard
+
   quote="Great service and excellent support team."
-  authorName="Mike Chen"
+
+#### 21. InteractiveCard **NEW**  authorName="Mike Chen"
+
   authorRole="Product Manager"
-  rating={4.5}
+
+Card with hover animations and micro-interactions for engagement.  rating={4.5}
+
   avatarImage="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike"
+
+```tsx/>
+
+<InteractiveCard```
+
+  title="Explore Features"
+
+  description="Hover to see effects"---
+
+  icon="✨"
+
+  accentColor="secondary"### 5. ImageCard
+
 />
-```
 
----
+```Display images with flexible layouts and overlay options.
 
-### 5. ImageCard
 
-Display images with flexible layouts and overlay options.
 
-**When to use:**
+**Features:****When to use:**
 
-- Image galleries
-- Portfolio displays
-- Product images
-- Featured images with text overlay
+- Hover lift effect (2px elevation)
 
-**Props:**
+- Glow effect on hover- Image galleries
 
-```typescript
+- Icon animation- Portfolio displays
+
+- Smooth transitions- Product images
+
+- Professional polish- Featured images with text overlay
+
+
+
+**Use for:** Interactive features, engagement CTAs, feature highlights**Props:**
+
+
+
+---```typescript
+
 interface ImageCardProps {
-  image: string;
+
+## Color System  image: string;
+
   imageAlt?: string;
-  title: string;
+
+### Brand Color Palette  title: string;
+
   description?: string;
-  overlay?: boolean;
-  className?: string;
-}
-```
 
-**Examples:**
+| Color | Hex | Use Case | Example |  overlay?: boolean;
 
-```tsx
-// Standard layout
+|-------|-----|----------|---------|  className?: string;
+
+| **Primary Red** | #ef4444 | Main actions, brand elements, attention-grabbing | PrimaryCard, FeaturedCard (primary) |}
+
+| **Secondary Indigo** | #6366f1 | Professional hierarchy, secondary actions | SecondaryCard, StatsCard, InteractiveCard |```
+
+| **Accent Emerald** | #22c55e | Success, growth, positive indicators | FeaturedCard (accent), StatsCard (accent) |
+
+| **Info Blue** | #3b82f6 | Information, secondary communication | AlertCard (info), ToolCard (beta) |**Examples:**
+
+| **Success Teal** | #14b8a6 | Successful operations | AlertCard (success), StatsCard (success) |
+
+| **Warning Amber** | #f59e0b | Cautions, warnings | AlertCard (warning), ToolCard (coming-soon) |```tsx
+
+| **Error Rose** | #ff6b85 | Errors, critical alerts | AlertCard (error) |// Standard layout
+
 <ImageCard
-  image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
+
+### Using Colors in Cards  image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
+
   imageAlt="Mountain landscape"
-  title="Mountain Landscape"
-  description="Beautiful alpine scenery"
-/>
+
+```tsx  title="Mountain Landscape"
+
+// Primary Red - Main actions  description="Beautiful alpine scenery"
+
+<PrimaryCard icon="⚡" />/>
+
+<FeaturedCard accentColor="primary" />
 
 // With overlay effect
-<ImageCard
-  image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
-  imageAlt="Mountain landscape"
-  title="Mountain Adventure"
+
+// Secondary Indigo - Professional hierarchy<ImageCard
+
+<SecondaryCard icon="💡" />  image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
+
+<StatsCard accentColor="secondary" />  imageAlt="Mountain landscape"
+
+<InteractiveCard accentColor="secondary" />  title="Mountain Adventure"
+
   description="Explore the peaks"
-  overlay={true}
-/>
+
+// Accent Emerald - Success & growth  overlay={true}
+
+<FeaturedCard accentColor="accent" />/>
+
+<StatsCard accentColor="accent" />```
+
+
+
+// Status Colors - Contextual information---
+
+<AlertCard variant="success" />    // Teal
+
+<AlertCard variant="info" />       // Blue### 6. CTACard
+
+<AlertCard variant="warning" />    // Amber
+
+<AlertCard variant="error" />      // RoseCall-to-action cards with primary and secondary buttons.
+
 ```
 
----
-
-### 6. CTACard
-
-Call-to-action cards with primary and secondary buttons.
-
 **When to use:**
+
+### Micro-Interaction Utilities
 
 - Sign up prompts
-- Feature promotions
-- Action-oriented content
-- Conversion-focused sections
 
-**Props:**
+Cards support advanced styling utilities:- Feature promotions
+
+- Action-oriented content
+
+```tsx- Conversion-focused sections
+
+// Hover Effects
+
+className="hover-lift"      // Elevates 2px on hover**Props:**
+
+className="hover-glow"      // Soft glow on hover
 
 ```typescript
-interface CTACardProps {
-  title: string;
+
+// Glass Morphisminterface CTACardProps {
+
+className="glass-effect"    // Frosted glass effect  title: string;
+
   description?: string;
-  primaryButtonText?: string;
-  secondaryButtonText?: string;
-  onPrimaryClick?: () => void;
-  onSecondaryClick?: () => void;
+
+// Glow Effects  primaryButtonText?: string;
+
+className="primary-glow"    // Red glow  secondaryButtonText?: string;
+
+className="secondary-glow"  // Indigo glow  onPrimaryClick?: () => void;
+
+className="accent-glow"     // Emerald glow  onSecondaryClick?: () => void;
+
   primaryButtonVariant?: "default" | "secondary" | "outline" | "ghost";
-  secondaryButtonVariant?: "default" | "secondary" | "outline" | "ghost";
-  className?: string;
-}
+
+// Gradient Text  secondaryButtonVariant?: "default" | "secondary" | "outline" | "ghost";
+
+className="text-gradient-primary"    // Red gradient  className?: string;
+
+className="text-gradient-secondary"  // Indigo gradient}
+
+className="text-gradient-accent"     // Emerald gradient```
+
 ```
 
 **Examples:**
 
-```tsx
-<CTACard
-  title="Ready to get started?"
-  description="Join thousands of users who are already using our platform"
-  primaryButtonText="Sign Up Free"
-  secondaryButtonText="Learn More"
-  onPrimaryClick={() => navigate('/signup')}
-  onSecondaryClick={() => navigate('/features')}
-/>
+---
 
-<CTACard
-  title="Upgrade Your Plan"
-  description="Unlock premium features and get priority support"
-  primaryButtonText="Upgrade Now"
-  primaryButtonVariant="default"
-  secondaryButtonText="View Plans"
-  secondaryButtonVariant="outline"
-/>
+```tsx
+
+## Best Practices<CTACard
+
+  title="Ready to get started?"
+
+### 1. Choose the Right Card  description="Join thousands of users who are already using our platform"
+
+  primaryButtonText="Sign Up Free"
+
+| Need | Card Type | Reasoning |  secondaryButtonText="Learn More"
+
+|------|-----------|-----------|  onPrimaryClick={() => navigate('/signup')}
+
+| Simple information | BasicCard | Lightweight, no extra features |  onSecondaryClick={() => navigate('/features')}
+
+| Highlight feature | FeaturedCard | Visual emphasis with border |/>
+
+| Show metrics | StatCard | Built for numerical data |
+
+| Social proof | TestimonialCard | Includes ratings & avatars |<CTACard
+
+| Call-to-action | CTACard | Button-focused design |  title="Upgrade Your Plan"
+
+| Pricing plans | PricingCard | Feature lists & CTA |  description="Unlock premium features and get priority support"
+
+| Alerts/Messages | AlertCard | Status-based styling |  primaryButtonText="Upgrade Now"
+
+| Main actions | PrimaryCard | Red accent, professional |  primaryButtonVariant="default"
+
+| Feature showcase | ToolCard | Status indicators |  secondaryButtonText="View Plans"
+
+| Upcoming features | ComingSoonCard | Premium, announcement-focused |  secondaryButtonVariant="outline"
+
+| Metrics display | StatsCard | Trends & color accents |/>
+
 ```
+
+### 2. Responsive Grids
 
 ---
 
-### 7. PricingCard
+```tsx
 
-Display pricing tiers with features and CTA buttons.
+// 1 column mobile, 2 on tablet, 3 on desktop### 7. PricingCard
 
-**When to use:**
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+  <Card />Display pricing tiers with features and CTA buttons.
+
+  <Card />
+
+  <Card />**When to use:**
+
+</div>
 
 - Pricing pages
-- Plan selection
-- Subscription options
-- Feature comparison
 
-**Props:**
+// 2 columns mobile, 4 on desktop- Plan selection
 
-```typescript
-interface PricingCardProps {
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">- Subscription options
+
+  <Card />- Feature comparison
+
+  <Card />
+
+  <Card />**Props:**
+
+  <Card />
+
+</div>```typescript
+
+```interface PricingCardProps {
+
   name: string;
-  price: string | number;
+
+### 3. Loading States  price: string | number;
+
   description?: string;
-  features: string[];
-  buttonText?: string;
-  buttonVariant?: "default" | "secondary" | "outline" | "ghost";
-  onButtonClick?: () => void;
-  featured?: boolean;
-  currency?: string;
-  billingPeriod?: string;
-  className?: string;
-}
+
+```tsx  features: string[];
+
+{isLoading ? (  buttonText?: string;
+
+  <>  buttonVariant?: "default" | "secondary" | "outline" | "ghost";
+
+    <SkeletonCard variant="product" />  onButtonClick?: () => void;
+
+    <SkeletonCard variant="product" />  featured?: boolean;
+
+    <SkeletonCard variant="product" />  currency?: string;
+
+  </>  billingPeriod?: string;
+
+) : (  className?: string;
+
+  <CardGrid />}
+
+)}```
+
 ```
 
 **Examples:**
 
+### 4. Empty States
+
 ```tsx
-// Basic plan
-<PricingCard
-  name="Starter"
-  price="29"
-  description="Perfect for getting started"
-  features={[
-    'Up to 5 projects',
-    '2 GB storage',
-    'Basic support',
-    'Community access',
-  ]}
-  buttonText="Choose Plan"
+
+```tsx// Basic plan
+
+{items.length === 0 ? (<PricingCard
+
+  <EmptyStateCard  name="Starter"
+
+    icon={<Inbox />}  price="29"
+
+    title="No items"  description="Perfect for getting started"
+
+    description="Create your first item"  features={[
+
+    actionButton={{ label: "Create", onClick: () => {} }}    'Up to 5 projects',
+
+  />    '2 GB storage',
+
+) : (    'Basic support',
+
+  <CardGrid items={items} />    'Community access',
+
+)}  ]}
+
+```  buttonText="Choose Plan"
+
   buttonVariant="outline"
-  onButtonClick={() => selectPlan('starter')}
+
+### 5. Consistent Spacing  onButtonClick={() => selectPlan('starter')}
+
 />
 
-// Featured plan
-<PricingCard
-  name="Professional"
-  price="79"
-  description="Most popular for teams"
+```tsx
+
+// Vertical spacing// Featured plan
+
+<div className="space-y-4"><PricingCard
+
+  <Card />  name="Professional"
+
+  <Card />  price="79"
+
+</div>  description="Most popular for teams"
+
   featured={true}
-  features={[
-    'Unlimited projects',
-    '100 GB storage',
-    'Priority support',
-    'Advanced analytics',
-    'API access',
+
+// Grid spacing  features={[
+
+<div className="grid gap-6">    'Unlimited projects',
+
+  <Card />    '100 GB storage',
+
+  <Card />    'Priority support',
+
+</div>    'Advanced analytics',
+
+```    'API access',
+
     'Team collaboration',
-  ]}
+
+---  ]}
+
   buttonText="Start Trial"
-  onButtonClick={() => selectPlan('professional')}
+
+## Component Reference  onButtonClick={() => selectPlan('professional')}
+
 />
+
+### Common Props Pattern
 
 // Enterprise plan
-<PricingCard
+
+Most cards share these base props:<PricingCard
+
   name="Enterprise"
-  price="Custom"
-  description="For large organizations"
-  features={[
-    'Everything in Pro',
-    'Unlimited storage',
-    '24/7 support',
+
+```typescript  price="Custom"
+
+interface CardBaseProps {  description="For large organizations"
+
+  className?: string;  features={[
+
+  children?: React.ReactNode;    'Everything in Pro',
+
+}    'Unlimited storage',
+
+```    '24/7 support',
+
     'Custom integrations',
-    'Dedicated manager',
+
+### AlertCard Variants    'Dedicated manager',
+
   ]}
-  buttonText="Contact Sales"
-  buttonVariant="secondary"
+
+```typescript  buttonText="Contact Sales"
+
+type AlertVariant = "success" | "info" | "warning" | "error";  buttonVariant="secondary"
+
   currency=""
-  billingPeriod=""
-/>
+
+interface AlertCardProps extends CardBaseProps {  billingPeriod=""
+
+  variant: AlertVariant;/>
+
+  title: string;```
+
+  description?: string;
+
+  dismissible?: boolean;---
+
+  onDismiss?: () => void;
+
+}### 8. AlertCard
+
 ```
-
----
-
-### 8. AlertCard
 
 Display alerts, notifications, and status messages.
 
+### StatCard Color Options
+
 **When to use:**
 
-- Error messages
-- Warning notifications
-- Success confirmations
-- Informational messages
-
-**Props:**
-
 ```typescript
-interface AlertCardProps {
-  title?: string;
-  description?: string;
-  variant?: "success" | "warning" | "error" | "info";
+
+type AccentColor = "primary" | "secondary" | "accent" | "success" | "warning";- Error messages
+
+type TrendDirection = "up" | "down" | "neutral";- Warning notifications
+
+- Success confirmations
+
+interface StatsCardProps {- Informational messages
+
+  label: string;
+
+  value: string;**Props:**
+
+  icon?: string | React.ReactNode;
+
+  accentColor?: AccentColor;```typescript
+
+  trend?: TrendDirection;interface AlertCardProps {
+
+  trendValue?: string;  title?: string;
+
+}  description?: string;
+
+```  variant?: "success" | "warning" | "error" | "info";
+
   dismissible?: boolean;
-  onDismiss?: () => void;
+
+### ToolCard Status Options  onDismiss?: () => void;
+
   children?: React.ReactNode;
-  className?: string;
-}
+
+```typescript  className?: string;
+
+type ToolStatus = "available" | "coming-soon" | "beta";}
+
 ```
 
-**Examples:**
+interface ToolCardProps {
 
-```tsx
-// Success alert
-<AlertCard
-  variant="success"
+  title: string;**Examples:**
+
+  description: string;
+
+  icon?: string | React.ReactNode;```tsx
+
+  status?: ToolStatus;// Success alert
+
+}<AlertCard
+
+```  variant="success"
+
   title="Success!"
-  description="Your changes have been saved successfully."
+
+---  description="Your changes have been saved successfully."
+
 />
+
+## Quick Examples
 
 // Warning alert
-<AlertCard
+
+### Example 1: Tool Showcase<AlertCard
+
   variant="warning"
-  title="Warning"
-  description="This action will affect 3 team members."
-  dismissible={true}
-  onDismiss={() => closeAlert()}
-/>
 
-// Error alert
-<AlertCard
-  variant="error"
-  title="Error Occurred"
-  description="Unable to process your request. Please try again later."
-/>
+```tsx  title="Warning"
 
-// Info alert with content
-<AlertCard
-  variant="info"
-  title="System Maintenance"
-  description="We'll be performing scheduled maintenance."
-  dismissible={true}
->
-  <ul className="list-disc list-inside space-y-1 mt-3">
-    <li>Maintenance window: 2:00 AM - 4:00 AM UTC</li>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">  description="This action will affect 3 team members."
+
+  <ToolCard  dismissible={true}
+
+    title="RACI Chart"  onDismiss={() => closeAlert()}
+
+    description="Define roles"/>
+
+    icon="📊"
+
+    status="available"// Error alert
+
+  /><AlertCard
+
+  <ToolCard  variant="error"
+
+    title="Project Charter"  title="Error Occurred"
+
+    description="Establish foundation"  description="Unable to process your request. Please try again later."
+
+    icon="📋"/>
+
+    status="coming-soon"
+
+  />// Info alert with content
+
+  <ToolCard<AlertCard
+
+    title="Risk Analysis"  variant="info"
+
+    description="Identify risks"  title="System Maintenance"
+
+    icon="⚠️"  description="We'll be performing scheduled maintenance."
+
+    status="beta"  dismissible={true}
+
+  />>
+
+</div>  <ul className="list-disc list-inside space-y-1 mt-3">
+
+```    <li>Maintenance window: 2:00 AM - 4:00 AM UTC</li>
+
     <li>Expected downtime: 30 minutes</li>
-  </ul>
+
+### Example 2: Feature Highlights  </ul>
+
 </AlertCard>
-```
 
----
+```tsx```
 
-### 9. ColorVariantCard
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-Cards with 9 different color themes for organization and categorization.
+  <PrimaryCard---
 
-**When to use:**
+    title="Crystal Clear"
 
-- Color-coded content categories
-- Organizing information visually
-- Highlighting different content types
-- Visual organization system
+    description="Complete transparency"### 9. ColorVariantCard
 
-**Props:**
+    icon="✓"
 
-```typescript
-interface ColorVariantCardProps {
-  title: string;
+  />Cards with 9 different color themes for organization and categorization.
+
+  <SecondaryCard
+
+    title="Professional"**When to use:**
+
+    description="Enterprise-grade"
+
+    icon="💼"- Color-coded content categories
+
+  />- Organizing information visually
+
+  <InteractiveCard- Highlighting different content types
+
+    title="Innovative"- Visual organization system
+
+    description="Cutting-edge features"
+
+    icon="✨"**Props:**
+
+    accentColor="secondary"
+
+  />```typescript
+
+</div>interface ColorVariantCardProps {
+
+```  title: string;
+
   description?: string;
-  color?:
+
+### Example 3: Dashboard Stats  color?:
+
     | "red"
-    | "orange"
-    | "yellow"
-    | "green"
-    | "blue"
-    | "indigo"
-    | "purple"
-    | "pink"
-    | "slate";
-  className?: string;
-  children?: React.ReactNode;
-}
-```
 
-**Available Colors:**
+```tsx    | "orange"
 
-- `red` — Critical, alerts, errors
-- `orange` — Warnings, caution
-- `yellow` — Highlights, tips
-- `green` — Success, positive actions
-- `blue` — Information, neutral (default)
-- `indigo` — Premium, professional
-- `purple` — Creative, innovative
-- `pink` — Friendly, approachable
-- `slate` — Neutral, secondary
+<div className="grid grid-cols-1 md:grid-cols-4 gap-6">    | "yellow"
 
-**Examples:**
+  <StatsCard    | "green"
 
-```tsx
-// Red for critical
-<ColorVariantCard
-  color="red"
-  title="System Alert"
+    label="Active"    | "blue"
+
+    value="24"    | "indigo"
+
+    accentColor="primary"    | "purple"
+
+    trend="up"    | "pink"
+
+    trendValue="+12%"    | "slate";
+
+  />  className?: string;
+
+  <StatsCard  children?: React.ReactNode;
+
+    label="Completed"}
+
+    value="156"```
+
+    accentColor="accent"
+
+    trend="up"**Available Colors:**
+
+    trendValue="+34"
+
+  />- `red` — Critical, alerts, errors
+
+  <StatsCard- `orange` — Warnings, caution
+
+    label="In Progress"- `yellow` — Highlights, tips
+
+    value="8"- `green` — Success, positive actions
+
+    accentColor="info"- `blue` — Information, neutral (default)
+
+    trend="neutral"- `indigo` — Premium, professional
+
+    trendValue="Steady"- `purple` — Creative, innovative
+
+  />- `pink` — Friendly, approachable
+
+  <StatsCard- `slate` — Neutral, secondary
+
+    label="Team Size"
+
+    value="12"**Examples:**
+
+    accentColor="secondary"
+
+    trend="up"```tsx
+
+    trendValue="+2"// Red for critical
+
+  /><ColorVariantCard
+
+</div>  color="red"
+
+```  title="System Alert"
+
   description="Important system notification"
->
+
+### Example 4: Coming Soon Section>
+
   This requires immediate attention
+
+```tsx</ColorVariantCard>
+
+<div className="space-y-6">
+
+  <ComingSoonCard// Green for success
+
+    title="Advanced Analytics"<ColorVariantCard
+
+    subtitle="Powerful Insights"  color="green"
+
+    description="Deep-dive analytics"  title="Deployment Complete"
+
+    icon="📈"  description="Your application is live"
+
+    eta="Q2 2026">
+
+  />  All systems operational
+
+  <ComingSoonCard</ColorVariantCard>
+
+    title="Team Collaboration"
+
+    subtitle="Work Together"// Purple for features
+
+    description="Real-time features"<ColorVariantCard
+
+    icon="👥"  color="purple"
+
+    eta="Q3 2026"  title="New Feature"
+
+  />  description="Check out what's new"
+
+</div>>
+
+```  Exciting updates available
+
 </ColorVariantCard>
 
-// Green for success
-<ColorVariantCard
-  color="green"
-  title="Deployment Complete"
-  description="Your application is live"
->
-  All systems operational
-</ColorVariantCard>
+---```
 
-// Purple for features
-<ColorVariantCard
-  color="purple"
-  title="New Feature"
-  description="Check out what's new"
->
-  Exciting updates available
-</ColorVariantCard>
-```
 
----
 
-### 10. ProductCard
+## Related Documentation---
 
-E-commerce product display with images, pricing, ratings, and cart functionality.
+
+
+- **Full Design System**: See `DESIGN_TOKENS.md` for complete specifications### 10. ProductCard
+
+- **Typography Components**: See `TYPOGRAPHY_COMPONENTS.md` for text styling
+
+- **Live Showcases**: Visit `/cards` for interactive demoE-commerce product display with images, pricing, ratings, and cart functionality.
+
+- **Real-world Usage**: Visit `/` for practical examples
 
 **When to use:**
+
+---
 
 - Product grids and catalogs
-- E-commerce listings
+
+## Version History- E-commerce listings
+
 - Product showcases
-- Item displays with pricing
 
-**Props:**
+**v2.0** (November 2025)- Item displays with pricing
 
-```typescript
-interface ProductCardProps {
+- ✨ Added 6 new specialized card components
+
+- 🎨 Integrated secondary indigo color system**Props:**
+
+- ✨ Added micro-interaction utilities
+
+- 📱 Enhanced responsive design```typescript
+
+- ♿ Improved accessibility complianceinterface ProductCardProps {
+
   image: string;
-  imageAlt?: string;
-  title: string;
-  price: number;
-  originalPrice?: number;
+
+**v1.0** (Initial Release)  imageAlt?: string;
+
+- 15 core card components  title: string;
+
+- Basic color system  price: number;
+
+- TypeScript support  originalPrice?: number;
+
   rating?: number;
-  reviewCount?: number;
+
+---  reviewCount?: number;
+
   description?: string;
-  badge?: string;
+
+**Last Updated**: November 8, 2025  badge?: string;
+
   badgeVariant?: "sale" | "new" | "featured";
   onAddToCart?: () => void;
   onFavorite?: () => void;

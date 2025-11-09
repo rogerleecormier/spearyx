@@ -31,6 +31,12 @@ import {
   TimelineCard,
   SkeletonCard,
   EmptyStateCard,
+  PrimaryCard,
+  SecondaryCard,
+  ToolCard,
+  ComingSoonCard,
+  StatsCard,
+  InteractiveCard,
 } from "../components/Cards";
 import {
   Display,
@@ -89,6 +95,146 @@ function CardsLibrary() {
               title="Responsive"
               description="Works perfectly on mobile, tablet, and desktop devices out of the box."
             />
+          </div>
+        </section>
+
+        {/* Specialized Cards Section - NEW */}
+        <section className="mb-24">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-2">
+              <Palette className="w-6 h-6 text-indigo-500" />
+              <Headline>Specialized Cards</Headline>
+            </div>
+            <Body className="text-neutral">
+              Modern, purpose-built cards for specific use cases: Primary/Secondary for hierarchy, Tool cards for feature showcase, Coming Soon cards for announcements, Stats cards for metrics, and Interactive cards for engagement.
+            </Body>
+          </div>
+
+          {/* Primary & Secondary Cards */}
+          <div className="mb-12">
+            <Title className="mb-6">Primary & Secondary Cards</Title>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <PrimaryCard
+                title="Primary Action"
+                description="Use for main actions and primary calls-to-action"
+                icon="⚡"
+              />
+              <SecondaryCard
+                title="Secondary Action"
+                description="Perfect for supporting actions and visual hierarchy"
+                icon="💡"
+              />
+            </div>
+          </div>
+
+          {/* Tool Cards */}
+          <div className="mb-12">
+            <Title className="mb-6">Tool & Feature Cards</Title>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <ToolCard
+                title="RACI Chart Generator"
+                description="Define roles and responsibilities with crystal clarity"
+                icon="📊"
+                status="available"
+              />
+              <ToolCard
+                title="Project Charter Tool"
+                description="Establish project foundations and scope"
+                icon="📋"
+                status="coming-soon"
+              />
+              <ToolCard
+                title="Risk Analyzer"
+                description="Identify and mitigate project risks"
+                icon="⚠️"
+                status="beta"
+              />
+            </div>
+          </div>
+
+          {/* Coming Soon Cards */}
+          <div className="mb-12">
+            <Title className="mb-6">Coming Soon Showcase</Title>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ComingSoonCard
+                title="Advanced Analytics"
+                subtitle="Powerful Insights"
+                description="Deep-dive analytics and reporting tools"
+                icon="📈"
+                eta="Q2 2026"
+              />
+              <ComingSoonCard
+                title="Team Collaboration Suite"
+                subtitle="Work Together"
+                description="Real-time collaboration and team features"
+                icon="👥"
+                eta="Q3 2026"
+              />
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="mb-12">
+            <Title className="mb-6">Statistics & Metrics</Title>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatsCard
+                label="Active Projects"
+                value="24"
+                icon="📊"
+                accentColor="primary"
+                trend="up"
+                trendValue="+12% from last month"
+              />
+              <StatsCard
+                label="Team Members"
+                value="8"
+                icon="👥"
+                accentColor="secondary"
+                trend="up"
+                trendValue="+2 this quarter"
+              />
+              <StatsCard
+                label="Completed Tasks"
+                value="156"
+                icon="✓"
+                accentColor="accent"
+                trend="up"
+                trendValue="+34 this week"
+              />
+              <StatsCard
+                label="Completion Rate"
+                value="87%"
+                icon="🎯"
+                accentColor="success"
+                trend="neutral"
+                trendValue="Steady"
+              />
+            </div>
+          </div>
+
+          {/* Interactive Cards */}
+          <div className="mb-12">
+            <Title className="mb-6">Interactive Cards with Hover Effects</Title>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <InteractiveCard
+                title="Explore Features"
+                description="Hover to discover interactive effects"
+                icon="✨"
+                accentColor="primary"
+              />
+              <InteractiveCard
+                title="Learn More"
+                description="Click to see professional polish"
+                icon="🚀"
+                accentColor="secondary"
+              />
+              <InteractiveCard
+                title="Get Started"
+                description="Interactive hover lift and glow"
+                icon="⚡"
+                accentColor="accent"
+              />
+            </div>
           </div>
         </section>
 

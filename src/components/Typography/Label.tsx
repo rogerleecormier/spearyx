@@ -16,7 +16,7 @@ export function Label({
   const fontWeight = variant === "semibold" ? "font-semibold" : "font-medium";
   return (
     <Component
-      className={`text-xs ${fontWeight} uppercase tracking-wider ${className}`}
+      className={`block text-xs ${fontWeight} uppercase tracking-wider ${className}`}
     >
       {children}
     </Component>

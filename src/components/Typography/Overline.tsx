@@ -13,7 +13,7 @@ export function Overline({
 }: OverlineProps) {
   return (
     <Component
-      className={`text-xs font-semibold uppercase tracking-widest ${className}`}
+      className={`block text-xs font-semibold uppercase tracking-widest ${className}`}
     >
       {children}
     </Component>

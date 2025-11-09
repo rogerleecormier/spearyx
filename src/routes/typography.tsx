@@ -18,65 +18,78 @@ export const Route = createFileRoute("/typography")({
 
 function TypographyLibrary() {
   const colors = {
-    primary: { name: "Primary", class: "text-primary", hex: "#6a9dff" },
+    primary: { name: "Primary Red", class: "text-red-500", hex: "#ef4444", description: "Brand primary color - use for main actions" },
     "primary-light": {
       name: "Primary Light",
-      class: "text-primary-light",
-      hex: "rgba(106, 157, 255, 0.7)",
+      class: "text-red-400",
+      hex: "#f87171",
+      description: "Lighter red for hover and active states",
     },
-    "primary-muted": {
-      name: "Primary Muted",
-      class: "text-primary-muted",
-      hex: "rgba(106, 157, 255, 0.5)",
+    secondary: { name: "Secondary Indigo", class: "text-indigo-500", hex: "#6366f1", description: "Professional secondary color - use for visual hierarchy" },
+    "secondary-light": {
+      name: "Secondary Light",
+      class: "text-indigo-400",
+      hex: "#818cf8",
+      description: "Lighter indigo for secondary actions",
     },
-    accent: { name: "Accent", class: "text-accent", hex: "#22c55e" },
+    accent: { name: "Accent Emerald", class: "text-emerald-500", hex: "#22c55e", description: "Success and positive indicators" },
     "accent-light": {
       name: "Accent Light",
-      class: "text-accent-light",
-      hex: "rgba(34, 197, 94, 0.7)",
+      class: "text-emerald-400",
+      hex: "#4ade80",
+      description: "Lighter emerald for accents",
     },
-    "accent-muted": {
-      name: "Accent Muted",
-      class: "text-accent-muted",
-      hex: "rgba(34, 197, 94, 0.5)",
+    info: { name: "Info Blue", class: "text-blue-500", hex: "#3b82f6", description: "Informational messages and secondary actions" },
+    "info-light": {
+      name: "Info Light",
+      class: "text-blue-400",
+      hex: "#60a5fa",
+      description: "Lighter blue for info states",
     },
-    success: { name: "Success", class: "text-success", hex: "#14b8a6" },
+    success: { name: "Success Teal", class: "text-teal-500", hex: "#14b8a6", description: "Successful operations" },
     "success-light": {
       name: "Success Light",
-      class: "text-success-light",
-      hex: "rgba(20, 184, 166, 0.7)",
+      class: "text-teal-400",
+      hex: "#2dd4bf",
+      description: "Lighter teal for success states",
     },
-    warning: { name: "Warning", class: "text-warning", hex: "#f59e0b" },
+    warning: { name: "Warning Amber", class: "text-amber-500", hex: "#f59e0b", description: "Warnings and caution" },
     "warning-light": {
       name: "Warning Light",
-      class: "text-warning-light",
-      hex: "rgba(245, 158, 11, 0.7)",
+      class: "text-amber-400",
+      hex: "#fbbf24",
+      description: "Lighter amber for warnings",
     },
-    error: { name: "Error", class: "text-error", hex: "#ff6b85" },
+    error: { name: "Error Rose", class: "text-rose-500", hex: "#ff6b85", description: "Errors and critical alerts" },
     "error-light": {
       name: "Error Light",
-      class: "text-error-light",
-      hex: "rgba(255, 107, 133, 0.7)",
+      class: "text-rose-400",
+      hex: "#fb7185",
+      description: "Lighter rose for error states",
     },
     "neutral-dark": {
       name: "Neutral Dark",
-      class: "text-neutral-dark",
-      hex: "rgb(17, 24, 39)",
+      class: "text-slate-900",
+      hex: "#111827",
+      description: "Primary text color",
     },
     neutral: {
-      name: "Neutral",
-      class: "text-neutral",
-      hex: "rgb(107, 114, 128)",
+      name: "Neutral Medium",
+      class: "text-slate-500",
+      hex: "#6b7280",
+      description: "Secondary text color",
     },
     "neutral-light": {
       name: "Neutral Light",
-      class: "text-neutral-light",
-      hex: "rgb(156, 163, 175)",
+      class: "text-slate-400",
+      hex: "#9ca3af",
+      description: "Tertiary text color",
     },
     "neutral-lighter": {
       name: "Neutral Lighter",
-      class: "text-neutral-lighter",
-      hex: "rgb(209, 213, 219)",
+      class: "text-slate-300",
+      hex: "#d1d5db",
+      description: "Disabled and placeholder text",
     },
   };
 
@@ -252,23 +265,26 @@ function TypographyLibrary() {
             {Object.entries(colors).map(([key, color]) => (
               <div
                 key={key}
-                className="bg-slate-50 rounded-lg border border-slate-200 p-6"
+                className="bg-white rounded-lg border border-slate-200 p-6 hover-lift"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div
-                    className="w-16 h-16 rounded border border-slate-300"
+                    className="w-16 h-16 rounded-lg border border-slate-300 flex-shrink-0"
                     style={{
                       backgroundColor: color.hex,
                     }}
                   />
-                  <div>
+                  <div className="flex-1">
                     <Caption className="text-neutral-light">{key}</Caption>
-                    <Title>{color.name}</Title>
+                    <Title className="text-base">{color.name}</Title>
                     <Caption className="text-neutral">{color.hex}</Caption>
                   </div>
                 </div>
-                <Body className={color.class}>
-                  The quick brown fox jumps over the lazy dog
+                <Body size="sm" className="text-neutral mb-3">
+                  {color.description}
+                </Body>
+                <Body className={`${color.class} font-medium`}>
+                  The quick brown fox
                 </Body>
               </div>
             ))}
@@ -354,19 +370,21 @@ function TypographyLibrary() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <Caption className="text-neutral-light">
+                    <Caption className="text-slate-400">
                       {lineHeight.class}
                     </Caption>
                     <Title>{lineHeight.name}</Title>
                   </div>
-                  <span className="text-neutral-light text-sm font-medium">
+                  <span className="text-slate-400 text-sm font-medium">
                     {lineHeight.value}
                   </span>
                 </div>
-                <p className={`${lineHeight.class}`}>
+                <p className={`${lineHeight.class} text-slate-700 max-w-2xl`}>
                   The quick brown fox jumps over the lazy dog. The quick brown
                   fox jumps over the lazy dog. The quick brown fox jumps over
-                  the lazy dog.
+                  the lazy dog. The quick brown fox jumps over the lazy dog. The
+                  quick brown fox jumps over the lazy dog. The quick brown fox
+                  jumps over the lazy dog.
                 </p>
               </div>
             ))}
@@ -380,54 +398,86 @@ function TypographyLibrary() {
           <Overline className="mb-8 text-red-500">Examples</Overline>
           <Headline className="mb-12">Combined Typography Examples</Headline>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {/* Card Example 1 */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border border-slate-200 p-8">
-              <Overline className="text-red-500 mb-2">Example Card</Overline>
-              <Headline className="mb-2">Professional Card Title</Headline>
+            <div className="bg-white rounded-lg border border-slate-200 p-8 hover-lift">
+              <Overline className="text-red-500 mb-2">Primary Brand</Overline>
+              <Headline className="text-red-500 mb-2">Primary Showcase</Headline>
               <Body className="text-neutral mb-4">
-                This demonstrates how typography styles combine to create a
-                complete card design.
+                This card demonstrates the primary red color system for main actions and brand elements.
               </Body>
-              <Subtitle className="text-red-500">Learn more</Subtitle>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-8 bg-red-500 rounded-sm"></div>
+                <Body className="text-red-500 font-semibold">Primary Action</Body>
+              </div>
             </div>
 
             {/* Card Example 2 */}
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border border-emerald-200 p-8">
-              <Overline className="text-emerald-600 mb-2">
-                Feature Card
-              </Overline>
-              <Title className="mb-2">Bold Feature Title</Title>
-              <Body size="sm" className="text-neutral mb-4">
-                Smaller body text works great for supporting content and
-                descriptions.
+            <div className="bg-white rounded-lg border border-indigo-200 p-8 hover-lift">
+              <Overline className="text-indigo-500 mb-2">Secondary Hierarchy</Overline>
+              <Headline className="text-indigo-500 mb-2">Secondary Showcase</Headline>
+              <Body className="text-neutral mb-4">
+                Secondary indigo provides professional hierarchy and supporting actions across the interface.
               </Body>
-              <Label className="text-emerald-600">Premium Feature</Label>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-8 bg-indigo-500 rounded-sm"></div>
+                <Body className="text-indigo-500 font-semibold">Secondary Action</Body>
+              </div>
             </div>
 
             {/* Card Example 3 */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-8">
-              <Label className="text-blue-600 mb-3 block">Section Label</Label>
-              <Display variant="semibold" className="mb-3">
-                Display Semibold
-              </Display>
-              <Body size="lg" className="text-slate-900 mb-4">
-                Combine different typography sizes and weights for visual
-                hierarchy.
+            <div className="bg-white rounded-lg border border-emerald-200 p-8 hover-lift">
+              <Overline className="text-emerald-600 mb-2">Growth & Success</Overline>
+              <Headline className="text-emerald-600 mb-2">Accent Colors</Headline>
+              <Body className="text-neutral mb-4">
+                Emerald accent conveys growth, success, and positive actions throughout the design.
               </Body>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-8 bg-emerald-500 rounded-sm"></div>
+                <Body className="text-emerald-600 font-semibold">Success State</Body>
+              </div>
             </div>
 
             {/* Card Example 4 */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-8">
-              <Caption className="text-orange-600 mb-2">
-                Supporting Text
-              </Caption>
-              <Hero variant="semibold" className="text-4xl mb-2">
-                Catchy Headline
-              </Hero>
-              <Caption className="text-neutral-light">
-                Caption text provides additional context and information.
-              </Caption>
+            <div className="bg-white rounded-lg border border-blue-200 p-8 hover-lift">
+              <Overline className="text-blue-600 mb-2">Information</Overline>
+              <Headline className="text-blue-600 mb-2">Info System</Headline>
+              <Body className="text-neutral mb-4">
+                Blue provides informational context, tips, and secondary communication throughout UI.
+              </Body>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-8 bg-blue-500 rounded-sm"></div>
+                <Body className="text-blue-600 font-semibold">Information</Body>
+              </div>
+            </div>
+          </div>
+
+          {/* Gradient Text Examples */}
+          <div className="mb-12">
+            <Overline className="mb-6 text-red-500">Advanced Styling</Overline>
+            <Headline className="mb-8">Gradient Text Utilities</Headline>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
+                <Headline className="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">Primary Gradient</Headline>
+                <Body size="sm" className="text-slate-600">
+                  Bold red gradient for emphasis and brand moments
+                </Body>
+              </div>
+              
+              <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
+                <Headline className="bg-gradient-to-r from-indigo-500 to-indigo-700 bg-clip-text text-transparent mb-4">Secondary Gradient</Headline>
+                <Body size="sm" className="text-slate-600">
+                  Professional indigo gradient for key highlights
+                </Body>
+              </div>
+              
+              <div className="bg-white rounded-lg border border-slate-200 p-8 text-center hover-lift">
+                <Headline className="bg-gradient-to-r from-emerald-500 to-emerald-700 bg-clip-text text-transparent mb-4">Accent Gradient</Headline>
+                <Body size="sm" className="text-slate-600">
+                  Emerald gradient for success and growth moments
+                </Body>
+              </div>
             </div>
           </div>
         </div>

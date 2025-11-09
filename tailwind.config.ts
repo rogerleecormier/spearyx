@@ -95,6 +95,34 @@ const config: Config = {
         "900": "#134e4a",
         "950": "#051f1b",
       },
+      // Secondary Indigo - Professional hierarchy
+      secondaryColor: {
+        "50": "#eef2ff",
+        "100": "#e0e7ff",
+        "200": "#c7d2fe",
+        "300": "#a5b4fc",
+        "400": "#818cf8",
+        "500": "#6366f1", // Main secondary indigo
+        "600": "#4f46e5",
+        "700": "#4338ca",
+        "800": "#3730a3",
+        "900": "#312e81",
+        "950": "#1e1b4b",
+      },
+      // Info Blue - Informational content
+      info: {
+        "50": "#eff6ff",
+        "100": "#dbeafe",
+        "200": "#bfdbfe",
+        "300": "#93c5fd",
+        "400": "#60a5fa",
+        "500": "#3b82f6",
+        "600": "#2563eb",
+        "700": "#1d4ed8",
+        "800": "#1e40af",
+        "900": "#1e3a8a",
+        "950": "#172554",
+      },
       // Shadcn compatibility
       border: "hsl(var(--border))",
       input: "hsl(var(--input))",
@@ -691,13 +719,22 @@ const config: Config = {
           backdropFilter: "blur(12px)",
         },
         ".primary-glow": {
-          boxShadow: "0 0 20px rgb(106 157 255 / 0.3)",
+          boxShadow: "0 0 20px rgb(239 68 68 / 0.3)",
+        },
+        ".secondary-glow": {
+          boxShadow: "0 0 20px rgb(99 102 241 / 0.3)",
         },
         ".accent-glow": {
           boxShadow: "0 0 20px rgb(34 197 94 / 0.3)",
         },
         ".text-gradient-primary": {
-          background: "linear-gradient(135deg, #6a9dff 0%, #5585e6 100%)",
+          background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+          "-webkit-background-clip": "text",
+          "background-clip": "text",
+          "-webkit-text-fill-color": "transparent",
+        },
+        ".text-gradient-secondary": {
+          background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
           "-webkit-background-clip": "text",
           "background-clip": "text",
           "-webkit-text-fill-color": "transparent",
@@ -851,13 +888,59 @@ const config: Config = {
           letterSpacing: "0.1em",
         },
 
+        // === CARD COLOR VARIANTS ===
+        ".card-primary": {
+          borderLeft: "4px solid #ef4444",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+        ".card-secondary": {
+          borderLeft: "4px solid #6366f1",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+        ".card-accent": {
+          borderLeft: "4px solid #22c55e",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+        ".card-success": {
+          borderLeft: "4px solid #14b8a6",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+        ".card-warning": {
+          borderLeft: "4px solid #f59e0b",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+        ".card-error": {
+          borderLeft: "4px solid #ff6b85",
+          background: "rgb(255 255 255)",
+          borderRadius: "0.75rem",
+          border: "1px solid rgb(209 213 219 / 0.5)",
+        },
+
         // === TEXT COLOR VARIANTS ===
         // Primary text colors
         ".text-primary-light": {
-          color: "rgb(106 157 255 / 0.7)",
+          color: "rgb(239 68 68 / 0.7)",
         },
         ".text-primary-muted": {
-          color: "rgb(106 157 255 / 0.5)",
+          color: "rgb(239 68 68 / 0.5)",
+        },
+
+        // Secondary text colors
+        ".text-secondary-light": {
+          color: "rgb(99 102 241 / 0.7)",
+        },
+        ".text-secondary-muted": {
+          color: "rgb(99 102 241 / 0.5)",
         },
 
         // Accent text colors
