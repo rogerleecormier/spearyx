@@ -1,13 +1,13 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface TestimonialCardProps {
-  quote: string
-  author: string
-  role?: string
-  avatar?: string
-  rating?: number
-  className?: string
+  quote: string;
+  author: string;
+  role?: string;
+  avatar?: string;
+  rating?: number;
+  className?: string;
 }
 
 export function TestimonialCard({
@@ -16,7 +16,7 @@ export function TestimonialCard({
   role,
   avatar,
   rating,
-  className = '',
+  className = "",
 }: TestimonialCardProps) {
   return (
     <Card className={className}>
@@ -24,7 +24,10 @@ export function TestimonialCard({
         {rating && (
           <div className="flex gap-1 mb-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className={i < rating ? 'text-yellow-400' : 'text-slate-300'}>
+              <span
+                key={i}
+                className={i < rating ? "text-yellow-400" : "text-slate-300"}
+              >
                 ★
               </span>
             ))}
@@ -43,5 +46,5 @@ export function TestimonialCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

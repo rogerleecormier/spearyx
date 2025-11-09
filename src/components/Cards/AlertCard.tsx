@@ -1,75 +1,81 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from "lucide-react";
 
 interface AlertCardProps {
-  title?: string
-  description?: string
-  variant?: 'success' | 'warning' | 'error' | 'info'
-  dismissible?: boolean
-  onDismiss?: () => void
-  children?: React.ReactNode
-  className?: string
+  title?: string;
+  description?: string;
+  variant?: "success" | "warning" | "error" | "info";
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 const variantConfig = {
   success: {
     Icon: CheckCircle,
-    bgColor: 'bg-green-50',
-    borderColor: 'border-l-green-500',
-    textColor: 'text-green-900',
-    titleColor: 'text-green-800',
-    descColor: 'text-green-700',
-    iconColor: 'text-green-500',
-    badgeBg: 'bg-green-100',
-    badgeText: 'text-green-800',
+    bgColor: "bg-green-50",
+    borderColor: "border-l-green-500",
+    textColor: "text-green-900",
+    titleColor: "text-green-800",
+    descColor: "text-green-700",
+    iconColor: "text-green-500",
+    badgeBg: "bg-green-100",
+    badgeText: "text-green-800",
   },
   warning: {
     Icon: AlertTriangle,
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-l-yellow-500',
-    textColor: 'text-yellow-900',
-    titleColor: 'text-yellow-800',
-    descColor: 'text-yellow-700',
-    iconColor: 'text-yellow-500',
-    badgeBg: 'bg-yellow-100',
-    badgeText: 'text-yellow-800',
+    bgColor: "bg-yellow-50",
+    borderColor: "border-l-yellow-500",
+    textColor: "text-yellow-900",
+    titleColor: "text-yellow-800",
+    descColor: "text-yellow-700",
+    iconColor: "text-yellow-500",
+    badgeBg: "bg-yellow-100",
+    badgeText: "text-yellow-800",
   },
   error: {
     Icon: AlertCircle,
-    bgColor: 'bg-red-50',
-    borderColor: 'border-l-red-500',
-    textColor: 'text-red-900',
-    titleColor: 'text-red-800',
-    descColor: 'text-red-700',
-    iconColor: 'text-red-500',
-    badgeBg: 'bg-red-100',
-    badgeText: 'text-red-800',
+    bgColor: "bg-red-50",
+    borderColor: "border-l-red-500",
+    textColor: "text-red-900",
+    titleColor: "text-red-800",
+    descColor: "text-red-700",
+    iconColor: "text-red-500",
+    badgeBg: "bg-red-100",
+    badgeText: "text-red-800",
   },
   info: {
     Icon: Info,
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-l-blue-500',
-    textColor: 'text-blue-900',
-    titleColor: 'text-blue-800',
-    descColor: 'text-blue-700',
-    iconColor: 'text-blue-500',
-    badgeBg: 'bg-blue-100',
-    badgeText: 'text-blue-800',
+    bgColor: "bg-blue-50",
+    borderColor: "border-l-blue-500",
+    textColor: "text-blue-900",
+    titleColor: "text-blue-800",
+    descColor: "text-blue-700",
+    iconColor: "text-blue-500",
+    badgeBg: "bg-blue-100",
+    badgeText: "text-blue-800",
   },
-}
+};
 
 export function AlertCard({
   title,
   description,
-  variant = 'info',
+  variant = "info",
   dismissible = false,
   onDismiss,
   children,
-  className = '',
+  className = "",
 }: AlertCardProps) {
-  const config = variantConfig[variant]
+  const config = variantConfig[variant];
   const { Icon, bgColor, borderColor, titleColor, descColor, iconColor } =
-    config
+    config;
 
   return (
     <Card
@@ -81,7 +87,9 @@ export function AlertCard({
             <Icon className={`${iconColor} w-5 h-5 flex-shrink-0 mt-0.5`} />
             <div className="flex-1">
               {title && (
-                <CardTitle className={`${titleColor} text-lg`}>{title}</CardTitle>
+                <CardTitle className={`${titleColor} text-lg`}>
+                  {title}
+                </CardTitle>
               )}
               {description && (
                 <CardDescription className={`${descColor} mt-1`}>
@@ -103,5 +111,5 @@ export function AlertCard({
       </CardHeader>
       {children && <CardContent className={descColor}>{children}</CardContent>}
     </Card>
-  )
+  );
 }

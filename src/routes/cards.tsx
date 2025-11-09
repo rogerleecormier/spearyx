@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 import {
   MessageCircle,
   TrendingUp,
@@ -14,7 +14,7 @@ import {
   Clock,
   Package as LoadingIcon,
   Inbox,
-} from 'lucide-react'
+} from "lucide-react";
 import {
   BasicCard,
   FeaturedCard,
@@ -31,11 +31,11 @@ import {
   TimelineCard,
   SkeletonCard,
   EmptyStateCard,
-} from '../components/Cards'
+} from "../components/Cards";
 
-export const Route = createFileRoute('/cards')({
+export const Route = createFileRoute("/cards")({
   component: CardsLibrary,
-})
+});
 
 function CardsLibrary() {
   return (
@@ -53,14 +53,14 @@ function CardsLibrary() {
             Card Library
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl">
-            A comprehensive collection of reusable card components. Each card type is fully modular and customizable for your application.
+            A comprehensive collection of reusable card components. Each card
+            type is fully modular and customizable for your application.
           </p>
         </div>
       </section>
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-16">
-        
         {/* Basic Card Section */}
         <section className="mb-24">
           <div className="mb-12">
@@ -69,7 +69,8 @@ function CardsLibrary() {
               <h2 className="text-3xl font-bold text-slate-900">Basic Card</h2>
             </div>
             <p className="text-slate-600">
-              The fundamental card component. Perfect for displaying simple content with a title and description.
+              The fundamental card component. Perfect for displaying simple
+              content with a title and description.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -93,10 +94,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Featured Card</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Featured Card
+              </h2>
             </div>
             <p className="text-slate-600">
-              Eye-catching card with optional icon and colored left border. Perfect for highlighting important features.
+              Eye-catching card with optional icon and colored left border.
+              Perfect for highlighting important features.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -123,7 +127,8 @@ function CardsLibrary() {
               <h2 className="text-3xl font-bold text-slate-900">Stat Card</h2>
             </div>
             <p className="text-slate-600">
-              Display metrics and statistics with optional trend indicators. Perfect for dashboards and analytics pages.
+              Display metrics and statistics with optional trend indicators.
+              Perfect for dashboards and analytics pages.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -131,25 +136,25 @@ function CardsLibrary() {
               value="12.5K"
               label="Total Users"
               icon={<TrendingUp size={20} />}
-              trend={{ direction: 'up', value: '+12.5%' }}
+              trend={{ direction: "up", value: "+12.5%" }}
             />
             <StatCard
               value="$52.8M"
               label="Revenue"
               icon={<TrendingUp size={20} />}
-              trend={{ direction: 'up', value: '+8.2%' }}
+              trend={{ direction: "up", value: "+8.2%" }}
             />
             <StatCard
               value="99.9%"
               label="Uptime"
               icon={<TrendingUp size={20} />}
-              trend={{ direction: 'up', value: '+0.1%' }}
+              trend={{ direction: "up", value: "+0.1%" }}
             />
             <StatCard
               value="4.9/5"
               label="Rating"
               icon={<Heart size={20} />}
-              trend={{ direction: 'up', value: '+0.2' }}
+              trend={{ direction: "up", value: "+0.2" }}
             />
           </div>
         </section>
@@ -159,10 +164,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <MessageCircle className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Testimonial Card</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Testimonial Card
+              </h2>
             </div>
             <p className="text-slate-600">
-              Showcase customer feedback with quotes, avatars, and star ratings. Great for social proof.
+              Showcase customer feedback with quotes, avatars, and star ratings.
+              Great for social proof.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -205,13 +213,16 @@ function CardsLibrary() {
               <h2 className="text-3xl font-bold text-slate-900">Image Card</h2>
             </div>
             <p className="text-slate-600">
-              Cards with featured images. Available in standard layout or with hover overlay effect.
+              Cards with featured images. Available in standard layout or with
+              hover overlay effect.
             </p>
           </div>
 
           {/* Standard Layout */}
           <div className="mb-16">
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">Standard Layout</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-6">
+              Standard Layout
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ImageCard
                 image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop"
@@ -233,7 +244,9 @@ function CardsLibrary() {
 
           {/* Overlay Variant */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">Overlay Variant (Hover)</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-6">
+              Overlay Variant (Hover)
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ImageCard
                 image="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop"
@@ -262,10 +275,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Call-to-Action Card</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Call-to-Action Card
+              </h2>
             </div>
             <p className="text-slate-600">
-              Encourage user engagement with action-oriented cards. Perfect for promotions and next steps.
+              Encourage user engagement with action-oriented cards. Perfect for
+              promotions and next steps.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -274,14 +290,14 @@ function CardsLibrary() {
               description="Join thousands of users. Start your free trial today with no credit card required."
               buttonText="Start Free Trial"
               buttonVariant="default"
-              onButtonClick={() => alert('CTA clicked!')}
+              onButtonClick={() => alert("CTA clicked!")}
             />
             <CTACard
               title="Learn More"
               description="Explore our comprehensive documentation and discover all the features available."
               buttonText="View Docs"
               buttonVariant="secondary"
-              onButtonClick={() => alert('Learn more clicked!')}
+              onButtonClick={() => alert("Learn more clicked!")}
             />
           </div>
         </section>
@@ -291,10 +307,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Zap className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Pricing Card</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Pricing Card
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display pricing tiers with features and CTA buttons. Perfect for product pricing pages.
+              Display pricing tiers with features and CTA buttons. Perfect for
+              product pricing pages.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -303,49 +322,49 @@ function CardsLibrary() {
               price="29"
               description="Perfect for getting started"
               features={[
-                'Up to 5 projects',
-                '2 GB storage',
-                'Basic support',
-                'Community access',
-                'Email notifications',
+                "Up to 5 projects",
+                "2 GB storage",
+                "Basic support",
+                "Community access",
+                "Email notifications",
               ]}
               buttonText="Start Free"
               buttonVariant="outline"
-              onButtonClick={() => alert('Starter plan clicked!')}
+              onButtonClick={() => alert("Starter plan clicked!")}
             />
             <PricingCard
               name="Professional"
               price="79"
               description="Most popular for teams"
               features={[
-                'Unlimited projects',
-                '100 GB storage',
-                'Priority support',
-                'Advanced analytics',
-                'API access',
-                'Team collaboration',
-                'Custom integrations',
+                "Unlimited projects",
+                "100 GB storage",
+                "Priority support",
+                "Advanced analytics",
+                "API access",
+                "Team collaboration",
+                "Custom integrations",
               ]}
               buttonText="Start Trial"
               featured={true}
-              onButtonClick={() => alert('Professional plan clicked!')}
+              onButtonClick={() => alert("Professional plan clicked!")}
             />
             <PricingCard
               name="Enterprise"
               price="Custom"
               description="For large organizations"
               features={[
-                'Everything in Pro',
-                'Unlimited storage',
-                '24/7 support',
-                'Advanced security',
-                'Custom contracts',
-                'Dedicated manager',
-                'SLA guarantee',
+                "Everything in Pro",
+                "Unlimited storage",
+                "24/7 support",
+                "Advanced security",
+                "Custom contracts",
+                "Dedicated manager",
+                "SLA guarantee",
               ]}
               buttonText="Contact Sales"
               buttonVariant="secondary"
-              onButtonClick={() => alert('Enterprise plan clicked!')}
+              onButtonClick={() => alert("Enterprise plan clicked!")}
             />
           </div>
         </section>
@@ -355,10 +374,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <AlertCircle className="w-6 h-6 text-blue-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Alert & Info Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Alert & Info Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display important information, warnings, errors, and success messages with contextual styling.
+              Display important information, warnings, errors, and success
+              messages with contextual styling.
             </p>
           </div>
           <div className="space-y-4">
@@ -385,27 +407,31 @@ function CardsLibrary() {
           </div>
 
           <div className="mt-12 pt-8 border-t">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">Dismissible Alerts</h3>
+            <h3 className="text-xl font-semibold text-slate-900 mb-6">
+              Dismissible Alerts
+            </h3>
             <div className="space-y-4">
               <AlertCard
                 variant="success"
                 title="Project Created"
                 description="Your new project is ready to use."
                 dismissible={true}
-                onDismiss={() => alert('Alert dismissed!')}
+                onDismiss={() => alert("Alert dismissed!")}
               />
               <AlertCard
                 variant="warning"
                 title="Deprecation Notice"
                 description="This API endpoint will be deprecated on December 31st."
                 dismissible={true}
-                onDismiss={() => alert('Alert dismissed!')}
+                onDismiss={() => alert("Alert dismissed!")}
               />
             </div>
           </div>
 
           <div className="mt-12 pt-8 border-t">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">With Additional Content</h3>
+            <h3 className="text-xl font-semibold text-slate-900 mb-6">
+              With Additional Content
+            </h3>
             <AlertCard
               variant="info"
               title="System Maintenance"
@@ -425,10 +451,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Palette className="w-6 h-6 text-purple-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Color Variant Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Color Variant Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Cards with 9 different color themes. Use color to organize, categorize, or highlight different content types.
+              Cards with 9 different color themes. Use color to organize,
+              categorize, or highlight different content types.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -437,7 +466,8 @@ function CardsLibrary() {
               title="Red Theme"
               description="Perfect for alerts, errors, or important actions that need attention."
             >
-              This card uses a red color scheme to draw focus to critical information.
+              This card uses a red color scheme to draw focus to critical
+              information.
             </ColorVariantCard>
             <ColorVariantCard
               color="orange"
@@ -465,7 +495,8 @@ function CardsLibrary() {
               title="Blue Theme"
               description="The most versatile - perfect for information and neutral content."
             >
-              Blue is trustworthy and works well for general information display.
+              Blue is trustworthy and works well for general information
+              display.
             </ColorVariantCard>
             <ColorVariantCard
               color="indigo"
@@ -479,7 +510,8 @@ function CardsLibrary() {
               title="Purple Theme"
               description="Creative and modern - great for innovative features or new content."
             >
-              Purple stands out and draws attention while remaining professional.
+              Purple stands out and draws attention while remaining
+              professional.
             </ColorVariantCard>
             <ColorVariantCard
               color="pink"
@@ -493,7 +525,8 @@ function CardsLibrary() {
               title="Slate Theme"
               description="Neutral and clean - perfect for secondary or background content."
             >
-              Slate provides a professional, understated appearance for neutral information.
+              Slate provides a professional, understated appearance for neutral
+              information.
             </ColorVariantCard>
           </div>
         </section>
@@ -503,10 +536,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <ShoppingBag className="w-6 h-6 text-blue-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Product Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Product Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Perfect for e-commerce, portfolios, and product showcases with ratings, pricing, and cart functionality.
+              Perfect for e-commerce, portfolios, and product showcases with
+              ratings, pricing, and cart functionality.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -520,8 +556,8 @@ function CardsLibrary() {
               description="Premium sound quality with noise cancellation"
               badge="Sale"
               badgeVariant="sale"
-              onAddToCart={() => alert('Added to cart!')}
-              onFavorite={() => alert('Favorited!')}
+              onAddToCart={() => alert("Added to cart!")}
+              onFavorite={() => alert("Favorited!")}
             />
             <ProductCard
               image="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop"
@@ -532,8 +568,8 @@ function CardsLibrary() {
               description="Latest features with health tracking"
               badge="New"
               badgeVariant="new"
-              onAddToCart={() => alert('Added to cart!')}
-              onFavorite={() => alert('Favorited!')}
+              onAddToCart={() => alert("Added to cart!")}
+              onFavorite={() => alert("Favorited!")}
               isFavorited={true}
             />
             <ProductCard
@@ -545,8 +581,8 @@ function CardsLibrary() {
               description="Capture moments hands-free"
               badge="Featured"
               badgeVariant="featured"
-              onAddToCart={() => alert('Added to cart!')}
-              onFavorite={() => alert('Favorited!')}
+              onAddToCart={() => alert("Added to cart!")}
+              onFavorite={() => alert("Favorited!")}
             />
           </div>
         </section>
@@ -556,15 +592,20 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Users className="w-6 h-6 text-green-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Profile Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Profile Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display user profiles with avatars, roles, bios, and action buttons. Available in vertical and horizontal layouts.
+              Display user profiles with avatars, roles, bios, and action
+              buttons. Available in vertical and horizontal layouts.
             </p>
           </div>
-          
+
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Vertical Layout</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Vertical Layout
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ProfileCard
                 avatar="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
@@ -572,8 +613,8 @@ function CardsLibrary() {
                 title="Product Designer"
                 description="Passionate about creating beautiful user experiences"
                 actionButton={{
-                  label: 'View Profile',
-                  onClick: () => alert('Profile clicked!'),
+                  label: "View Profile",
+                  onClick: () => alert("Profile clicked!"),
                 }}
               />
               <ProfileCard
@@ -582,9 +623,9 @@ function CardsLibrary() {
                 title="Full Stack Developer"
                 description="Building scalable web applications"
                 actionButton={{
-                  label: 'Follow',
-                  onClick: () => alert('Following!'),
-                  variant: 'outline',
+                  label: "Follow",
+                  onClick: () => alert("Following!"),
+                  variant: "outline",
                 }}
               />
               <ProfileCard
@@ -593,16 +634,18 @@ function CardsLibrary() {
                 title="Project Manager"
                 description="Delivering projects on time and on budget"
                 actionButton={{
-                  label: 'Message',
-                  onClick: () => alert('Message sent!'),
-                  variant: 'secondary',
+                  label: "Message",
+                  onClick: () => alert("Message sent!"),
+                  variant: "secondary",
                 }}
               />
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Horizontal Layout</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Horizontal Layout
+            </h3>
             <div className="space-y-4">
               <ProfileCard
                 layout="horizontal"
@@ -611,8 +654,8 @@ function CardsLibrary() {
                 title="UI/UX Designer"
                 description="5+ years of experience in digital design"
                 actionButton={{
-                  label: 'Connect',
-                  onClick: () => alert('Connected!'),
+                  label: "Connect",
+                  onClick: () => alert("Connected!"),
                 }}
               />
               <ProfileCard
@@ -622,9 +665,9 @@ function CardsLibrary() {
                 title="Marketing Manager"
                 description="Helping brands grow through strategic marketing"
                 actionButton={{
-                  label: 'Follow',
-                  onClick: () => alert('Following!'),
-                  variant: 'outline',
+                  label: "Follow",
+                  onClick: () => alert("Following!"),
+                  variant: "outline",
                 }}
               />
             </div>
@@ -636,10 +679,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <ProgressIcon className="w-6 h-6 text-purple-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Progress Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Progress Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display progress in multiple formats: linear bars, circular indicators, and step-based tracking.
+              Display progress in multiple formats: linear bars, circular
+              indicators, and step-based tracking.
             </p>
           </div>
 
@@ -689,11 +735,11 @@ function CardsLibrary() {
             progress={60}
             variant="steps"
             steps={[
-              { label: 'Create Account', completed: true },
-              { label: 'Verify Email', completed: true },
-              { label: 'Add Profile Photo', completed: true },
-              { label: 'Choose Preferences', completed: false },
-              { label: 'Get Started', completed: false },
+              { label: "Create Account", completed: true },
+              { label: "Verify Email", completed: true },
+              { label: "Add Profile Photo", completed: true },
+              { label: "Choose Preferences", completed: false },
+              { label: "Get Started", completed: false },
             ]}
             progressColor="green"
           />
@@ -704,44 +750,49 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Clock className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Timeline Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Timeline Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display activity feeds, project history, and event timelines with status indicators.
+              Display activity feeds, project history, and event timelines with
+              status indicators.
             </p>
           </div>
 
           <TimelineCard
             events={[
               {
-                date: 'Today at 2:30 PM',
-                title: 'Project Launched',
-                description: 'Your new product is now live and available to users',
-                status: 'completed',
+                date: "Today at 2:30 PM",
+                title: "Project Launched",
+                description:
+                  "Your new product is now live and available to users",
+                status: "completed",
               },
               {
-                date: 'Yesterday at 10:15 AM',
-                title: 'Design Review Complete',
-                description: 'All design assets have been approved by the team',
-                status: 'completed',
+                date: "Yesterday at 10:15 AM",
+                title: "Design Review Complete",
+                description: "All design assets have been approved by the team",
+                status: "completed",
               },
               {
-                date: 'Tomorrow at 3:00 PM',
-                title: 'Team Meeting',
-                description: 'Q&A session with stakeholders about the new features',
-                status: 'current',
+                date: "Tomorrow at 3:00 PM",
+                title: "Team Meeting",
+                description:
+                  "Q&A session with stakeholders about the new features",
+                status: "current",
               },
               {
-                date: 'Next Week',
-                title: 'Beta Testing Phase',
-                description: 'Open beta program for early adopters',
-                status: 'upcoming',
+                date: "Next Week",
+                title: "Beta Testing Phase",
+                description: "Open beta program for early adopters",
+                status: "upcoming",
               },
               {
-                date: 'In 2 weeks',
-                title: 'Public Release',
-                description: 'Full rollout to all users',
-                status: 'upcoming',
+                date: "In 2 weeks",
+                title: "Public Release",
+                description: "Full rollout to all users",
+                status: "upcoming",
               },
             ]}
           />
@@ -752,10 +803,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <LoadingIcon className="w-6 h-6 text-indigo-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Skeleton Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Skeleton Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Use skeleton cards as loading placeholders to maintain layout stability while content loads.
+              Use skeleton cards as loading placeholders to maintain layout
+              stability while content loads.
             </p>
           </div>
 
@@ -766,7 +820,9 @@ function CardsLibrary() {
           </div>
 
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Other Variants</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Other Variants
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SkeletonCard variant="profile" />
               <SkeletonCard variant="feature" />
@@ -779,10 +835,13 @@ function CardsLibrary() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Inbox className="w-6 h-6 text-pink-500" />
-              <h2 className="text-3xl font-bold text-slate-900">Empty State Cards</h2>
+              <h2 className="text-3xl font-bold text-slate-900">
+                Empty State Cards
+              </h2>
             </div>
             <p className="text-slate-600">
-              Display when there's no content to show. Provides guidance and action options to users.
+              Display when there's no content to show. Provides guidance and
+              action options to users.
             </p>
           </div>
 
@@ -792,8 +851,8 @@ function CardsLibrary() {
               title="No Messages"
               description="You don't have any messages yet. Start a conversation with someone to get started."
               actionButton={{
-                label: 'Send a Message',
-                onClick: () => alert('Send message clicked!'),
+                label: "Send a Message",
+                onClick: () => alert("Send message clicked!"),
               }}
             />
             <EmptyStateCard
@@ -801,9 +860,9 @@ function CardsLibrary() {
               title="No Orders"
               description="You haven't placed any orders yet. Browse our products to get started."
               actionButton={{
-                label: 'Start Shopping',
-                onClick: () => alert('Shopping clicked!'),
-                variant: 'secondary',
+                label: "Start Shopping",
+                onClick: () => alert("Shopping clicked!"),
+                variant: "secondary",
               }}
             />
           </div>
@@ -814,9 +873,9 @@ function CardsLibrary() {
               title="No Projects"
               description="Create your first project to start organizing your work and collaborating with your team."
               actionButton={{
-                label: 'Create Project',
-                onClick: () => alert('Create project clicked!'),
-                variant: 'default',
+                label: "Create Project",
+                onClick: () => alert("Create project clicked!"),
+                variant: "default",
               }}
             />
           </div>
@@ -827,10 +886,12 @@ function CardsLibrary() {
           <h2 className="text-3xl font-bold text-slate-900 mb-8">How to Use</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Import Cards</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                Import Cards
+              </h3>
               <div className="bg-slate-900 rounded-lg p-6 overflow-x-auto">
-              <pre className="text-slate-100 text-sm font-mono">
-{`import {
+                <pre className="text-slate-100 text-sm font-mono">
+                  {`import {
   BasicCard,
   FeaturedCard,
   StatCard,
@@ -847,14 +908,16 @@ function CardsLibrary() {
   SkeletonCard,
   EmptyStateCard,
 } from '@/components/Cards'`}
-              </pre>
+                </pre>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Use in Components</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                Use in Components
+              </h3>
               <div className="bg-slate-900 rounded-lg p-6 overflow-x-auto">
                 <pre className="text-slate-100 text-sm font-mono">
-{`<BasicCard
+                  {`<BasicCard
   title="Hello"
   description="Your card here"
 />
@@ -882,7 +945,9 @@ function CardsLibrary() {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Fully Modular</h3>
-                <p className="text-slate-600 text-sm">Mix and match components as needed</p>
+                <p className="text-slate-600 text-sm">
+                  Mix and match components as needed
+                </p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -892,8 +957,12 @@ function CardsLibrary() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900">Responsive Design</h3>
-                <p className="text-slate-600 text-sm">Works on all screen sizes</p>
+                <h3 className="font-semibold text-slate-900">
+                  Responsive Design
+                </h3>
+                <p className="text-slate-600 text-sm">
+                  Works on all screen sizes
+                </p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -904,12 +973,14 @@ function CardsLibrary() {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Customizable</h3>
-                <p className="text-slate-600 text-sm">Easy to customize colors and styling</p>
+                <p className="text-slate-600 text-sm">
+                  Easy to customize colors and styling
+                </p>
               </div>
             </div>
           </div>
         </section>
       </div>
     </div>
-  )
+  );
 }

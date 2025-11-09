@@ -1,17 +1,17 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface SkeletonCardProps {
-  variant?: 'product' | 'profile' | 'basic' | 'feature'
-  className?: string
+  variant?: "product" | "profile" | "basic" | "feature";
+  className?: string;
 }
 
 export function SkeletonCard({
-  variant = 'basic',
-  className = '',
+  variant = "basic",
+  className = "",
 }: SkeletonCardProps) {
-  const pulse = 'animate-pulse'
+  const pulse = "animate-pulse";
 
-  if (variant === 'product') {
+  if (variant === "product") {
     return (
       <Card className={`overflow-hidden ${className}`}>
         <div className={`h-48 bg-slate-200 ${pulse}`} />
@@ -27,29 +27,29 @@ export function SkeletonCard({
           <div className={`h-10 bg-slate-200 rounded w-full ${pulse}`} />
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (variant === 'profile') {
+  if (variant === "profile") {
     return (
       <Card className={`overflow-hidden ${className}`}>
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div
-              className={`w-24 h-24 rounded-full bg-slate-200 ${pulse}`}
-            />
+            <div className={`w-24 h-24 rounded-full bg-slate-200 ${pulse}`} />
           </div>
-          <div className={`h-5 bg-slate-200 rounded w-3/4 mx-auto mb-3 ${pulse}`} />
+          <div
+            className={`h-5 bg-slate-200 rounded w-3/4 mx-auto mb-3 ${pulse}`}
+          />
           <div className={`h-4 bg-slate-200 rounded w-1/2 mx-auto ${pulse}`} />
         </CardHeader>
         <CardContent>
           <div className={`h-10 bg-slate-200 rounded w-full ${pulse}`} />
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (variant === 'feature') {
+  if (variant === "feature") {
     return (
       <Card className={`overflow-hidden ${className}`}>
         <CardHeader>
@@ -64,7 +64,7 @@ export function SkeletonCard({
           </div>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   // Default basic variant
@@ -82,5 +82,5 @@ export function SkeletonCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

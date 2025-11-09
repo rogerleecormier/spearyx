@@ -1,25 +1,31 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
-  avatar: string
-  avatarAlt?: string
-  name: string
-  title: string
-  description?: string
+  avatar: string;
+  avatarAlt?: string;
+  name: string;
+  title: string;
+  description?: string;
   socialLinks?: Array<{
-    label: string
-    icon: React.ReactNode
-    href?: string
-    onClick?: () => void
-  }>
+    label: string;
+    icon: React.ReactNode;
+    href?: string;
+    onClick?: () => void;
+  }>;
   actionButton?: {
-    label: string
-    onClick: () => void
-    variant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  }
-  className?: string
-  layout?: 'vertical' | 'horizontal'
+    label: string;
+    onClick: () => void;
+    variant?: "default" | "secondary" | "outline" | "ghost";
+  };
+  className?: string;
+  layout?: "vertical" | "horizontal";
 }
 
 export function ProfileCard({
@@ -30,13 +36,15 @@ export function ProfileCard({
   description,
   socialLinks,
   actionButton,
-  className = '',
-  layout = 'vertical',
+  className = "",
+  layout = "vertical",
 }: ProfileCardProps) {
-  const isVertical = layout === 'vertical'
+  const isVertical = layout === "vertical";
 
   return (
-    <Card className={`overflow-hidden transition-all hover:shadow-lg ${className}`}>
+    <Card
+      className={`overflow-hidden transition-all hover:shadow-lg ${className}`}
+    >
       {isVertical ? (
         // Vertical Layout
         <CardHeader className="text-center pb-4">
@@ -80,7 +88,7 @@ export function ProfileCard({
       )}
 
       {(socialLinks || actionButton) && (
-        <CardContent className={isVertical ? 'pb-6' : ''}>
+        <CardContent className={isVertical ? "pb-6" : ""}>
           {socialLinks && socialLinks.length > 0 && (
             <div className="flex justify-center gap-2 mb-4">
               {socialLinks.map((link, idx) => (
@@ -98,8 +106,8 @@ export function ProfileCard({
           {actionButton && (
             <Button
               onClick={actionButton.onClick}
-              variant={actionButton.variant || 'default'}
-              className={isVertical ? 'w-full' : ''}
+              variant={actionButton.variant || "default"}
+              className={isVertical ? "w-full" : ""}
             >
               {actionButton.label}
             </Button>
@@ -107,5 +115,5 @@ export function ProfileCard({
         </CardContent>
       )}
     </Card>
-  )
+  );
 }

@@ -1,19 +1,25 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 
 interface PricingCardProps {
-  name: string
-  price: string | number
-  description?: string
-  features: string[]
-  buttonText?: string
-  buttonVariant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  onButtonClick?: () => void
-  featured?: boolean
-  currency?: string
-  billingPeriod?: string
-  className?: string
+  name: string;
+  price: string | number;
+  description?: string;
+  features: string[];
+  buttonText?: string;
+  buttonVariant?: "default" | "secondary" | "outline" | "ghost";
+  onButtonClick?: () => void;
+  featured?: boolean;
+  currency?: string;
+  billingPeriod?: string;
+  className?: string;
 }
 
 export function PricingCard({
@@ -21,18 +27,18 @@ export function PricingCard({
   price,
   description,
   features,
-  buttonText = 'Get Started',
-  buttonVariant = 'default',
+  buttonText = "Get Started",
+  buttonVariant = "default",
   onButtonClick,
   featured = false,
-  currency = '$',
-  billingPeriod = '/month',
-  className = '',
+  currency = "$",
+  billingPeriod = "/month",
+  className = "",
 }: PricingCardProps) {
   return (
     <Card
       className={`relative overflow-hidden transition-all ${
-        featured ? 'ring-2 ring-red-500 md:scale-105' : ''
+        featured ? "ring-2 ring-red-500 md:scale-105" : ""
       } ${className}`}
     >
       {featured && (
@@ -45,14 +51,17 @@ export function PricingCard({
         <CardTitle className="text-2xl">{name}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
         <div className="mt-4">
-          <span className="text-5xl font-bold">{currency}{price}</span>
+          <span className="text-5xl font-bold">
+            {currency}
+            {price}
+          </span>
           <span className="text-slate-600 ml-2">{billingPeriod}</span>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <Button
           onClick={onButtonClick}
-          variant={featured ? 'default' : buttonVariant}
+          variant={featured ? "default" : buttonVariant}
           className="w-full"
         >
           {buttonText}
@@ -67,5 +76,5 @@ export function PricingCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

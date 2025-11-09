@@ -1,29 +1,35 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Heart, ShoppingCart, Star } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Heart, ShoppingCart, Star } from "lucide-react";
 
 interface ProductCardProps {
-  image: string
-  imageAlt?: string
-  title: string
-  price: number
-  originalPrice?: number
-  rating?: number
-  reviewCount?: number
-  description?: string
-  badge?: string
-  badgeVariant?: 'sale' | 'new' | 'featured'
-  onAddToCart?: () => void
-  onFavorite?: () => void
-  isFavorited?: boolean
-  className?: string
+  image: string;
+  imageAlt?: string;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  rating?: number;
+  reviewCount?: number;
+  description?: string;
+  badge?: string;
+  badgeVariant?: "sale" | "new" | "featured";
+  onAddToCart?: () => void;
+  onFavorite?: () => void;
+  isFavorited?: boolean;
+  className?: string;
 }
 
 const badgeStyles = {
-  sale: 'bg-red-500',
-  new: 'bg-green-500',
-  featured: 'bg-purple-500',
-}
+  sale: "bg-red-500",
+  new: "bg-green-500",
+  featured: "bg-purple-500",
+};
 
 export function ProductCard({
   image,
@@ -35,19 +41,21 @@ export function ProductCard({
   reviewCount,
   description,
   badge,
-  badgeVariant = 'sale',
+  badgeVariant = "sale",
   onAddToCart,
   onFavorite,
   isFavorited = false,
-  className = '',
+  className = "",
 }: ProductCardProps) {
   const discount =
     originalPrice && originalPrice > price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
-      : null
+      : null;
 
   return (
-    <Card className={`overflow-hidden transition-all hover:shadow-lg ${className}`}>
+    <Card
+      className={`overflow-hidden transition-all hover:shadow-lg ${className}`}
+    >
       {/* Image Container */}
       <div className="relative overflow-hidden bg-slate-100 h-48">
         <img
@@ -75,7 +83,7 @@ export function ProductCard({
           className="absolute bottom-3 right-3 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all"
         >
           <Heart
-            className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-slate-400'}`}
+            className={`w-5 h-5 ${isFavorited ? "fill-red-500 text-red-500" : "text-slate-400"}`}
           />
         </button>
       </div>
@@ -91,8 +99,8 @@ export function ProductCard({
                   key={i}
                   className={`w-4 h-4 ${
                     i < Math.floor(rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-slate-300'
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-slate-300"
                   }`}
                 />
               ))}
@@ -117,16 +125,15 @@ export function ProductCard({
 
       <CardContent className="pb-4">
         {description && (
-          <p className="text-sm text-slate-600 line-clamp-2 mb-4">{description}</p>
+          <p className="text-sm text-slate-600 line-clamp-2 mb-4">
+            {description}
+          </p>
         )}
-        <Button
-          onClick={onAddToCart}
-          className="w-full gap-2"
-        >
+        <Button onClick={onAddToCart} className="w-full gap-2">
           <ShoppingCart className="w-4 h-4" />
           Add to Cart
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

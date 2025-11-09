@@ -1,49 +1,55 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Circle } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CheckCircle, Circle } from "lucide-react";
 
 interface ProgressCardProps {
-  title: string
-  description?: string
-  progress: number
-  progressColor?: 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple'
-  variant?: 'linear' | 'circular' | 'steps'
+  title: string;
+  description?: string;
+  progress: number;
+  progressColor?: "red" | "orange" | "yellow" | "green" | "blue" | "purple";
+  variant?: "linear" | "circular" | "steps";
   steps?: Array<{
-    label: string
-    completed: boolean
-  }>
-  showPercentage?: boolean
-  className?: string
+    label: string;
+    completed: boolean;
+  }>;
+  showPercentage?: boolean;
+  className?: string;
 }
 
 const colorClasses = {
-  red: 'bg-red-500',
-  orange: 'bg-orange-500',
-  yellow: 'bg-yellow-500',
-  green: 'bg-green-500',
-  blue: 'bg-blue-500',
-  purple: 'bg-purple-500',
-}
+  red: "bg-red-500",
+  orange: "bg-orange-500",
+  yellow: "bg-yellow-500",
+  green: "bg-green-500",
+  blue: "bg-blue-500",
+  purple: "bg-purple-500",
+};
 
 const textColorClasses = {
-  red: 'text-red-500',
-  orange: 'text-orange-500',
-  yellow: 'text-yellow-500',
-  green: 'text-green-500',
-  blue: 'text-blue-500',
-  purple: 'text-purple-500',
-}
+  red: "text-red-500",
+  orange: "text-orange-500",
+  yellow: "text-yellow-500",
+  green: "text-green-500",
+  blue: "text-blue-500",
+  purple: "text-purple-500",
+};
 
 export function ProgressCard({
   title,
   description,
   progress,
-  progressColor = 'blue',
-  variant = 'linear',
+  progressColor = "blue",
+  variant = "linear",
   steps,
   showPercentage = true,
-  className = '',
+  className = "",
 }: ProgressCardProps) {
-  const clampedProgress = Math.min(Math.max(progress, 0), 100)
+  const clampedProgress = Math.min(Math.max(progress, 0), 100);
 
   return (
     <Card className={`overflow-hidden transition-all ${className}`}>
@@ -53,12 +59,16 @@ export function ProgressCard({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {variant === 'linear' && (
+        {variant === "linear" && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-700">Progress</span>
+              <span className="text-sm font-medium text-slate-700">
+                Progress
+              </span>
               {showPercentage && (
-                <span className={`text-sm font-bold ${textColorClasses[progressColor]}`}>
+                <span
+                  className={`text-sm font-bold ${textColorClasses[progressColor]}`}
+                >
                   {clampedProgress}%
                 </span>
               )}
@@ -72,10 +82,13 @@ export function ProgressCard({
           </div>
         )}
 
-        {variant === 'circular' && (
+        {variant === "circular" && (
           <div className="flex flex-col items-center">
             <div className="relative w-24 h-24 mb-4">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <svg
+                className="w-full h-full transform -rotate-90"
+                viewBox="0 0 100 100"
+              >
                 <circle
                   cx="50"
                   cy="50"
@@ -105,7 +118,7 @@ export function ProgressCard({
           </div>
         )}
 
-        {variant === 'steps' && steps && steps.length > 0 && (
+        {variant === "steps" && steps && steps.length > 0 && (
           <div className="space-y-3">
             {steps.map((step, idx) => (
               <div key={idx} className="flex items-center gap-3">
@@ -117,8 +130,8 @@ export function ProgressCard({
                 <span
                   className={`text-sm ${
                     step.completed
-                      ? 'text-slate-900 font-medium'
-                      : 'text-slate-600'
+                      ? "text-slate-900 font-medium"
+                      : "text-slate-600"
                   }`}
                 >
                   {step.label}
@@ -127,11 +140,17 @@ export function ProgressCard({
             ))}
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-700">Overall Progress</span>
-                <span className={`text-sm font-bold ${textColorClasses[progressColor]}`}>
+                <span className="text-sm font-medium text-slate-700">
+                  Overall Progress
+                </span>
+                <span
+                  className={`text-sm font-bold ${textColorClasses[progressColor]}`}
+                >
                   {Math.round(
-                    (steps.filter((s) => s.completed).length / steps.length) * 100
-                  )}%
+                    (steps.filter((s) => s.completed).length / steps.length) *
+                      100
+                  )}
+                  %
                 </span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden mt-2">
@@ -139,7 +158,8 @@ export function ProgressCard({
                   className={`h-full ${colorClasses[progressColor]} transition-all duration-500`}
                   style={{
                     width: `${Math.round(
-                      (steps.filter((s) => s.completed).length / steps.length) * 100
+                      (steps.filter((s) => s.completed).length / steps.length) *
+                        100
                     )}%`,
                   }}
                 />
@@ -149,5 +169,5 @@ export function ProgressCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

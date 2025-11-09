@@ -33,7 +33,7 @@ import {
   TimelineCard,
   SkeletonCard,
   EmptyStateCard,
-} from '@/components/Cards'
+} from "@/components/Cards";
 ```
 
 ---
@@ -41,15 +41,12 @@ import {
 ## Basic Usage
 
 ```tsx
-import { BasicCard } from '@/components/Cards'
+import { BasicCard } from "@/components/Cards";
 
 export function MyComponent() {
   return (
-    <BasicCard
-      title="Hello World"
-      description="This is a basic card example"
-    />
-  )
+    <BasicCard title="Hello World" description="This is a basic card example" />
+  );
 }
 ```
 
@@ -62,6 +59,7 @@ export function MyComponent() {
 The simplest card component. Perfect for displaying basic information with title and description.
 
 **When to use:**
+
 - Displaying simple information blocks
 - Feature lists
 - Quick informational cards
@@ -71,10 +69,10 @@ The simplest card component. Perfect for displaying basic information with title
 
 ```typescript
 interface BasicCardProps {
-  title: string
-  description?: string
-  className?: string
-  children?: React.ReactNode
+  title: string;
+  description?: string;
+  className?: string;
+  children?: React.ReactNode;
 }
 ```
 
@@ -107,6 +105,7 @@ interface BasicCardProps {
 A card with a colored left border accent. Great for highlighting important information.
 
 **When to use:**
+
 - Highlighting important content
 - Categorizing items by color
 - Featured items in lists
@@ -116,11 +115,11 @@ A card with a colored left border accent. Great for highlighting important infor
 
 ```typescript
 interface FeaturedCardProps {
-  title: string
-  description?: string
-  accentColor?: 'primary' | 'accent' | 'slate'
-  className?: string
-  children?: React.ReactNode
+  title: string;
+  description?: string;
+  accentColor?: "primary" | "accent" | "slate";
+  className?: string;
+  children?: React.ReactNode;
 }
 ```
 
@@ -156,6 +155,7 @@ interface FeaturedCardProps {
 Display key metrics with trend indicators and icons.
 
 **When to use:**
+
 - Dashboard metrics
 - KPIs and analytics
 - Statistics display
@@ -165,14 +165,14 @@ Display key metrics with trend indicators and icons.
 
 ```typescript
 interface StatCardProps {
-  title: string
-  value: string | number
-  icon?: React.ReactNode
+  title: string;
+  value: string | number;
+  icon?: React.ReactNode;
   trend?: {
-    direction: 'up' | 'down'
-    value: number | string
-  }
-  className?: string
+    direction: "up" | "down";
+    value: number | string;
+  };
+  className?: string;
 }
 ```
 
@@ -216,6 +216,7 @@ import { TrendingUp } from 'lucide-react'
 Display customer testimonials with ratings and avatars.
 
 **When to use:**
+
 - Customer testimonials
 - User reviews
 - Social proof
@@ -225,12 +226,12 @@ Display customer testimonials with ratings and avatars.
 
 ```typescript
 interface TestimonialCardProps {
-  quote: string
-  authorName: string
-  authorRole?: string
-  rating?: number
-  avatarImage?: string
-  className?: string
+  quote: string;
+  authorName: string;
+  authorRole?: string;
+  rating?: number;
+  avatarImage?: string;
+  className?: string;
 }
 ```
 
@@ -261,6 +262,7 @@ interface TestimonialCardProps {
 Display images with flexible layouts and overlay options.
 
 **When to use:**
+
 - Image galleries
 - Portfolio displays
 - Product images
@@ -270,12 +272,12 @@ Display images with flexible layouts and overlay options.
 
 ```typescript
 interface ImageCardProps {
-  image: string
-  imageAlt?: string
-  title: string
-  description?: string
-  overlay?: boolean
-  className?: string
+  image: string;
+  imageAlt?: string;
+  title: string;
+  description?: string;
+  overlay?: boolean;
+  className?: string;
 }
 ```
 
@@ -307,6 +309,7 @@ interface ImageCardProps {
 Call-to-action cards with primary and secondary buttons.
 
 **When to use:**
+
 - Sign up prompts
 - Feature promotions
 - Action-oriented content
@@ -316,15 +319,15 @@ Call-to-action cards with primary and secondary buttons.
 
 ```typescript
 interface CTACardProps {
-  title: string
-  description?: string
-  primaryButtonText?: string
-  secondaryButtonText?: string
-  onPrimaryClick?: () => void
-  onSecondaryClick?: () => void
-  primaryButtonVariant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  secondaryButtonVariant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  className?: string
+  title: string;
+  description?: string;
+  primaryButtonText?: string;
+  secondaryButtonText?: string;
+  onPrimaryClick?: () => void;
+  onSecondaryClick?: () => void;
+  primaryButtonVariant?: "default" | "secondary" | "outline" | "ghost";
+  secondaryButtonVariant?: "default" | "secondary" | "outline" | "ghost";
+  className?: string;
 }
 ```
 
@@ -357,6 +360,7 @@ interface CTACardProps {
 Display pricing tiers with features and CTA buttons.
 
 **When to use:**
+
 - Pricing pages
 - Plan selection
 - Subscription options
@@ -366,17 +370,17 @@ Display pricing tiers with features and CTA buttons.
 
 ```typescript
 interface PricingCardProps {
-  name: string
-  price: string | number
-  description?: string
-  features: string[]
-  buttonText?: string
-  buttonVariant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  onButtonClick?: () => void
-  featured?: boolean
-  currency?: string
-  billingPeriod?: string
-  className?: string
+  name: string;
+  price: string | number;
+  description?: string;
+  features: string[];
+  buttonText?: string;
+  buttonVariant?: "default" | "secondary" | "outline" | "ghost";
+  onButtonClick?: () => void;
+  featured?: boolean;
+  currency?: string;
+  billingPeriod?: string;
+  className?: string;
 }
 ```
 
@@ -443,6 +447,7 @@ interface PricingCardProps {
 Display alerts, notifications, and status messages.
 
 **When to use:**
+
 - Error messages
 - Warning notifications
 - Success confirmations
@@ -452,13 +457,13 @@ Display alerts, notifications, and status messages.
 
 ```typescript
 interface AlertCardProps {
-  title?: string
-  description?: string
-  variant?: 'success' | 'warning' | 'error' | 'info'
-  dismissible?: boolean
-  onDismiss?: () => void
-  children?: React.ReactNode
-  className?: string
+  title?: string;
+  description?: string;
+  variant?: "success" | "warning" | "error" | "info";
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  children?: React.ReactNode;
+  className?: string;
 }
 ```
 
@@ -509,6 +514,7 @@ interface AlertCardProps {
 Cards with 9 different color themes for organization and categorization.
 
 **When to use:**
+
 - Color-coded content categories
 - Organizing information visually
 - Highlighting different content types
@@ -518,15 +524,25 @@ Cards with 9 different color themes for organization and categorization.
 
 ```typescript
 interface ColorVariantCardProps {
-  title: string
-  description?: string
-  color?: 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'indigo' | 'purple' | 'pink' | 'slate'
-  className?: string
-  children?: React.ReactNode
+  title: string;
+  description?: string;
+  color?:
+    | "red"
+    | "orange"
+    | "yellow"
+    | "green"
+    | "blue"
+    | "indigo"
+    | "purple"
+    | "pink"
+    | "slate";
+  className?: string;
+  children?: React.ReactNode;
 }
 ```
 
 **Available Colors:**
+
 - `red` — Critical, alerts, errors
 - `orange` — Warnings, caution
 - `yellow` — Highlights, tips
@@ -575,6 +591,7 @@ interface ColorVariantCardProps {
 E-commerce product display with images, pricing, ratings, and cart functionality.
 
 **When to use:**
+
 - Product grids and catalogs
 - E-commerce listings
 - Product showcases
@@ -584,20 +601,20 @@ E-commerce product display with images, pricing, ratings, and cart functionality
 
 ```typescript
 interface ProductCardProps {
-  image: string
-  imageAlt?: string
-  title: string
-  price: number
-  originalPrice?: number
-  rating?: number
-  reviewCount?: number
-  description?: string
-  badge?: string
-  badgeVariant?: 'sale' | 'new' | 'featured'
-  onAddToCart?: () => void
-  onFavorite?: () => void
-  isFavorited?: boolean
-  className?: string
+  image: string;
+  imageAlt?: string;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  rating?: number;
+  reviewCount?: number;
+  description?: string;
+  badge?: string;
+  badgeVariant?: "sale" | "new" | "featured";
+  onAddToCart?: () => void;
+  onFavorite?: () => void;
+  isFavorited?: boolean;
+  className?: string;
 }
 ```
 
@@ -652,6 +669,7 @@ interface ProductCardProps {
 Display user profiles with avatars, roles, and action buttons.
 
 **When to use:**
+
 - Team member directories
 - User profiles
 - Member listings
@@ -662,24 +680,24 @@ Display user profiles with avatars, roles, and action buttons.
 
 ```typescript
 interface ProfileCardProps {
-  avatar: string
-  avatarAlt?: string
-  name: string
-  title: string
-  description?: string
+  avatar: string;
+  avatarAlt?: string;
+  name: string;
+  title: string;
+  description?: string;
   socialLinks?: Array<{
-    label: string
-    icon: React.ReactNode
-    href?: string
-    onClick?: () => void
-  }>
+    label: string;
+    icon: React.ReactNode;
+    href?: string;
+    onClick?: () => void;
+  }>;
   actionButton?: {
-    label: string
-    onClick: () => void
-    variant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  }
-  className?: string
-  layout?: 'vertical' | 'horizontal'
+    label: string;
+    onClick: () => void;
+    variant?: "default" | "secondary" | "outline" | "ghost";
+  };
+  className?: string;
+  layout?: "vertical" | "horizontal";
 }
 ```
 
@@ -736,6 +754,7 @@ interface ProfileCardProps {
 Display progress in multiple formats: linear bars, circular indicators, and step-based tracking.
 
 **When to use:**
+
 - Project progress tracking
 - Skill levels
 - Task completion
@@ -747,17 +766,17 @@ Display progress in multiple formats: linear bars, circular indicators, and step
 
 ```typescript
 interface ProgressCardProps {
-  title: string
-  description?: string
-  progress: number
-  progressColor?: 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple'
-  variant?: 'linear' | 'circular' | 'steps'
+  title: string;
+  description?: string;
+  progress: number;
+  progressColor?: "red" | "orange" | "yellow" | "green" | "blue" | "purple";
+  variant?: "linear" | "circular" | "steps";
   steps?: Array<{
-    label: string
-    completed: boolean
-  }>
-  showPercentage?: boolean
-  className?: string
+    label: string;
+    completed: boolean;
+  }>;
+  showPercentage?: boolean;
+  className?: string;
 }
 ```
 
@@ -806,6 +825,7 @@ interface ProgressCardProps {
 Display activity feeds, project history, and event timelines.
 
 **When to use:**
+
 - Activity feeds
 - Project history
 - Event timelines
@@ -817,16 +837,16 @@ Display activity feeds, project history, and event timelines.
 
 ```typescript
 interface TimelineEvent {
-  date: string
-  title: string
-  description: string
-  icon?: React.ReactNode
-  status?: 'completed' | 'current' | 'upcoming'
+  date: string;
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
+  status?: "completed" | "current" | "upcoming";
 }
 
 interface TimelineCardProps {
-  events: TimelineEvent[]
-  className?: string
+  events: TimelineEvent[];
+  className?: string;
 }
 ```
 
@@ -836,28 +856,28 @@ interface TimelineCardProps {
 <TimelineCard
   events={[
     {
-      date: 'Today at 2:30 PM',
-      title: 'Project Launched',
-      description: 'Your new product is now live',
-      status: 'completed',
+      date: "Today at 2:30 PM",
+      title: "Project Launched",
+      description: "Your new product is now live",
+      status: "completed",
     },
     {
-      date: 'Yesterday at 10:15 AM',
-      title: 'Design Review Complete',
-      description: 'All design assets approved',
-      status: 'completed',
+      date: "Yesterday at 10:15 AM",
+      title: "Design Review Complete",
+      description: "All design assets approved",
+      status: "completed",
     },
     {
-      date: 'Tomorrow at 3:00 PM',
-      title: 'Team Meeting',
-      description: 'Q&A session with stakeholders',
-      status: 'current',
+      date: "Tomorrow at 3:00 PM",
+      title: "Team Meeting",
+      description: "Q&A session with stakeholders",
+      status: "current",
     },
     {
-      date: 'Next Week',
-      title: 'Beta Testing Phase',
-      description: 'Open beta for early adopters',
-      status: 'upcoming',
+      date: "Next Week",
+      title: "Beta Testing Phase",
+      description: "Open beta for early adopters",
+      status: "upcoming",
     },
   ]}
 />
@@ -870,6 +890,7 @@ interface TimelineCardProps {
 Loading placeholder cards that maintain layout stability during data fetching.
 
 **When to use:**
+
 - Loading states
 - Data fetching
 - Streaming content
@@ -880,12 +901,13 @@ Loading placeholder cards that maintain layout stability during data fetching.
 
 ```typescript
 interface SkeletonCardProps {
-  variant?: 'product' | 'profile' | 'basic' | 'feature'
-  className?: string
+  variant?: "product" | "profile" | "basic" | "feature";
+  className?: string;
 }
 ```
 
 **Available Variants:**
+
 - `product` — Product card skeleton
 - `profile` — Profile card skeleton
 - `basic` — Basic card skeleton
@@ -895,33 +917,39 @@ interface SkeletonCardProps {
 
 ```tsx
 // Product loading state
-{isLoading ? (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <SkeletonCard variant="product" />
-    <SkeletonCard variant="product" />
-    <SkeletonCard variant="product" />
-  </div>
-) : (
-  <ProductGrid products={products} />
-)}
+{
+  isLoading ? (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <SkeletonCard variant="product" />
+      <SkeletonCard variant="product" />
+      <SkeletonCard variant="product" />
+    </div>
+  ) : (
+    <ProductGrid products={products} />
+  );
+}
 
 // Profile loading state
-{isLoadingProfile ? (
-  <SkeletonCard variant="profile" />
-) : (
-  <ProfileCard {...profileData} />
-)}
+{
+  isLoadingProfile ? (
+    <SkeletonCard variant="profile" />
+  ) : (
+    <ProfileCard {...profileData} />
+  );
+}
 
 // Feature list loading
-{isLoadingFeatures ? (
-  <div className="space-y-4">
-    <SkeletonCard variant="feature" />
-    <SkeletonCard variant="feature" />
-    <SkeletonCard variant="feature" />
-  </div>
-) : (
-  <FeatureList features={features} />
-)}
+{
+  isLoadingFeatures ? (
+    <div className="space-y-4">
+      <SkeletonCard variant="feature" />
+      <SkeletonCard variant="feature" />
+      <SkeletonCard variant="feature" />
+    </div>
+  ) : (
+    <FeatureList features={features} />
+  );
+}
 ```
 
 ---
@@ -931,6 +959,7 @@ interface SkeletonCardProps {
 Display when there's no content to show with guidance and action options.
 
 **When to use:**
+
 - Empty content states
 - First-time user experience
 - No search results
@@ -941,15 +970,15 @@ Display when there's no content to show with guidance and action options.
 
 ```typescript
 interface EmptyStateCardProps {
-  icon: React.ReactNode
-  title: string
-  description: string
+  icon: React.ReactNode;
+  title: string;
+  description: string;
   actionButton?: {
-    label: string
-    onClick: () => void
-    variant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  }
-  className?: string
+    label: string;
+    onClick: () => void;
+    variant?: "default" | "secondary" | "outline" | "ghost";
+  };
+  className?: string;
 }
 ```
 
@@ -1021,13 +1050,15 @@ Always validate required props before rendering:
 // ✅ Good
 function ProductGrid({ products }: { products: Product[] }) {
   if (!products || products.length === 0) {
-    return <EmptyStateCard icon={<Box />} title="No Products" />
+    return <EmptyStateCard icon={<Box />} title="No Products" />;
   }
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {products.map(p => <ProductCard key={p.id} {...p} />)}
+      {products.map((p) => (
+        <ProductCard key={p.id} {...p} />
+      ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -1038,17 +1069,19 @@ Use SkeletonCard while data is loading:
 ```tsx
 // ✅ Good
 function ProductListing() {
-  const { data, isLoading } = useProducts()
-  
+  const { data, isLoading } = useProducts();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[1, 2, 3].map(i => <SkeletonCard key={i} variant="product" />)}
+        {[1, 2, 3].map((i) => (
+          <SkeletonCard key={i} variant="product" />
+        ))}
       </div>
-    )
+    );
   }
-  
-  return <ProductGrid products={data} />
+
+  return <ProductGrid products={data} />;
 }
 ```
 
@@ -1087,8 +1120,8 @@ Handle errors gracefully with AlertCard:
 ```tsx
 // ✅ Good
 function DataDisplay() {
-  const { data, error, isLoading } = useData()
-  
+  const { data, error, isLoading } = useData();
+
   if (error) {
     return (
       <AlertCard
@@ -1097,12 +1130,12 @@ function DataDisplay() {
         description={error.message}
         dismissible
       />
-    )
+    );
   }
-  
-  if (isLoading) return <SkeletonCard />
-  
-  return <DisplayData data={data} />
+
+  if (isLoading) return <SkeletonCard />;
+
+  return <DisplayData data={data} />;
 }
 ```
 
@@ -1133,13 +1166,10 @@ Lazy load images and optimize for performance:
 
 ```tsx
 // ✅ Good - Lazy loading images
-<ProductCard
-  image={product.image}
-  {...product}
-/>
+<ProductCard image={product.image} {...product} />;
 
 // For large grids, consider virtual scrolling
-import { FixedSizeList } from 'react-window'
+import { FixedSizeList } from "react-window";
 
 <FixedSizeList
   height={600}
@@ -1152,7 +1182,7 @@ import { FixedSizeList } from 'react-window'
       <ProductCard {...products[index]} />
     </div>
   )}
-</FixedSizeList>
+</FixedSizeList>;
 ```
 
 ---
@@ -1163,10 +1193,10 @@ import { FixedSizeList } from 'react-window'
 
 ```tsx
 function ProductCatalog() {
-  const [filter, setFilter] = useState('all')
-  const [sort, setSort] = useState('newest')
-  const products = useProducts(filter, sort)
-  
+  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("newest");
+  const products = useProducts(filter, sort);
+
   if (!products.length) {
     return (
       <EmptyStateCard
@@ -1174,30 +1204,30 @@ function ProductCatalog() {
         title="No Products Found"
         description="Try adjusting your filters"
         actionButton={{
-          label: 'Clear Filters',
-          onClick: () => setFilter('all')
+          label: "Clear Filters",
+          onClick: () => setFilter("all"),
         }}
       />
-    )
+    );
   }
-  
+
   return (
     <div>
       <div className="flex gap-4 mb-8">
-        <select onChange={e => setFilter(e.target.value)}>
+        <select onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All Products</option>
           <option value="new">New</option>
           <option value="sale">On Sale</option>
         </select>
-        <select onChange={e => setSort(e.target.value)}>
+        <select onChange={(e) => setSort(e.target.value)}>
           <option value="newest">Newest</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
         </select>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map(product => (
+        {products.map((product) => (
           <ProductCard
             key={product.id}
             {...product}
@@ -1207,7 +1237,7 @@ function ProductCatalog() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -1215,10 +1245,10 @@ function ProductCatalog() {
 
 ```tsx
 function TeamDirectory() {
-  const [search, setSearch] = useState('')
-  const [department, setDepartment] = useState('all')
-  const members = useTeamMembers(search, department)
-  
+  const [search, setSearch] = useState("");
+  const [department, setDepartment] = useState("all");
+  const members = useTeamMembers(search, department);
+
   return (
     <div>
       <div className="mb-8 flex gap-4">
@@ -1226,17 +1256,17 @@ function TeamDirectory() {
           type="search"
           placeholder="Search team members..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-4 py-2 border rounded-lg"
         />
-        <select onChange={e => setDepartment(e.target.value)}>
+        <select onChange={(e) => setDepartment(e.target.value)}>
           <option value="all">All Departments</option>
           <option value="engineering">Engineering</option>
           <option value="design">Design</option>
           <option value="product">Product</option>
         </select>
       </div>
-      
+
       {!members.length ? (
         <EmptyStateCard
           icon={<Users />}
@@ -1245,7 +1275,7 @@ function TeamDirectory() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {members.map(member => (
+          {members.map((member) => (
             <ProfileCard
               key={member.id}
               avatar={member.avatar}
@@ -1253,15 +1283,15 @@ function TeamDirectory() {
               title={member.title}
               description={member.bio}
               actionButton={{
-                label: 'View Profile',
-                onClick: () => navigate(`/team/${member.id}`)
+                label: "View Profile",
+                onClick: () => navigate(`/team/${member.id}`),
               }}
             />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -1269,23 +1299,25 @@ function TeamDirectory() {
 
 ```tsx
 function Dashboard() {
-  const { stats, progress, timeline, isLoading } = useDashboard()
-  
+  const { stats, progress, timeline, isLoading } = useDashboard();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[1, 2, 3, 4].map(i => <SkeletonCard key={i} variant="feature" />)}
+        {[1, 2, 3, 4].map((i) => (
+          <SkeletonCard key={i} variant="feature" />
+        ))}
       </div>
-    )
+    );
   }
-  
+
   return (
     <div className="space-y-8">
       {/* KPI Stats */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Key Metrics</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map(stat => (
+          {stats.map((stat) => (
             <StatCard
               key={stat.id}
               title={stat.title}
@@ -1296,12 +1328,12 @@ function Dashboard() {
           ))}
         </div>
       </div>
-      
+
       {/* Progress Trackers */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Progress</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {progress.map(item => (
+          {progress.map((item) => (
             <ProgressCard
               key={item.id}
               title={item.title}
@@ -1312,14 +1344,14 @@ function Dashboard() {
           ))}
         </div>
       </div>
-      
+
       {/* Timeline */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
         <TimelineCard events={timeline} />
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -1327,29 +1359,29 @@ function Dashboard() {
 
 ```tsx
 function PricingPage() {
-  const [billingPeriod, setBillingPeriod] = useState('monthly')
-  const plans = getPricingPlans(billingPeriod)
-  
+  const [billingPeriod, setBillingPeriod] = useState("monthly");
+  const plans = getPricingPlans(billingPeriod);
+
   return (
     <div className="space-y-12">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
         <div className="flex justify-center gap-4">
           <button
-            onClick={() => setBillingPeriod('monthly')}
-            className={billingPeriod === 'monthly' ? 'font-bold' : ''}
+            onClick={() => setBillingPeriod("monthly")}
+            className={billingPeriod === "monthly" ? "font-bold" : ""}
           >
             Monthly
           </button>
           <button
-            onClick={() => setBillingPeriod('annual')}
-            className={billingPeriod === 'annual' ? 'font-bold' : ''}
+            onClick={() => setBillingPeriod("annual")}
+            className={billingPeriod === "annual" ? "font-bold" : ""}
           >
             Annual (Save 20%)
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan, idx) => (
           <PricingCard
@@ -1361,7 +1393,7 @@ function PricingPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -1369,45 +1401,45 @@ function PricingPage() {
 
 ```tsx
 function UserForm() {
-  const [formState, setFormState] = useState({})
-  const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
-  
+  const [formState, setFormState] = useState({});
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
   const handleSubmit = async () => {
-    const newErrors = validate(formState)
-    
+    const newErrors = validate(formState);
+
     if (Object.keys(newErrors).length === 0) {
-      setSubmitted(true)
+      setSubmitted(true);
       return (
         <AlertCard
           variant="success"
           title="Success!"
           description="Your form has been submitted."
         />
-      )
+      );
     }
-    
-    setErrors(newErrors)
-  }
-  
+
+    setErrors(newErrors);
+  };
+
   return (
     <div className="space-y-6">
-      {Object.keys(errors).map(field => (
+      {Object.keys(errors).map((field) => (
         <AlertCard
           key={field}
           variant="error"
           title="Validation Error"
           description={errors[field]}
           dismissible
-          onDismiss={() => setErrors(e => ({ ...e, [field]: undefined }))}
+          onDismiss={() => setErrors((e) => ({ ...e, [field]: undefined }))}
         />
       ))}
-      
+
       {/* Form fields here */}
-      
+
       <button onClick={handleSubmit}>Submit</button>
     </div>
-  )
+  );
 }
 ```
 
@@ -1424,28 +1456,30 @@ function UserForm() {
 
 ### ColorVariantCard Colors
 
-| Color | Use Case | Icon/Status |
-|-------|----------|------------|
-| Red | Critical, alerts, errors | High priority |
-| Orange | Warnings, caution | Medium priority |
-| Yellow | Highlights, tips | Attention needed |
-| Green | Success, positive actions | Complete |
-| Blue | Information, neutral (default) | Standard |
-| Indigo | Premium, professional | Exclusive |
-| Purple | Creative, innovative | New feature |
-| Pink | Friendly, approachable | Community |
-| Slate | Neutral, secondary | Background |
+| Color  | Use Case                       | Icon/Status      |
+| ------ | ------------------------------ | ---------------- |
+| Red    | Critical, alerts, errors       | High priority    |
+| Orange | Warnings, caution              | Medium priority  |
+| Yellow | Highlights, tips               | Attention needed |
+| Green  | Success, positive actions      | Complete         |
+| Blue   | Information, neutral (default) | Standard         |
+| Indigo | Premium, professional          | Exclusive        |
+| Purple | Creative, innovative           | New feature      |
+| Pink   | Friendly, approachable         | Community        |
+| Slate  | Neutral, secondary             | Background       |
 
 ---
 
 ## Browser Support
 
 All card components are built with:
+
 - React 19+
 - TypeScript
 - Tailwind CSS 4.0+
 
 Supported browsers:
+
 - Chrome/Edge (latest)
 - Firefox (latest)
 - Safari (latest)
@@ -1456,23 +1490,26 @@ Supported browsers:
 ## Performance Tips
 
 1. **Use memoization for card lists:**
+
    ```tsx
-   const MemoizedProductCard = React.memo(ProductCard)
+   const MemoizedProductCard = React.memo(ProductCard);
    ```
 
 2. **Lazy load images:**
+
    ```tsx
    <img src={image} loading="lazy" alt={alt} />
    ```
 
 3. **Virtual scrolling for large lists:**
+
    ```tsx
-   import { FixedSizeList } from 'react-window'
+   import { FixedSizeList } from "react-window";
    ```
 
 4. **Code splitting for card components:**
    ```tsx
-   const ProductCard = React.lazy(() => import('./ProductCard'))
+   const ProductCard = React.lazy(() => import("./ProductCard"));
    ```
 
 ---

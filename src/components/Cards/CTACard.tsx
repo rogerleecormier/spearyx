@@ -1,13 +1,19 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface CTACardProps {
-  title: string
-  description: string
-  buttonText: string
-  onButtonClick?: () => void
-  buttonVariant?: 'default' | 'secondary' | 'outline' | 'ghost'
-  className?: string
+  title: string;
+  description: string;
+  buttonText: string;
+  onButtonClick?: () => void;
+  buttonVariant?: "default" | "secondary" | "outline" | "ghost";
+  className?: string;
 }
 
 export function CTACard({
@@ -15,8 +21,8 @@ export function CTACard({
   description,
   buttonText,
   onButtonClick,
-  buttonVariant = 'default',
-  className = '',
+  buttonVariant = "default",
+  className = "",
 }: CTACardProps) {
   return (
     <Card className={className}>
@@ -30,5 +36,5 @@ export function CTACard({
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }
