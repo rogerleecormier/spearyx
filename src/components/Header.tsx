@@ -26,6 +26,8 @@ export default function Header() {
     setIsOpen(false);
   };
 
+  const isDev = import.meta.env.DEV;
+
   return (
     <header className="border-b bg-white">
       <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
@@ -36,41 +38,43 @@ export default function Header() {
             className="h-8 w-auto"
           />
         </Link>
-        <div className="relative" ref={dropdownRef}>
-          <Button
-            variant="outline"
-            className="text-slate-900"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <Layers size={20} />
-            <span className="hidden sm:inline ml-2">Components</span>
-            <ChevronDown
-              size={16}
-              className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
-            />
-          </Button>
+        {isDev && (
+          <div className="relative" ref={dropdownRef}>
+            <Button
+              variant="outline"
+              className="text-slate-900"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              <Layers size={20} />
+              <span className="hidden sm:inline ml-2">Components</span>
+              <ChevronDown
+                size={16}
+                className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+            </Button>
 
-          {isOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-              <Link
-                to="/cards"
-                onClick={handleLinkClick}
-                className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-              >
-                <Layers size={18} className="mr-2 text-primary-500" />
-                <span>Card Library</span>
-              </Link>
-              <Link
-                to="/typography"
-                onClick={handleLinkClick}
-                className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-              >
-                <Layers size={18} className="mr-2 text-primary-500" />
-                <span>Typography</span>
-              </Link>
-            </div>
-          )}
-        </div>
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                <Link
+                  to="/cards"
+                  onClick={handleLinkClick}
+                  className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                >
+                  <Layers size={18} className="mr-2 text-primary-500" />
+                  <span>Card Library</span>
+                </Link>
+                <Link
+                  to="/typography"
+                  onClick={handleLinkClick}
+                  className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                >
+                  <Layers size={18} className="mr-2 text-primary-500" />
+                  <span>Typography</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

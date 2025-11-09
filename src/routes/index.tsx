@@ -67,10 +67,10 @@ function App() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <button
-              onClick={() => setShowEarlyAccessModal(true)}
-              className="px-8 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 flex items-center gap-2 hover:scale-105"
+              disabled
+              className="px-8 py-3 bg-gray-400 text-white rounded-lg font-semibold cursor-not-allowed flex items-center gap-2 opacity-75"
             >
-              Get Early Access
+              Waitlist Coming Soon
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
@@ -259,10 +259,10 @@ function App() {
           </Body>
 
           <button
-            onClick={() => setShowEarlyAccessModal(true)}
-            className="px-8 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 inline-flex items-center gap-2 hover:scale-105"
+            disabled
+            className="px-8 py-3 bg-gray-400 text-white rounded-lg font-semibold cursor-not-allowed inline-flex items-center gap-2 opacity-75"
           >
-            Join the Waitlist
+            Waitlist Coming Soon
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
