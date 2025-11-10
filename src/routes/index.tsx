@@ -55,14 +55,15 @@ function App() {
             AI-Powered Precision Project Management
           </Hero>
 
-            <Body
-              size="lg"
-              className="text-slate-700 mb-12 max-w-2xl mx-auto leading-relaxed"
-            >
-              Project Managers are the tip of the spear — we arm you with AI-driven
-              precision tools to delivery strategic clarity to every project. Replace
-              your spreadsheets and hit your delivery targets with confidence.
-            </Body>
+          <Body
+            size="lg"
+            className="text-slate-700 mb-12 max-w-2xl mx-auto leading-relaxed"
+          >
+            Project Managers are the tip of the spear — we arm you with
+            AI-driven precision tools to delivery strategic clarity to every
+            project. Replace your spreadsheets and hit your delivery targets
+            with confidence.
+          </Body>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
