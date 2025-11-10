@@ -90,7 +90,9 @@ export default function RaciGeneratorPage() {
       <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-          <Body size="sm" className="mt-4 text-slate-600">Loading chart...</Body>
+          <Body size="sm" className="mt-4 text-slate-600">
+            Loading chart...
+          </Body>
         </div>
       </main>
     );
@@ -113,7 +115,10 @@ export default function RaciGeneratorPage() {
               {!validation.isValid && (
                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium">{validation.errors.length} issue{validation.errors.length !== 1 ? 's' : ''}</span>
+                  <span className="font-medium">
+                    {validation.errors.length} issue
+                    {validation.errors.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
               )}
               {validation.isValid && (
@@ -133,7 +138,9 @@ export default function RaciGeneratorPage() {
                 {!isSaving && lastSaved && (
                   <>
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span>Saved {new Date(lastSaved).toLocaleTimeString()}</span>
+                    <span>
+                      Saved {new Date(lastSaved).toLocaleTimeString()}
+                    </span>
                   </>
                 )}
               </div>
@@ -155,7 +162,9 @@ export default function RaciGeneratorPage() {
                     <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       1
                     </div>
-                    <CardTitle className="text-lg text-black">Chart Details</CardTitle>
+                    <CardTitle className="text-lg text-black">
+                      Chart Details
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -176,7 +185,9 @@ export default function RaciGeneratorPage() {
                     <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       2
                     </div>
-                    <CardTitle className="text-lg text-black">Description</CardTitle>
+                    <CardTitle className="text-lg text-black">
+                      Description
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -241,18 +252,19 @@ export default function RaciGeneratorPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Card className="border-slate-200 shadow-sm">
                   <CardHeader className="pb-3">
-                    <Label className="text-slate-700 font-semibold">Theme</Label>
+                    <Label className="text-slate-700 font-semibold">
+                      Theme
+                    </Label>
                   </CardHeader>
                   <CardContent>
-                    <ThemeSelector
-                      theme={chart.theme}
-                      onChange={updateTheme}
-                    />
+                    <ThemeSelector theme={chart.theme} onChange={updateTheme} />
                   </CardContent>
                 </Card>
                 <Card className="border-slate-200 shadow-sm">
                   <CardHeader className="pb-3">
-                    <Label className="text-slate-700 font-semibold">Export</Label>
+                    <Label className="text-slate-700 font-semibold">
+                      Export
+                    </Label>
                   </CardHeader>
                   <CardContent>
                     <ExportButtons />
@@ -263,7 +275,9 @@ export default function RaciGeneratorPage() {
               {/* Danger Zone */}
               <Card className="border-red-200 bg-red-50 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-base text-red-600">Danger Zone</CardTitle>
+                  <CardTitle className="text-base text-red-600">
+                    Danger Zone
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResetControls
@@ -285,7 +299,14 @@ export default function RaciGeneratorPage() {
               </Body>
               {chart.roles.length > 0 && chart.tasks.length > 0 && (
                 <Body size="sm" className="text-slate-500 mt-2">
-                  <span className="font-semibold text-red-600">{chart.roles.length}</span> roles × <span className="font-semibold text-red-600">{chart.tasks.length}</span> tasks
+                  <span className="font-semibold text-red-600">
+                    {chart.roles.length}
+                  </span>{" "}
+                  roles ×{" "}
+                  <span className="font-semibold text-red-600">
+                    {chart.tasks.length}
+                  </span>{" "}
+                  tasks
                 </Body>
               )}
             </div>
@@ -294,10 +315,7 @@ export default function RaciGeneratorPage() {
             {chart.roles.length > 0 && chart.tasks.length > 0 ? (
               <Card className="border-slate-200 shadow-sm">
                 <CardContent className="p-6">
-                  <RaciMatrixEditor
-                    chart={chart}
-                    onChange={setChart}
-                  />
+                  <RaciMatrixEditor chart={chart} onChange={setChart} />
                 </CardContent>
               </Card>
             ) : (
@@ -308,7 +326,8 @@ export default function RaciGeneratorPage() {
                     Matrix Preview
                   </Headline>
                   <Body size="sm" className="text-slate-600 mt-2 max-w-sm">
-                    Add at least one role and one task to see your RACI matrix in action.
+                    Add at least one role and one task to see your RACI matrix
+                    in action.
                   </Body>
                 </CardContent>
               </Card>
@@ -319,7 +338,9 @@ export default function RaciGeneratorPage() {
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
                   <Info className="w-5 h-5 text-blue-600" />
-                  <CardTitle className="text-base text-slate-900">Tips for Success</CardTitle>
+                  <CardTitle className="text-base text-slate-900">
+                    Tips for Success
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
@@ -330,11 +351,23 @@ export default function RaciGeneratorPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-600 font-bold">•</span>
-                    <span>Use keyboard navigation: <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded">Tab</kbd> to move, <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded">Esc</kbd> to cancel</span>
+                    <span>
+                      Use keyboard navigation:{" "}
+                      <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded">
+                        Tab
+                      </kbd>{" "}
+                      to move,{" "}
+                      <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded">
+                        Esc
+                      </kbd>{" "}
+                      to cancel
+                    </span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-600 font-bold">•</span>
-                    <span>Click the up/down arrows or drag to reorder items</span>
+                    <span>
+                      Click the up/down arrows or drag to reorder items
+                    </span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-600 font-bold">•</span>

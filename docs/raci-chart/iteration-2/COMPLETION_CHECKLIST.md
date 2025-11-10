@@ -9,6 +9,7 @@
 ## ✅ Pre-Implementation Checklist
 
 ### Prerequisites
+
 - [x] Iteration 1 complete and tested
 - [x] All Iteration 1 components working
 - [x] TypeScript types defined
@@ -16,6 +17,7 @@
 - [x] Development environment running
 
 ### Documentation Review
+
 - [ ] Read START_HERE.md
 - [ ] Read INDEX.md
 - [ ] Read ARCHITECTURE.md
@@ -29,6 +31,7 @@
 ### Phase 1: State Management (Estimated: 8 hours)
 
 #### lib/raci/state.ts Creation
+
 - [ ] File created at `src/lib/raci/state.ts`
 - [ ] `RaciAction` union type defined
 - [ ] `RaciReducer` function implemented
@@ -49,6 +52,7 @@
 - [ ] No TypeScript errors
 
 #### useRaciState Hook Creation
+
 - [ ] Hook created in appropriate location (e.g., `src/lib/raci/hooks.ts`)
 - [ ] Uses `useReducer` internally
 - [ ] Convenience methods created:
@@ -68,6 +72,7 @@
 - [ ] No console errors
 
 #### lib/raci/persistence.ts Creation
+
 - [ ] File created at `src/lib/raci/persistence.ts`
 - [ ] `saveToLocalStorage(chart: RaciChart)` implemented
 - [ ] `loadFromLocalStorage()` implemented with version check
@@ -79,6 +84,7 @@
 - [ ] Silent failures (no console noise for auto-save)
 
 #### useAutoSave Hook Creation
+
 - [ ] Hook created and exported
 - [ ] Takes `chart` and optional `key` parameter
 - [ ] Debounces saves (5 second minimum)
@@ -89,6 +95,7 @@
 - [ ] No infinite loops
 
 #### State Management Testing
+
 - [ ] Reducer dispatches work correctly
 - [ ] State updates are immutable
 - [ ] All actions tested manually
@@ -102,6 +109,7 @@
 ### Phase 2: Validation Layer (Estimated: 8 hours)
 
 #### lib/raci/validation.ts Creation
+
 - [ ] File created at `src/lib/raci/validation.ts`
 - [ ] `ValidationError` type defined
 - [ ] `ValidationWarning` type defined
@@ -109,43 +117,39 @@
 - [ ] Error codes enum created
 
 #### Validation Functions
+
 - [ ] `validateRoleName(name: string): ValidationError[]`
   - [ ] Rejects empty strings
   - [ ] Rejects duplicates (case-insensitive)
   - [ ] Rejects names > 50 chars
   - [ ] Returns meaningful error messages
-  
 - [ ] `validateTaskName(name: string, existing: string[]): ValidationError[]`
   - [ ] Rejects empty strings
   - [ ] Rejects duplicates (case-insensitive)
   - [ ] Rejects names > 100 chars
   - [ ] Returns meaningful error messages
-  
 - [ ] `validateTaskDescription(description?: string): ValidationError[]`
   - [ ] Allows empty (optional)
   - [ ] Rejects > 500 chars
   - [ ] Validates special characters
-  
 - [ ] `validateTitle(title: string): ValidationError[]`
   - [ ] Rejects empty
   - [ ] Rejects > 100 chars
   - [ ] Validates special characters
-  
 - [ ] `validateLogo(file: File | string): ValidationError[]`
   - [ ] Validates file type (PNG, JPG, SVG)
   - [ ] Validates file size (max 5MB)
   - [ ] Validates base64 encoding
-  
 - [ ] `validateChart(chart: RaciChart): ValidationResult`
   - [ ] Calls all individual validators
   - [ ] Combines all errors
   - [ ] Returns comprehensive result
-  
 - [ ] `getErrorMessage(code: string): string`
   - [ ] Returns localized/friendly error text
   - [ ] Maps error codes to messages
 
 #### useValidation Hook Creation
+
 - [ ] Hook created and exported
 - [ ] Takes `chart: RaciChart` as parameter
 - [ ] Returns `ValidationResult` object
@@ -154,6 +158,7 @@
 - [ ] Provides `getFieldError(field: string)` method
 
 #### Types/raci.ts Updates
+
 - [ ] `ValidationError` interface added
   ```typescript
   interface ValidationError {
@@ -176,6 +181,7 @@
 - [ ] All TypeScript types properly exported
 
 #### Validation Testing
+
 - [ ] Role name validation works for all cases
 - [ ] Task name validation works for all cases
 - [ ] Title validation works
@@ -190,6 +196,7 @@
 ### Phase 3: Component Implementation (Estimated: 20 hours)
 
 #### RaciHeaderBar (Enhanced)
+
 - [ ] Component updated at `src/components/raci/RaciHeaderBar.tsx`
 - [ ] Props interface defined:
   ```typescript
@@ -239,8 +246,10 @@
   - [ ] No console errors
 
 #### RolesEditor (NEW)
+
 - [ ] Component created at `src/components/raci/RolesEditor.tsx`
 - [ ] Props interface defined:
+
   ```typescript
   interface RolesEditorProps {
     roles: RaciRole[];
@@ -318,8 +327,10 @@
   - [ ] No console errors
 
 #### TasksEditor (NEW)
+
 - [ ] Component created at `src/components/raci/TasksEditor.tsx`
 - [ ] Props interface defined:
+
   ```typescript
   interface TasksEditorProps {
     tasks: RaciTask[];
@@ -402,8 +413,10 @@
   - [ ] No console errors
 
 #### ErrorModal (Enhanced)
+
 - [ ] Component updated at `src/components/raci/ErrorModal.tsx`
 - [ ] Props interface:
+
   ```typescript
   interface ErrorModalProps {
     isOpen: boolean;
@@ -452,8 +465,10 @@
   - [ ] Multiple errors display correctly
 
 #### ResetControls (Enhanced)
+
 - [ ] Component updated at `src/components/raci/ResetControls.tsx`
 - [ ] Props interface:
+
   ```typescript
   interface ResetControlsProps {
     onReset: () => void;
@@ -499,6 +514,7 @@
   - [ ] onReset called on confirmation
 
 #### RaciGeneratorPage (Enhanced)
+
 - [ ] Component updated at `src/components/raci/RaciGeneratorPage.tsx`
 - [ ] State Initialization
   - [ ] Initialize state using `useRaciState()`
@@ -560,6 +576,7 @@
 ### Phase 4: Keyboard Navigation & Polish (Estimated: 4 hours)
 
 #### useKeyboardNav Hook Creation
+
 - [ ] Hook created at `src/lib/raci/hooks.ts` (or appropriate location)
 - [ ] `handleEsc(callback)` method
   - [ ] Returns event handler
@@ -576,6 +593,7 @@
   - [ ] Calls callback on Shift+Tab
 
 #### Keyboard Navigation Testing
+
 - [ ] Tab navigation flows logically
 - [ ] Shift+Tab navigates backward
 - [ ] Esc closes all modals/dialogs
@@ -585,6 +603,7 @@
 - [ ] Works in all browsers
 
 #### Visual Polish
+
 - [ ] Focus indicators clearly visible
 - [ ] Error states visually distinct
 - [ ] Loading states clear
@@ -593,6 +612,7 @@
 - [ ] Responsive layout tested
 
 #### Cross-browser Testing
+
 - [ ] Chrome/Edge works
 - [ ] Firefox works
 - [ ] Safari works
@@ -604,6 +624,7 @@
 ### Phase 5: Testing & QA (Estimated varies)
 
 #### Feature Testing
+
 - [ ] All CRUD operations work without errors
 - [ ] State persists across page reload
 - [ ] Validation errors prevent bad data
@@ -611,6 +632,7 @@
 - [ ] Undo/reset works (if implemented)
 
 #### Unit Test Coverage (Recommended)
+
 - [ ] `validateRoleName()` - all cases
 - [ ] `validateTaskName()` - all cases
 - [ ] State reducer - all actions
@@ -619,6 +641,7 @@
 - [ ] `TasksEditor` CRUD operations
 
 #### Integration Testing
+
 - [ ] Full CRUD workflow for roles
 - [ ] Full CRUD workflow for tasks
 - [ ] State consistency across reload
@@ -626,6 +649,7 @@
 - [ ] Error modal shows correctly
 
 #### E2E Testing
+
 - [ ] Add role → displays → edit → delete (workflow)
 - [ ] Add task → displays → edit → delete (workflow)
 - [ ] Title edit → auto-saves → reload preserves
@@ -633,6 +657,7 @@
 - [ ] Reset → confirmation → clears data
 
 #### Accessibility Testing (WCAG 2.1 AA)
+
 - [ ] **Keyboard Navigation**
   - [ ] Tab through all controls
   - [ ] Shift+Tab backward
@@ -666,6 +691,7 @@
   - [ ] Touch targets ≥48px × 48px
 
 #### Performance Testing
+
 - [ ] 100+ roles: No noticeable lag
 - [ ] 100+ tasks: No noticeable lag
 - [ ] Rapid CRUD: Smooth (no jank)
@@ -673,6 +699,7 @@
 - [ ] Memory usage: No leaks on repeated edits
 
 #### Browser Testing
+
 - [ ] Chrome 120+ ✅
 - [ ] Firefox 121+ ✅
 - [ ] Safari 17+ ✅
@@ -685,6 +712,7 @@
 ## 📊 Code Quality Checklist
 
 ### TypeScript
+
 - [ ] No TypeScript errors (`tsc --noEmit`)
 - [ ] No `any` types used
 - [ ] All function parameters typed
@@ -692,6 +720,7 @@
 - [ ] No unsafe casts
 
 ### Code Style
+
 - [ ] Follows project conventions
 - [ ] Consistent naming (camelCase, PascalCase)
 - [ ] JSDoc comments on all exports
@@ -699,6 +728,7 @@
 - [ ] No commented-out code
 
 ### Performance
+
 - [ ] No unnecessary re-renders
 - [ ] `useCallback` used for event handlers
 - [ ] `useMemo` used for expensive computations
@@ -706,12 +736,14 @@
 - [ ] Event listeners cleaned up
 
 ### Error Handling
+
 - [ ] All error cases handled
 - [ ] No unhandled promise rejections
 - [ ] Error messages helpful
 - [ ] Graceful degradation (localStorage full, etc.)
 
 ### Accessibility
+
 - [ ] WCAG 2.1 AA compliant
 - [ ] ARIA labels present
 - [ ] Keyboard accessible
@@ -719,6 +751,7 @@
 - [ ] Focus management correct
 
 ### Documentation
+
 - [ ] README updated with new features
 - [ ] JSDoc comments clear
 - [ ] Prop types documented
@@ -729,6 +762,7 @@
 ## ✅ Final Sign-Off Checklist
 
 ### Before Marking Complete
+
 - [ ] All features implemented and tested
 - [ ] All code reviewed (no `any` types, good patterns)
 - [ ] All accessibility requirements met
@@ -738,6 +772,7 @@
 - [ ] Ready for Iteration 3
 
 ### Sign-Off
+
 - **Implementation Status**: [ ] COMPLETE
 - **Code Review Status**: [ ] PASSED
 - **Testing Status**: [ ] PASSED

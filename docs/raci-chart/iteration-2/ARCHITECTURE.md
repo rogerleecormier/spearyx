@@ -209,23 +209,23 @@ RaciGeneratorPage (state provider)
 │  └─ Props: { description, onDescriptionChange, validation }
 │
 ├─ RolesEditor
-│  └─ Props: { 
-│      roles, 
-│      onAddRole, 
-│      onEditRole, 
-│      onDeleteRole, 
-│      onReorderRoles, 
-│      validation 
+│  └─ Props: {
+│      roles,
+│      onAddRole,
+│      onEditRole,
+│      onDeleteRole,
+│      onReorderRoles,
+│      validation
 │    }
 │
 ├─ TasksEditor
-│  └─ Props: { 
-│      tasks, 
-│      onAddTask, 
-│      onEditTask, 
-│      onDeleteTask, 
-│      onReorderTasks, 
-│      validation 
+│  └─ Props: {
+│      tasks,
+│      onAddTask,
+│      onEditTask,
+│      onDeleteTask,
+│      onReorderTasks,
+│      validation
 │    }
 │
 ├─ ThemeSelector
@@ -251,6 +251,7 @@ RaciGeneratorPage (state provider)
 ### Props Data Types
 
 #### From Parent to Child
+
 ```typescript
 // RaciHeaderBar receives:
 {
@@ -277,6 +278,7 @@ RaciGeneratorPage (state provider)
 ```
 
 #### From Child to Parent (Event Handlers)
+
 ```typescript
 // RolesEditor calls:
 onAddRole("Product Manager")
@@ -348,6 +350,7 @@ If valid:
 ### Validation Rules
 
 #### Role Validation
+
 ```
 Rule 1: Not empty
   - Error: "Role name cannot be empty"
@@ -365,6 +368,7 @@ Result: isValid = all rules pass
 ```
 
 #### Task Validation
+
 ```
 Rule 1: Name not empty
   - Error: "Task name cannot be empty"
@@ -386,6 +390,7 @@ Result: isValid = all rules pass
 ```
 
 #### Logo Validation
+
 ```
 Rule 1: File type allowed (PNG, JPG, SVG)
   - Error: "Invalid file type (only PNG, JPG, SVG)"
@@ -589,20 +594,26 @@ Focus Visible Indicator:
 ### RaciAction Union Type
 
 ```typescript
-type RaciAction = 
+type RaciAction =
   | { type: "addRole"; payload: { name: string } }
   | { type: "editRole"; payload: { id: string; name: string } }
   | { type: "deleteRole"; payload: { id: string } }
   | { type: "reorderRoles"; payload: { roles: RaciRole[] } }
   | { type: "addTask"; payload: { name: string; description?: string } }
-  | { type: "editTask"; payload: { id: string; name: string; description?: string } }
+  | {
+      type: "editTask";
+      payload: { id: string; name: string; description?: string };
+    }
   | { type: "deleteTask"; payload: { id: string } }
   | { type: "reorderTasks"; payload: { tasks: RaciTask[] } }
   | { type: "updateTitle"; payload: { title: string } }
   | { type: "updateLogo"; payload: { logo?: string } }
-  | { type: "updateMatrix"; payload: { matrix: Record<string, Record<string, RaciValue>> } }
+  | {
+      type: "updateMatrix";
+      payload: { matrix: Record<string, Record<string, RaciValue>> };
+    }
   | { type: "reset" }
-  | { type: "setState"; payload: { chart: RaciChart } }
+  | { type: "setState"; payload: { chart: RaciChart } };
 ```
 
 ### Reducer Implementation Pattern
@@ -614,28 +625,28 @@ function raciReducer(state: RaciChart, action: RaciAction): RaciChart {
       const newRole: RaciRole = {
         id: generateUUID(),
         name: action.payload.name,
-        order: state.roles.length
+        order: state.roles.length,
       };
-      
+
       return {
         ...state,
         roles: [...state.roles, newRole],
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
     }
-    
+
     case "deleteRole": {
       return {
         ...state,
-        roles: state.roles.filter(r => r.id !== action.payload.id),
-        updatedAt: new Date().toISOString()
+        roles: state.roles.filter((r) => r.id !== action.payload.id),
+        updatedAt: new Date().toISOString(),
       };
     }
-    
+
     case "reset": {
       return createInitialChart();
     }
-    
+
     default:
       return state;
   }
@@ -709,13 +720,14 @@ Critical Error:
 ✅ Error modal showing errors  
 ✅ Page reload preserves state  
 ✅ No TypeScript errors  
-✅ No console errors  
+✅ No console errors
 
 ### Ready for Iteration 3
+
 ✅ Solid state foundation  
 ✅ Reliable persistence  
 ✅ Trustworthy validation  
-✅ Good UX (keyboard nav, error handling)  
+✅ Good UX (keyboard nav, error handling)
 
 ---
 

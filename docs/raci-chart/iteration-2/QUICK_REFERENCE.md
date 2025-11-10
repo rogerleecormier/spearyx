@@ -9,6 +9,7 @@
 ## 🎯 Implementation Checklist Quick View
 
 ### Phase 1: State Management
+
 ```
 lib/raci/state.ts
 ├─ RaciAction type
@@ -34,6 +35,7 @@ useAutoSave hook
 ```
 
 ### Phase 2: Validation
+
 ```
 lib/raci/validation.ts
 ├─ validateRoleName()
@@ -55,6 +57,7 @@ ValidationError type
 ```
 
 ### Phase 3: Components
+
 ```
 RaciHeaderBar - Title + Logo
 ├─ Props: {title, logo, onTitleChange, onLogoChange, validation}
@@ -83,6 +86,7 @@ RaciGeneratorPage - Main integration
 ```
 
 ### Phase 4: Keyboard Navigation
+
 ```
 useKeyboardNav hook
 ├─ handleEsc(callback)
@@ -100,9 +104,10 @@ Focus management
 ## 💻 Code Patterns
 
 ### Reducer Pattern
+
 ```typescript
 // Define action type
-type MyAction = 
+type MyAction =
   | { type: "add"; payload: { name: string } }
   | { type: "delete"; payload: { id: string } };
 
@@ -112,7 +117,10 @@ function reducer(state: State, action: MyAction): State {
     case "add":
       return { ...state, items: [...state.items, newItem] };
     case "delete":
-      return { ...state, items: state.items.filter(i => i.id !== action.payload.id) };
+      return {
+        ...state,
+        items: state.items.filter((i) => i.id !== action.payload.id),
+      };
     default:
       return state;
   }
@@ -121,34 +129,36 @@ function reducer(state: State, action: MyAction): State {
 // Use in hook
 function useMyHook() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  
+
   return {
     state,
     add: (name) => dispatch({ type: "add", payload: { name } }),
-    delete: (id) => dispatch({ type: "delete", payload: { id } })
+    delete: (id) => dispatch({ type: "delete", payload: { id } }),
   };
 }
 ```
 
 ### Form Submission Pattern
+
 ```typescript
 function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
-  
+
   const value = inputRef.current?.value.trim();
-  
+
   // Validate
-  if (!value) return;  // Error shown by validation hook
-  
+  if (!value) return; // Error shown by validation hook
+
   // Call handler
   onAdd(value);
-  
+
   // Clear
   inputRef.current!.value = "";
 }
 ```
 
 ### Confirmation Dialog Pattern
+
 ```typescript
 function handleDelete(id: string) {
   // Show confirmation
@@ -168,6 +178,7 @@ function handleCancel() {
 ```
 
 ### localStorage Pattern
+
 ```typescript
 // Save
 localStorage.setItem("key", JSON.stringify(data));
@@ -185,15 +196,16 @@ if (parsed?.version === CURRENT_VERSION) {
 ```
 
 ### Debounce Pattern
+
 ```typescript
 function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(timer);
   }, [value, delay]);
-  
+
   return debouncedValue;
 }
 
@@ -224,6 +236,7 @@ Space (on button)  → Click
 ## 🎨 Component Props Quick Lookup
 
 ### RaciHeaderBar
+
 ```typescript
 {
   title: string;
@@ -235,6 +248,7 @@ Space (on button)  → Click
 ```
 
 ### RolesEditor
+
 ```typescript
 {
   roles: RaciRole[];
@@ -247,6 +261,7 @@ Space (on button)  → Click
 ```
 
 ### TasksEditor
+
 ```typescript
 {
   tasks: RaciTask[];
@@ -259,6 +274,7 @@ Space (on button)  → Click
 ```
 
 ### ErrorModal
+
 ```typescript
 {
   isOpen: boolean;
@@ -272,6 +288,7 @@ Space (on button)  → Click
 ```
 
 ### ResetControls
+
 ```typescript
 {
   onReset: () => void;
@@ -307,15 +324,17 @@ STORAGE_QUOTA        → "Storage quota exceeded"
 ## 📊 Type Definitions Cheatsheet
 
 ### RaciRole
+
 ```typescript
 {
-  id: string;        // UUID
-  name: string;      // e.g., "Product Manager"
-  order: number;     // 0, 1, 2, ... (for positioning)
+  id: string; // UUID
+  name: string; // e.g., "Product Manager"
+  order: number; // 0, 1, 2, ... (for positioning)
 }
 ```
 
 ### RaciTask
+
 ```typescript
 {
   id: string;        // UUID
@@ -326,6 +345,7 @@ STORAGE_QUOTA        → "Storage quota exceeded"
 ```
 
 ### RaciChart
+
 ```typescript
 {
   id: string;
@@ -343,6 +363,7 @@ STORAGE_QUOTA        → "Storage quota exceeded"
 ```
 
 ### ValidationResult
+
 ```typescript
 {
   isValid: boolean;
@@ -353,12 +374,13 @@ STORAGE_QUOTA        → "Storage quota exceeded"
 ```
 
 ### ValidationError
+
 ```typescript
 {
-  field: string;       // e.g., "title", "roles"
-  message: string;     // User-friendly text
+  field: string; // e.g., "title", "roles"
+  message: string; // User-friendly text
   severity: "error" | "warning";
-  code: string;        // e.g., "ROLE_EMPTY"
+  code: string; // e.g., "ROLE_EMPTY"
 }
 ```
 
@@ -425,6 +447,7 @@ Styles:
 ## 🧪 Testing Checklist Quick View
 
 ### CRUD Operations
+
 - [ ] Add role: works
 - [ ] Edit role: works
 - [ ] Delete role: works
@@ -435,6 +458,7 @@ Styles:
 - [ ] Reorder tasks: works
 
 ### Validation
+
 - [ ] Role empty: error shown
 - [ ] Role duplicate: error shown
 - [ ] Task empty: error shown
@@ -443,12 +467,14 @@ Styles:
 - [ ] Logo wrong type: error shown
 
 ### Persistence
+
 - [ ] State saves to localStorage
 - [ ] Page reload: state restored
 - [ ] Clear localStorage: default template used
 - [ ] Corruption: recovered gracefully
 
 ### Keyboard
+
 - [ ] Tab: navigates forward
 - [ ] Shift+Tab: navigates backward
 - [ ] Esc: closes dialogs
@@ -456,6 +482,7 @@ Styles:
 - [ ] No keyboard traps
 
 ### Accessibility
+
 - [ ] Screen reader announces form labels
 - [ ] Focus visible on all inputs
 - [ ] Error messages announced
@@ -486,6 +513,7 @@ Styles:
 ## 🔗 External References
 
 ### React Hooks
+
 - `useReducer` - State management
 - `useEffect` - Side effects
 - `useCallback` - Memoize callbacks
@@ -494,12 +522,14 @@ Styles:
 - `useContext` - Shared state
 
 ### Web APIs
+
 - `localStorage.getItem/setItem` - Persistence
 - `JSON.stringify/parse` - Serialization
 - `FileReader.readAsDataURL()` - File to base64
 - `Array.filter/map/sort` - Array operations
 
 ### Accessibility
+
 - WCAG 2.1 Level AA - Standards
 - ARIA attributes - Semantic markup
 - Focus management - Keyboard nav

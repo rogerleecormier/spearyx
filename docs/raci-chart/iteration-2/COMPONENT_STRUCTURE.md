@@ -9,16 +9,19 @@
 ## 📐 RaciHeaderBar Component
 
 ### Purpose
+
 Display and edit the chart title and logo.
 
 ### File Location
+
 `src/components/raci/RaciHeaderBar.tsx`
 
 ### Props Interface
+
 ```typescript
 interface RaciHeaderBarProps {
   title: string;
-  logo?: string;  // Base64 encoded
+  logo?: string; // Base64 encoded
   onTitleChange: (title: string) => void;
   onLogoChange: (logo: string) => void;
   validation: ValidationResult;
@@ -26,6 +29,7 @@ interface RaciHeaderBarProps {
 ```
 
 ### Sub-Components
+
 ```
 RaciHeaderBar
 ├─ Title Section
@@ -45,10 +49,11 @@ RaciHeaderBar
 ### Event Handlers
 
 #### Title Input
+
 ```typescript
 function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
   const newTitle = e.target.value;
-  
+
   // Optional: validate locally
   if (newTitle.length <= 100) {
     onTitleChange(newTitle);
@@ -57,17 +62,18 @@ function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
 ```
 
 #### Logo File Input
+
 ```typescript
 function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
   const file = e.target.files?.[0];
-  
+
   if (!file) return;
-  
+
   // Validate file
   const reader = new FileReader();
   reader.onload = (event) => {
     const base64 = event.target?.result as string;
-    onLogoChange(base64);  // Pass base64 to parent
+    onLogoChange(base64); // Pass base64 to parent
   };
   reader.readAsDataURL(file);
 }
@@ -76,6 +82,7 @@ function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
 ### Accessibility
 
 **ARIA Labels**
+
 ```typescript
 <input
   aria-label="Chart title"
@@ -92,12 +99,14 @@ function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
 ```
 
 **Keyboard Navigation**
+
 - Tab: Focus title input
 - Tab: Focus logo input
 - Tab: Focus remove button (if logo present)
 - Tab: Loop back to start
 
 **Focus Indicators**
+
 - All inputs show focus ring
 - Remove button shows focus ring
 
@@ -106,12 +115,15 @@ function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
 ## 📐 RolesEditor Component
 
 ### Purpose
+
 CRUD operations for roles (Add, Edit, Delete, Reorder).
 
 ### File Location
+
 `src/components/raci/RolesEditor.tsx`
 
 ### Props Interface
+
 ```typescript
 interface RolesEditorProps {
   roles: RaciRole[];
@@ -124,6 +136,7 @@ interface RolesEditorProps {
 ```
 
 ### Sub-Components
+
 ```
 RolesEditor
 ├─ Add Role Section
@@ -147,65 +160,69 @@ RolesEditor
 ### Event Handlers
 
 #### Add Role
+
 ```typescript
 function handleAddRole(e: React.FormEvent) {
   e.preventDefault();
-  
+
   const name = inputRef.current?.value.trim();
-  
+
   if (!name) {
     // Component shows error from validation
     return;
   }
-  
+
   onAddRole(name);
-  inputRef.current!.value = "";  // Clear input
+  inputRef.current!.value = ""; // Clear input
 }
 ```
 
 #### Edit Role
+
 ```typescript
 function handleEditRole(id: string, newName: string) {
   if (!newName.trim()) return;
-  
+
   onEditRole(id, newName.trim());
-  setEditingId(null);  // Exit edit mode
+  setEditingId(null); // Exit edit mode
 }
 
 function handleEditKeyDown(e: React.KeyboardEvent, id: string) {
   if (e.key === "Enter") {
     handleEditRole(id, e.currentTarget.value);
   } else if (e.key === "Escape") {
-    setEditingId(null);  // Cancel edit
+    setEditingId(null); // Cancel edit
   }
 }
 ```
 
 #### Delete Role
+
 ```typescript
 function handleDeleteRole(id: string) {
-  setConfirmDelete(id);  // Show confirmation
+  setConfirmDelete(id); // Show confirmation
 }
 
 function handleConfirmDelete(id: string) {
   onDeleteRole(id);
-  setConfirmDelete(null);  // Close confirmation
+  setConfirmDelete(null); // Close confirmation
 }
 
 function handleCancelDelete() {
-  setConfirmDelete(null);  // Close without deleting
+  setConfirmDelete(null); // Close without deleting
 }
 ```
 
 #### Reorder Roles
+
 ```typescript
 function handleReorderRoles(newRoles: RaciRole[]) {
   // Update order property if using arrow buttons
   const reorderedRoles = newRoles.map((role, idx) => ({
     ...role,
-    order: idx
+    order: idx,
   }));
-  
+
   onReorderRoles(reorderedRoles);
 }
 ```
@@ -213,6 +230,7 @@ function handleReorderRoles(newRoles: RaciRole[]) {
 ### Accessibility
 
 **ARIA Labels**
+
 ```typescript
 <input
   aria-label="New role name"
@@ -226,6 +244,7 @@ function handleReorderRoles(newRoles: RaciRole[]) {
 ```
 
 **Keyboard Navigation**
+
 - Tab: Focus add input
 - Tab: Focus add button
 - Tab: Focus each role's edit button
@@ -235,6 +254,7 @@ function handleReorderRoles(newRoles: RaciRole[]) {
 - Esc: Cancel edit or close confirmation
 
 **Confirmation Dialog**
+
 - Trap focus inside dialog
 - Cancel button gets focus first (safer)
 - Esc key closes
@@ -245,12 +265,15 @@ function handleReorderRoles(newRoles: RaciRole[]) {
 ## 📐 TasksEditor Component
 
 ### Purpose
+
 CRUD operations for tasks (Add, Edit, Delete, Reorder).
 
 ### File Location
+
 `src/components/raci/TasksEditor.tsx`
 
 ### Props Interface
+
 ```typescript
 interface TasksEditorProps {
   tasks: RaciTask[];
@@ -263,6 +286,7 @@ interface TasksEditorProps {
 ```
 
 ### Sub-Components
+
 ```
 TasksEditor
 ├─ Add Task Section
@@ -288,15 +312,16 @@ TasksEditor
 ### Event Handlers
 
 #### Add Task
+
 ```typescript
 function handleAddTask(e: React.FormEvent) {
   e.preventDefault();
-  
+
   const name = nameInputRef.current?.value.trim();
   const description = descInputRef.current?.value.trim();
-  
-  if (!name) return;  // Validation handles error display
-  
+
+  if (!name) return; // Validation handles error display
+
   onAddTask(name, description || undefined);
   nameInputRef.current!.value = "";
   descInputRef.current!.value = "";
@@ -304,10 +329,11 @@ function handleAddTask(e: React.FormEvent) {
 ```
 
 #### Edit Task
+
 ```typescript
 function handleEditTask(id: string, name: string, description?: string) {
   if (!name.trim()) return;
-  
+
   onEditTask(id, name.trim(), description?.trim() || undefined);
   setEditingId(null);
 }
@@ -325,6 +351,7 @@ function handleEditKeyDown(e: React.KeyboardEvent, id: string) {
 ```
 
 #### Delete Task
+
 ```typescript
 function handleDeleteTask(id: string) {
   setConfirmDelete(id);
@@ -337,13 +364,14 @@ function handleConfirmDelete(id: string) {
 ```
 
 #### Reorder Tasks
+
 ```typescript
 function handleReorderTasks(newTasks: RaciTask[]) {
   const reorderedTasks = newTasks.map((task, idx) => ({
     ...task,
-    order: idx
+    order: idx,
   }));
-  
+
   onReorderTasks(reorderedTasks);
 }
 ```
@@ -351,6 +379,7 @@ function handleReorderTasks(newTasks: RaciTask[]) {
 ### Accessibility
 
 **ARIA Labels**
+
 ```typescript
 <input
   aria-label="New task name"
@@ -369,6 +398,7 @@ function handleReorderTasks(newTasks: RaciTask[]) {
 ```
 
 **Keyboard Navigation**
+
 - Tab: Focus name input
 - Tab: Focus description textarea
 - Tab: Focus add button
@@ -381,12 +411,15 @@ function handleReorderTasks(newTasks: RaciTask[]) {
 ## 📐 ErrorModal Component
 
 ### Purpose
+
 Display validation errors and recovery options.
 
 ### File Location
+
 `src/components/raci/ErrorModal.tsx`
 
 ### Props Interface
+
 ```typescript
 interface ErrorModalProps {
   isOpen: boolean;
@@ -400,6 +433,7 @@ interface ErrorModalProps {
 ```
 
 ### Sub-Components
+
 ```
 ErrorModal (if isOpen)
 ├─ Backdrop (dark overlay)
@@ -422,38 +456,42 @@ ErrorModal (if isOpen)
 ### Event Handlers
 
 #### Dismiss Modal
+
 ```typescript
 function handleDismiss() {
-  onDismiss();  // Close modal
+  onDismiss(); // Close modal
 }
 
 function handleKeyDown(e: React.KeyboardEvent) {
   if (e.key === "Escape") {
-    onDismiss();  // Esc closes
+    onDismiss(); // Esc closes
   }
 }
 ```
 
 #### Recovery Action
+
 ```typescript
 function handleRecovery() {
-  recoveryAction?.callback();  // Call provided callback
-  onDismiss();  // Close modal
+  recoveryAction?.callback(); // Call provided callback
+  onDismiss(); // Close modal
 }
 ```
 
 ### Accessibility
 
 **Focus Management**
+
 ```typescript
 useEffect(() => {
   if (isOpen) {
-    dismissButtonRef.current?.focus();  // Focus dismiss button
+    dismissButtonRef.current?.focus(); // Focus dismiss button
   }
 }, [isOpen]);
 ```
 
 **ARIA Attributes**
+
 ```typescript
 <div
   role="dialog"
@@ -474,6 +512,7 @@ useEffect(() => {
 ```
 
 **Keyboard Navigation**
+
 - Tab: Focus dismiss button
 - Tab: Focus recovery button (if exists)
 - Esc: Dismiss modal
@@ -484,12 +523,15 @@ useEffect(() => {
 ## 📐 ResetControls Component
 
 ### Purpose
+
 Reset chart state with confirmation.
 
 ### File Location
+
 `src/components/raci/ResetControls.tsx`
 
 ### Props Interface
+
 ```typescript
 interface ResetControlsProps {
   onReset: () => void;
@@ -498,6 +540,7 @@ interface ResetControlsProps {
 ```
 
 ### Sub-Components
+
 ```
 ResetControls
 ├─ Reset Button (warning color)
@@ -515,6 +558,7 @@ ResetControls
 ### Event Handlers
 
 #### Open Confirmation
+
 ```typescript
 function handleResetClick() {
   setShowConfirmation(true);
@@ -522,9 +566,10 @@ function handleResetClick() {
 ```
 
 #### Confirm Reset
+
 ```typescript
 function handleConfirmReset() {
-  onReset();  // Call parent reset handler
+  onReset(); // Call parent reset handler
   setShowConfirmation(false);
 }
 
@@ -542,6 +587,7 @@ function handleKeyDown(e: React.KeyboardEvent) {
 ### Accessibility
 
 **ARIA Attributes**
+
 ```typescript
 <button
   aria-label="Reset chart contents"
@@ -558,6 +604,7 @@ function handleKeyDown(e: React.KeyboardEvent) {
 ```
 
 **Keyboard Navigation**
+
 - Tab: Focus reset button
 - Tab: Focus cancel button (in dialog)
 - Tab: Focus confirm button
@@ -569,15 +616,18 @@ function handleKeyDown(e: React.KeyboardEvent) {
 ## 📐 RaciGeneratorPage Component
 
 ### Purpose
+
 Main page component integrating all editors and state management.
 
 ### File Location
+
 `src/components/raci/RaciGeneratorPage.tsx`
 
 ### State Management
+
 ```typescript
 // Initialize state management
-const raciState = useRaciState();  // Hook
+const raciState = useRaciState(); // Hook
 const validation = useValidation(raciState.state);
 const autoSave = useAutoSave(raciState.state);
 
@@ -592,11 +642,12 @@ const {
   deleteTask,
   updateTitle,
   updateLogo,
-  reset
+  reset,
 } = raciState;
 ```
 
 ### Props (from Page Route)
+
 ```typescript
 interface RaciGeneratorPageProps {
   // Optional: initial chart data (from import)
@@ -605,6 +656,7 @@ interface RaciGeneratorPageProps {
 ```
 
 ### Sub-Components Integration
+
 ```
 RaciGeneratorPage
 │
@@ -656,6 +708,7 @@ RaciGeneratorPage
 ```
 
 ### Event Handler Pattern
+
 ```typescript
 // Pattern for all CRUD operations:
 
@@ -675,6 +728,7 @@ function handleAddRole(name: string) {
 ```
 
 ### Keyboard Shortcuts (Prepared)
+
 ```typescript
 useEffect(() => {
   function handleGlobalKeydown(e: KeyboardEvent) {
@@ -683,10 +737,10 @@ useEffect(() => {
       e.preventDefault();
       // Undo handler here
     }
-    
+
     // Other global shortcuts can go here
   }
-  
+
   window.addEventListener("keydown", handleGlobalKeydown);
   return () => window.removeEventListener("keydown", handleGlobalKeydown);
 }, []);
@@ -752,13 +806,16 @@ interface ValidationResult {
 }
 
 // Reducer
-type RaciAction = 
+type RaciAction =
   | { type: "addRole"; payload: { name: string } }
   | { type: "editRole"; payload: { id: string; name: string } }
   | { type: "deleteRole"; payload: { id: string } }
   | { type: "reorderRoles"; payload: { roles: RaciRole[] } }
   | { type: "addTask"; payload: { name: string; description?: string } }
-  | { type: "editTask"; payload: { id: string; name: string; description?: string } }
+  | {
+      type: "editTask";
+      payload: { id: string; name: string; description?: string };
+    }
   | { type: "deleteTask"; payload: { id: string } }
   | { type: "reorderTasks"; payload: { tasks: RaciTask[] } }
   | { type: "updateTitle"; payload: { title: string } }

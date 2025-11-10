@@ -11,11 +11,14 @@ const CURRENT_VERSION = "2.0.0";
  * Generate a UUID v4
  */
 function generateUUID(): string {
-  return crypto.randomUUID?.() || "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0;
-    const v = c === "x" ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  return (
+    crypto.randomUUID?.() ||
+    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    })
+  );
 }
 
 /**
@@ -63,9 +66,7 @@ export function raciReducer(state: RaciChart, action: RaciAction): RaciChart {
       return {
         ...state,
         roles: state.roles.map((r) =>
-          r.id === action.payload.id
-            ? { ...r, name: action.payload.name }
-            : r
+          r.id === action.payload.id ? { ...r, name: action.payload.name } : r
         ),
         updatedAt: new Date().toISOString(),
       };

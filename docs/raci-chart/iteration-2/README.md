@@ -16,29 +16,34 @@ Iteration 2 transforms the Iteration 1 component shells into a **fully functiona
 After Iteration 2, the application will have:
 
 ✅ **Full CRUD Operations**
+
 - Add/Edit/Delete roles with reordering
 - Add/Edit/Delete tasks with multi-line descriptions
 - Edit title and upload logo
 
 ✅ **State Management**
+
 - Central state hook using React's `useReducer`
 - Automatic persistence to localStorage
 - IndexedDB fallback for large datasets
 - Page reload state recovery
 
 ✅ **Real-Time Validation**
+
 - Field-level validation with helpful error messages
 - Chart-level validation with error aggregation
 - Validation prevents invalid operations
 - Error modal for critical issues
 
 ✅ **Keyboard Navigation**
+
 - Tab/Shift+Tab through all controls
 - Esc to close dialogs
 - Enter to submit forms
 - Focus management and visual indicators
 
 ✅ **User Experience**
+
 - Auto-save every 5 seconds (debounced)
 - Clear error feedback
 - Confirmation dialogs for destructive actions
@@ -53,6 +58,7 @@ After Iteration 2, the application will have:
 **Decision**: Use React's `useReducer` hook with custom hooks for state, validation, and persistence.
 
 **Rationale**:
+
 - ✅ No external dependency (useReducer built-in)
 - ✅ Scales well as complexity grows
 - ✅ Easy to debug with Redux DevTools
@@ -60,6 +66,7 @@ After Iteration 2, the application will have:
 - ✅ Familiar pattern for most React developers
 
 **Alternative Considered**:
+
 - Context API alone (not performant for frequent updates)
 - Redux (overkill for current scope)
 - Zustand (lightweight but external dependency)
@@ -67,6 +74,7 @@ After Iteration 2, the application will have:
 **Decision**: Use localStorage with IndexedDB fallback for persistence.
 
 **Rationale**:
+
 - ✅ No backend required (offline-first)
 - ✅ localStorage is 5-10MB (sufficient for most charts)
 - ✅ IndexedDB fallback handles larger datasets
@@ -74,6 +82,7 @@ After Iteration 2, the application will have:
 - ✅ Version checking for schema evolution
 
 **Alternative Considered**:
+
 - Backend API (requires server, adds latency)
 - Firestore (third-party dependency, privacy concerns)
 - SQLite.js (WASM library, adds bundle size)
@@ -81,12 +90,14 @@ After Iteration 2, the application will have:
 **Decision**: Validation in both reducer and hooks (belt and suspenders).
 
 **Rationale**:
+
 - ✅ Reducer validates before state changes (prevents invalid states)
 - ✅ useValidation hook provides real-time feedback (UX)
 - ✅ Two layers catch errors from different entry points
 - ✅ Clear separation of concerns
 
 **Alternative Considered**:
+
 - Validation only in reducer (no real-time feedback)
 - Validation only in component (allows invalid states)
 
@@ -103,15 +114,15 @@ Add these interfaces if not already present:
 ```typescript
 // Core entities
 export interface RaciRole {
-  id: string;        // UUID from crypto.randomUUID()
-  name: string;      // e.g., "Product Manager"
-  order: number;     // 0-based position for sorting
+  id: string; // UUID from crypto.randomUUID()
+  name: string; // e.g., "Product Manager"
+  order: number; // 0-based position for sorting
 }
 
 export interface RaciTask {
   id: string;
   name: string;
-  description?: string;  // Optional multi-line text
+  description?: string; // Optional multi-line text
   order: number;
 }
 
@@ -120,16 +131,16 @@ export type RaciValue = "R" | "A" | "C" | "I" | null;
 // Chart state
 export interface RaciChart {
   id: string;
-  title: string;      // Default: "Untitled Project"
+  title: string; // Default: "Untitled Project"
   description: string;
   roles: RaciRole[];
   tasks: RaciTask[];
   matrix: Record<string, Record<string, RaciValue>>;
-  theme: string;      // Default: "default"
-  logo?: string;      // Base64 encoded image
-  createdAt: string;  // ISO 8601 timestamp
+  theme: string; // Default: "default"
+  logo?: string; // Base64 encoded image
+  createdAt: string; // ISO 8601 timestamp
   updatedAt: string;
-  version: string;    // Current: "2.0.0"
+  version: string; // Current: "2.0.0"
 }
 
 // Reducer actions
@@ -139,7 +150,10 @@ export type RaciAction =
   | { type: "deleteRole"; payload: { id: string } }
   | { type: "reorderRoles"; payload: { roles: RaciRole[] } }
   | { type: "addTask"; payload: { name: string; description?: string } }
-  | { type: "editTask"; payload: { id: string; name: string; description?: string } }
+  | {
+      type: "editTask";
+      payload: { id: string; name: string; description?: string };
+    }
   | { type: "deleteTask"; payload: { id: string } }
   | { type: "reorderTasks"; payload: { tasks: RaciTask[] } }
   | { type: "updateTitle"; payload: { title: string } }
@@ -316,10 +330,10 @@ export function loadFromLocalStorage(): RaciChart | null {
     if (!json) return null;
 
     const chart = JSON.parse(json) as RaciChart;
-    
+
     // Version check
     if (chart.version !== CURRENT_VERSION) {
-      return null;  // Discard if version mismatch
+      return null; // Discard if version mismatch
     }
 
     return chart;
@@ -354,7 +368,7 @@ export function useAutoSave(
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const debouncedChart = useDebounce(chart, 5000);  // 5 second debounce
+  const debouncedChart = useDebounce(chart, 5000); // 5 second debounce
 
   useEffect(() => {
     setIsSaving(true);
@@ -455,8 +469,7 @@ export function validateChart(chart: RaciChart): ValidationResult {
     isValid,
     errors: errors.filter((e) => e.severity === "error"),
     warnings: errors.filter((e) => e.severity === "warning"),
-    getFieldError: (field: string) =>
-      errors.find((e) => e.field === field),
+    getFieldError: (field: string) => errors.find((e) => e.field === field),
   };
 }
 ```
@@ -482,6 +495,7 @@ export function useValidation(chart: RaciChart): ValidationResult {
 This phase implements the UI components using the state and validation infrastructure. Each component receives typed props and uses event handlers to call parent-provided callbacks.
 
 **Key Pattern**:
+
 ```typescript
 // Component receives data and callbacks
 <RolesEditor
@@ -559,13 +573,18 @@ export function RaciGeneratorPage() {
 ### 1. Avoid Unnecessary Re-renders
 
 ✅ **Do**: Use `useCallback` for event handlers
+
 ```typescript
-const handleAddRole = useCallback((name: string) => {
-  onAddRole(name);
-}, [onAddRole]);  // Only recreate if onAddRole changes
+const handleAddRole = useCallback(
+  (name: string) => {
+    onAddRole(name);
+  },
+  [onAddRole]
+); // Only recreate if onAddRole changes
 ```
 
 ❌ **Don't**: Inline function definitions
+
 ```typescript
 {/* Every render creates new function */}
 <button onClick={() => onAddRole(name)} />
@@ -574,6 +593,7 @@ const handleAddRole = useCallback((name: string) => {
 ### 2. Debounce Auto-save
 
 ✅ **Do**: 5-second minimum between saves
+
 ```typescript
 const debouncedChart = useDebounce(chart, 5000);
 
@@ -583,6 +603,7 @@ useEffect(() => {
 ```
 
 ❌ **Don't**: Save on every keystroke
+
 ```typescript
 onChange={(e) => saveToLocalStorage(chart)}  // Way too often
 ```
@@ -590,18 +611,21 @@ onChange={(e) => saveToLocalStorage(chart)}  // Way too often
 ### 3. Memoize Expensive Computations
 
 ✅ **Do**: Cache validation results
+
 ```typescript
 const validation = useMemo(() => validateChart(chart), [chart]);
 ```
 
 ❌ **Don't**: Recalculate validation in every render
+
 ```typescript
-const validation = validateChart(chart);  // Every render!
+const validation = validateChart(chart); // Every render!
 ```
 
 ### 4. Limit Component Scope
 
 ✅ **Do**: Small focused components
+
 - `RolesEditor` only handles roles
 - `TasksEditor` only handles tasks
 
@@ -612,6 +636,7 @@ const validation = validateChart(chart);  // Every render!
 ## Error Handling Strategy
 
 ### Validation Errors (User-Caused)
+
 ```
 User tries to add empty role name
     ↓
@@ -623,6 +648,7 @@ User corrects and retries
 ```
 
 ### Storage Errors (System-Caused)
+
 ```
 localStorage quota exceeded
     ↓
@@ -636,6 +662,7 @@ User warned on page reload if needed
 ```
 
 ### Critical Errors (Unexpected)
+
 ```
 Corrupted data in localStorage
     ↓
@@ -651,6 +678,7 @@ User starts fresh
 ## Testing Strategy
 
 ### Unit Tests (lib/raci/validation.ts)
+
 ```typescript
 describe("validateRoleName", () => {
   test("rejects empty string", () => {
@@ -678,6 +706,7 @@ describe("validateRoleName", () => {
 ```
 
 ### Integration Tests
+
 ```typescript
 describe("RolesEditor", () => {
   test("add role workflow", () => {
@@ -697,6 +726,7 @@ describe("RolesEditor", () => {
 ```
 
 ### E2E Tests (with Playwright or Cypress)
+
 ```typescript
 test("full CRUD workflow", async ({ page }) => {
   await page.goto("/tools/raci-generator");
@@ -727,30 +757,36 @@ test("full CRUD workflow", async ({ page }) => {
 ### WCAG 2.1 Level AA Requirements
 
 **1.4.3 Contrast (Minimum)**
+
 - Text: ≥ 4.5:1 contrast
 - Large text: ≥ 3:1 contrast
 - Icons: ≥ 3:1 contrast
 
 **2.1.1 Keyboard**
+
 - All functionality accessible via keyboard
 - No keyboard traps
 - Logical tab order
 
 **2.4.7 Focus Visible**
+
 - Focus indicator always visible
 - ≥ 2px outline
 - Distinct from surrounding content
 
 **3.3.1 Error Identification**
+
 - Errors identified
 - Suggested correction provided
 - Text alone not used for error indication
 
 **3.3.4 Error Prevention**
+
 - Reversible actions (can undo)
 - Irreversible actions require confirmation
 
 **4.1.2 Name, Role, Value**
+
 - All components have proper ARIA labels
 - ARIA roles correct
 - States and properties communicated
@@ -774,25 +810,28 @@ npm install -D @testing-library/jest-dom @axe-core/react
 ## Browser Support
 
 ### Minimum Requirements
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
 ### Features Used
+
 - `crypto.randomUUID()` - UUID generation
 - `useReducer` - React 16.8+
 - `localStorage` / `IndexedDB` - All modern browsers
 - `FileReader.readAsDataURL()` - All modern browsers
 
 ### Polyfills (if needed)
+
 ```typescript
 // UUID polyfill for older browsers
 if (!globalThis.crypto?.randomUUID) {
   globalThis.crypto.randomUUID = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === "x" ? r : (r & 0x3 | 0x8);
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   };
@@ -806,6 +845,7 @@ if (!globalThis.crypto?.randomUUID) {
 After Iteration 2 is complete, you'll be ready for:
 
 ### Iteration 3: RACI Matrix Editor
+
 - Interactive color-coded grid
 - Cell toggle logic (R/A/C/I)
 - Exclusive assignment (one per cell)
@@ -813,46 +853,55 @@ After Iteration 2 is complete, you'll be ready for:
 - Performance optimization for large matrices
 
 ### Prerequisites Met
+
 ✅ Solid state management  
 ✅ Reliable persistence  
 ✅ Trustworthy validation  
-✅ Good keyboard navigation foundation  
+✅ Good keyboard navigation foundation
 
 ---
 
 ## Troubleshooting
 
 ### State Not Persisting
+
 **Issue**: Page reload doesn't restore state
 
 **Solution**:
+
 1. Check localStorage is enabled: `localStorage.setItem("test", "1")`
 2. Check key name matches: `const STORAGE_KEY = "raciChart"`
 3. Check version matches: `chart.version === "2.0.0"`
 4. Check auto-save hook runs: Add console.log in useAutoSave
 
 ### Validation Always Fails
+
 **Issue**: Error modal shows even for valid data
 
 **Solution**:
+
 1. Check validation logic: Add unit tests
 2. Check field names: Match exactly (case-sensitive)
 3. Check error severity: Only "error" blocks operations
 4. Trace validation: console.log(validation) in component
 
 ### Keyboard Navigation Not Working
+
 **Issue**: Tab doesn't move between fields
 
 **Solution**:
+
 1. Check tabIndex: Should be 0 for normal flow
 2. Check focus trap: Don't trap outside modals
 3. Check event handlers: `e.preventDefault()` can block Tab
 4. Test manually: Tab key should work always
 
 ### Memory Leak Warnings
+
 **Issue**: Console shows "memory leak" warnings
 
 **Solution**:
+
 1. Clean up listeners: `return () => removeEventListener(...)`
 2. Clean up timers: `return () => clearTimeout(timer)`
 3. Clean up subscriptions: Unsubscribe in cleanup

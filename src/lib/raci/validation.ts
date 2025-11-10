@@ -3,7 +3,13 @@
  * Centralized validation rules with helpful error messages
  */
 
-import { RaciChart, RaciRole, RaciTask, ValidationError, ValidationResult } from "@/types/raci";
+import {
+  RaciChart,
+  RaciRole,
+  RaciTask,
+  ValidationError,
+  ValidationResult,
+} from "@/types/raci";
 
 /**
  * Validate a single role name
@@ -37,9 +43,7 @@ export function validateRoleName(
   }
 
   const duplicate = existingRoles.some(
-    (r) =>
-      r.name.toLowerCase() === trimmed.toLowerCase() &&
-      r.id !== excludeId
+    (r) => r.name.toLowerCase() === trimmed.toLowerCase() && r.id !== excludeId
   );
 
   if (duplicate) {
@@ -85,9 +89,7 @@ export function validateTaskName(
   }
 
   const duplicate = existingTasks.some(
-    (t) =>
-      t.name.toLowerCase() === trimmed.toLowerCase() &&
-      t.id !== excludeId
+    (t) => t.name.toLowerCase() === trimmed.toLowerCase() && t.id !== excludeId
   );
 
   if (duplicate) {
@@ -194,16 +196,12 @@ export function validateChart(chart: RaciChart): ValidationResult {
 
   // Validate all roles
   chart.roles.forEach((role) => {
-    errors.push(
-      ...validateRoleName(role.name, chart.roles, role.id)
-    );
+    errors.push(...validateRoleName(role.name, chart.roles, role.id));
   });
 
   // Validate all tasks
   chart.tasks.forEach((task) => {
-    errors.push(
-      ...validateTaskName(task.name, chart.tasks, task.id)
-    );
+    errors.push(...validateTaskName(task.name, chart.tasks, task.id));
     errors.push(...validateTaskDescription(task.description));
   });
 

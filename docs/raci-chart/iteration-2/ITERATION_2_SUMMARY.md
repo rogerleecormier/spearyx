@@ -13,6 +13,7 @@
 Iteration 2 transforms the Iteration 1 component shells into **fully functional CRUD editors** with real-time validation and state persistence. This iteration focuses on **editor logic**, **state management**, and **user interaction**, laying the groundwork for the RACI matrix implementation in Iteration 3.
 
 ### Key Outcomes
+
 ✅ All CRUD operations (Add/Edit/Delete/Reorder)  
 ✅ Real-time validation with error feedback  
 ✅ State management hook with localStorage persistence  
@@ -27,10 +28,12 @@ Iteration 2 transforms the Iteration 1 component shells into **fully functional 
 ### 1. Enhanced Components (6 total)
 
 #### RaciHeaderBar (ENHANCED)
+
 **Purpose**: Title editor + Logo upload  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Editable title field (max 100 chars)
 - [ ] Real-time character counter
 - [ ] Logo file input (PNG, JPG, SVG)
@@ -40,10 +43,11 @@ Iteration 2 transforms the Iteration 1 component shells into **fully functional 
 - [ ] Accessibility: ARIA labels, keyboard focus
 
 **Props**:
+
 ```typescript
 interface RaciHeaderBarProps {
   title: string;
-  logo?: string;  // Base64
+  logo?: string; // Base64
   onTitleChange: (title: string) => void;
   onLogoChange: (logo: string) => void;
   validation: ValidationResult;
@@ -55,10 +59,12 @@ interface RaciHeaderBarProps {
 ---
 
 #### RolesEditor (NEW)
+
 **Purpose**: CRUD operations for roles  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Add role form (input + button)
 - [ ] Editable list of roles
 - [ ] Inline edit mode (double-click or edit button)
@@ -69,6 +75,7 @@ interface RaciHeaderBarProps {
 - [ ] Keyboard navigation (Tab, Shift+Tab, Esc)
 
 **Props**:
+
 ```typescript
 interface RolesEditorProps {
   roles: RaciRole[];
@@ -85,10 +92,12 @@ interface RolesEditorProps {
 ---
 
 #### TasksEditor (NEW)
+
 **Purpose**: CRUD operations for tasks  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Add task form (inputs + button)
 - [ ] Editable list of tasks with descriptions
 - [ ] Inline edit mode (multi-line textarea)
@@ -99,6 +108,7 @@ interface RolesEditorProps {
 - [ ] Keyboard navigation (Tab, Shift+Tab, Esc)
 
 **Props**:
+
 ```typescript
 interface TasksEditorProps {
   tasks: RaciTask[];
@@ -115,10 +125,12 @@ interface TasksEditorProps {
 ---
 
 #### ErrorModal (ENHANCED)
+
 **Purpose**: Display validation errors and recovery options  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Error title and description
 - [ ] Error list (multiple errors)
 - [ ] Recovery suggestions
@@ -128,6 +140,7 @@ interface TasksEditorProps {
 - [ ] ARIA attributes
 
 **Props**:
+
 ```typescript
 interface ErrorModalProps {
   isOpen: boolean;
@@ -142,10 +155,12 @@ interface ErrorModalProps {
 ---
 
 #### ResetControls (ENHANCED)
+
 **Purpose**: Reset chart with confirmation  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Reset button
 - [ ] Confirmation dialog
 - [ ] Cancel/Confirm options
@@ -154,6 +169,7 @@ interface ErrorModalProps {
 - [ ] Keyboard navigation
 
 **Props**:
+
 ```typescript
 interface ResetControlsProps {
   onReset: () => void;
@@ -166,10 +182,12 @@ interface ResetControlsProps {
 ---
 
 #### RaciGeneratorPage (ENHANCED)
+
 **Purpose**: Main component integrating state management  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Initialize state from localStorage
 - [ ] Connect all sub-components
 - [ ] Manage validation state
@@ -184,10 +202,12 @@ interface ResetControlsProps {
 ### 2. New Hooks (4 total)
 
 #### useRaciState
+
 **Purpose**: Central state management hook  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Reducer pattern for state management
 - [ ] Actions: `addRole`, `editRole`, `deleteRole`, `reorderRoles`
 - [ ] Actions: `addTask`, `editTask`, `deleteTask`, `reorderTasks`
@@ -197,6 +217,7 @@ interface ResetControlsProps {
 - [ ] Consistent action patterns
 
 **Hook Signature**:
+
 ```typescript
 function useRaciState(initialChart?: RaciChart): {
   state: RaciChart;
@@ -206,7 +227,7 @@ function useRaciState(initialChart?: RaciChart): {
   editRole: (id: string, name: string) => void;
   deleteRole: (id: string) => void;
   // ... etc for tasks, title, logo
-}
+};
 ```
 
 **Lines of Code**: ~200 lines
@@ -214,10 +235,12 @@ function useRaciState(initialChart?: RaciChart): {
 ---
 
 #### useAutoSave
+
 **Purpose**: Auto-save to localStorage with debounce  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Debounced save (5 second delay)
 - [ ] Detects state changes
 - [ ] Stores in localStorage
@@ -227,6 +250,7 @@ function useRaciState(initialChart?: RaciChart): {
 - [ ] Silent failures (user doesn't see errors)
 
 **Hook Signature**:
+
 ```typescript
 function useAutoSave(
   chart: RaciChart,
@@ -235,7 +259,7 @@ function useAutoSave(
   isSaving: boolean;
   lastSaved: Date | null;
   error: Error | null;
-}
+};
 ```
 
 **Lines of Code**: ~120 lines
@@ -243,10 +267,12 @@ function useAutoSave(
 ---
 
 #### useValidation
+
 **Purpose**: Real-time validation of chart state  
 **Status**: To be implemented
 
 **Features**:
+
 - [ ] Validates roles (unique names, required)
 - [ ] Validates tasks (unique names, required, max length)
 - [ ] Validates title (required, max 100 chars)
@@ -256,6 +282,7 @@ function useAutoSave(
 - [ ] Real-time updates as state changes
 
 **Hook Signature**:
+
 ```typescript
 function useValidation(chart: RaciChart): ValidationResult {
   isValid: boolean;
@@ -270,10 +297,12 @@ function useValidation(chart: RaciChart): ValidationResult {
 ---
 
 #### useKeyboardNav
+
 **Purpose**: Keyboard navigation utilities  
 **Status**: To be implemented (prepared, full implementation in Iteration 3)
 
 **Features**:
+
 - [ ] Tab/Shift+Tab navigation
 - [ ] Esc to close modals/dialogs
 - [ ] Enter to submit forms
@@ -283,12 +312,13 @@ function useValidation(chart: RaciChart): ValidationResult {
 - [ ] Accessibility announcements
 
 **Hook Signature**:
+
 ```typescript
 function useKeyboardNav(options?: KeyboardNavOptions): {
   handleEsc: (callback: () => void) => (e: KeyboardEvent) => void;
   handleEnter: (callback: () => void) => (e: KeyboardEvent) => void;
   // ... etc
-}
+};
 ```
 
 **Lines of Code**: ~100 lines (basic), ~200 lines (full)
@@ -298,10 +328,12 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 ### 3. New Utility Modules (3 total)
 
 #### lib/raci/state.ts
+
 **Purpose**: State management reducer and initialization  
 **Status**: To be implemented
 
 **Exports**:
+
 - [ ] `RaciAction` type (union of all actions)
 - [ ] `RaciReducer` function
 - [ ] `createInitialChart()` function
@@ -313,10 +345,12 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 ---
 
 #### lib/raci/validation.ts
+
 **Purpose**: Validation logic and error messages  
 **Status**: To be implemented
 
 **Exports**:
+
 - [ ] `validateRole()` - Single role validation
 - [ ] `validateTask()` - Single task validation
 - [ ] `validateTitle()` - Title validation
@@ -330,10 +364,12 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 ---
 
 #### lib/raci/persistence.ts
+
 **Purpose**: LocalStorage and IndexedDB helpers  
 **Status**: To be implemented
 
 **Exports**:
+
 - [ ] `saveToLocalStorage()` - Save chart
 - [ ] `loadFromLocalStorage()` - Load chart with version check
 - [ ] `clearLocalStorage()` - Clear all RACI data
@@ -348,6 +384,7 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 ### 4. Type Definitions
 
 **Enhancements to `types/raci.ts`**:
+
 - [ ] `ValidationResult` interface
 - [ ] `ValidationError` interface
 - [ ] `ValidationWarning` interface
@@ -363,6 +400,7 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 ## 📈 Code Statistics
 
 ### Total New Code
+
 - **Components**: ~860 lines
 - **Hooks**: ~570 lines
 - **Utilities**: ~500 lines
@@ -370,6 +408,7 @@ function useKeyboardNav(options?: KeyboardNavOptions): {
 - **Total**: ~2,030 lines
 
 ### Breaking Down by Component
+
 ```
 RaciHeaderBar:         ~150 lines
 RolesEditor:           ~250 lines
@@ -400,18 +439,21 @@ TOTAL:                 ~2,030 lines
 ## ✅ Feature Checklist
 
 ### Phase 1: State Management
+
 - [ ] Create `lib/raci/state.ts` with reducer
 - [ ] Create `useRaciState` hook
 - [ ] Create `lib/raci/persistence.ts`
 - [ ] Test state initialization and persistence
 
 ### Phase 2: Validation
+
 - [ ] Create `lib/raci/validation.ts`
 - [ ] Create `useValidation` hook
 - [ ] Create validation error types
 - [ ] Test all validation scenarios
 
 ### Phase 3: Components
+
 - [ ] Implement RaciHeaderBar (title + logo)
 - [ ] Implement RolesEditor (CRUD)
 - [ ] Implement TasksEditor (CRUD)
@@ -420,6 +462,7 @@ TOTAL:                 ~2,030 lines
 - [ ] Integrate RaciGeneratorPage
 
 ### Phase 4: Keyboard Navigation & Polish
+
 - [ ] Create `useKeyboardNav` hook
 - [ ] Test Tab/Shift+Tab navigation
 - [ ] Test Esc key functionality
@@ -427,6 +470,7 @@ TOTAL:                 ~2,030 lines
 - [ ] Test on mobile (touch)
 
 ### Phase 5: Testing & QA
+
 - [ ] Verify all CRUD operations
 - [ ] Test state persistence
 - [ ] Test validation feedback
@@ -439,6 +483,7 @@ TOTAL:                 ~2,030 lines
 ## 🎯 Success Criteria
 
 ### Feature Completeness
+
 - [x] State management hook working
 - [x] Persistence to localStorage
 - [x] All CRUD operations functional
@@ -446,6 +491,7 @@ TOTAL:                 ~2,030 lines
 - [x] Keyboard navigation
 
 ### Code Quality
+
 - [x] 0 TypeScript errors
 - [x] 0 console errors/warnings
 - [x] All functions have JSDoc comments
@@ -453,6 +499,7 @@ TOTAL:                 ~2,030 lines
 - [x] No `any` types used
 
 ### User Experience
+
 - [x] Smooth keyboard navigation
 - [x] Clear validation error messages
 - [x] Visual feedback for all actions
@@ -460,12 +507,14 @@ TOTAL:                 ~2,030 lines
 - [x] Mobile responsive
 
 ### Performance
+
 - [x] No memory leaks
 - [x] Efficient re-renders (no unnecessary updates)
 - [x] Auto-save debounced (5s minimum)
 - [x] Fast state updates (< 100ms)
 
 ### Accessibility
+
 - [x] WCAG 2.1 AA compliance
 - [x] ARIA labels on all inputs
 - [x] Keyboard accessible (no mouse required)
@@ -477,18 +526,21 @@ TOTAL:                 ~2,030 lines
 ## 🔗 Dependencies
 
 ### On Iteration 1
+
 - Requires: SSR route `/tools/raci-generator`
 - Requires: All component shells from Iteration 1
 - Requires: TypeScript types from Iteration 1
 - Requires: CSS structure from Iteration 1
 
 ### External Dependencies
+
 - React 18 (hooks)
 - TypeScript
 - Tailwind CSS (styling)
 - React Hot Toast (optional for notifications)
 
 ### Optional Enhancements
+
 - React DnD (for drag-and-drop reordering)
 - Zod (for schema validation)
 - Zustand (if switching to external state management)
@@ -498,6 +550,7 @@ TOTAL:                 ~2,030 lines
 ## 📊 Testing Checklist
 
 ### Unit Tests
+
 - [ ] `validateRole()` with all cases
 - [ ] `validateTask()` with all cases
 - [ ] `validateChart()` complete validation
@@ -505,6 +558,7 @@ TOTAL:                 ~2,030 lines
 - [ ] Persistence save/load
 
 ### Integration Tests
+
 - [ ] RolesEditor CRUD workflow
 - [ ] TasksEditor CRUD workflow
 - [ ] RaciHeaderBar title + logo
@@ -512,6 +566,7 @@ TOTAL:                 ~2,030 lines
 - [ ] Persistence on page reload
 
 ### E2E Tests
+
 - [ ] Add role → displays → edit → delete
 - [ ] Add task → displays → edit → delete
 - [ ] Upload logo → preview → remove
@@ -519,6 +574,7 @@ TOTAL:                 ~2,030 lines
 - [ ] Validation errors → user feedback
 
 ### Accessibility Tests
+
 - [ ] Tab/Shift+Tab through all fields
 - [ ] Esc closes all dialogs
 - [ ] Screen reader announces errors
@@ -526,6 +582,7 @@ TOTAL:                 ~2,030 lines
 - [ ] High contrast mode works
 
 ### Performance Tests
+
 - [ ] 100+ roles (no lag)
 - [ ] 100+ tasks (no lag)
 - [ ] Rapid CRUD operations (no delays)
@@ -536,7 +593,9 @@ TOTAL:                 ~2,030 lines
 ## 🚀 Next Phase
 
 ### Iteration 3: RACI Matrix Editor
+
 After completing Iteration 2, you'll be ready for:
+
 - Interactive color-coded matrix
 - Cell toggle logic (R/A/C/I)
 - Exclusive cell assignments
@@ -544,6 +603,7 @@ After completing Iteration 2, you'll be ready for:
 - Performance optimization for large matrices
 
 ### Key Transition Points
+
 - ✅ State management must be solid (all CRUD tested)
 - ✅ Validation must be reliable (no false positives)
 - ✅ Keyboard navigation foundation in place
@@ -554,6 +614,7 @@ After completing Iteration 2, you'll be ready for:
 ## 📝 Notes
 
 ### Implementation Strategy
+
 1. Build state management first (foundation)
 2. Build validation (used by components)
 3. Build components (use hooks)
@@ -561,19 +622,18 @@ After completing Iteration 2, you'll be ready for:
 5. Polish and test
 
 ### Common Challenges
+
 - **Challenge**: State not persisting
   - **Solution**: Use `useAutoSave` hook with localStorage
-  
 - **Challenge**: Validation feedback unclear
   - **Solution**: Centralize error messages in `validation.ts`
-  
 - **Challenge**: Keyboard navigation difficult
   - **Solution**: Use `useKeyboardNav` hook for consistency
-  
 - **Challenge**: TypeScript complexity
   - **Solution**: Define types carefully before implementing
 
 ### Performance Tips
+
 - Use `useCallback` for event handlers
 - Debounce `useAutoSave` (5 second minimum)
 - Memoize validation results
@@ -584,6 +644,7 @@ After completing Iteration 2, you'll be ready for:
 ## 📞 Reference
 
 ### Key Files to Create
+
 1. `src/components/raci/RaciHeaderBar.tsx` (enhanced)
 2. `src/components/raci/RolesEditor.tsx` (new)
 3. `src/components/raci/TasksEditor.tsx` (new)
@@ -596,6 +657,7 @@ After completing Iteration 2, you'll be ready for:
 10. Update `src/types/raci.ts` (new types)
 
 ### Key Hooks to Create
+
 1. `useRaciState` - State management
 2. `useAutoSave` - Persistence
 3. `useValidation` - Validation

@@ -10,6 +10,7 @@
 ## 🚀 Quick Start (2 minutes)
 
 ### What You'll Build
+
 Transform the Iteration 1 component shells into **fully functional editors** with real-time validation and state management.
 
 ```bash
@@ -22,6 +23,7 @@ http://localhost:3000/tools/raci-generator
 ```
 
 After Iteration 2, you'll see:
+
 - ✅ **Editable title** with live updates
 - ✅ **Logo upload** with preview
 - ✅ **CRUD Roles editor** (Add/Edit/Delete/Reorder)
@@ -35,6 +37,7 @@ After Iteration 2, you'll see:
 ## 📦 What You're Building
 
 ### 6 New/Enhanced Components
+
 1. **RaciHeaderBar** - Title + Logo editor (ENHANCED)
 2. **RolesEditor** - CRUD roles with reordering (NEW)
 3. **TasksEditor** - CRUD tasks with multi-line descriptions (NEW)
@@ -43,17 +46,20 @@ After Iteration 2, you'll see:
 6. **RaciGeneratorPage** - State integration (ENHANCED)
 
 ### 4 New Hooks/Utils
+
 1. **useRaciState** - Central state management hook
 2. **useAutoSave** - Auto-save to localStorage with debounce
 3. **useValidation** - Real-time validation logic
 4. **useKeyboardNav** - Keyboard navigation utilities
 
 ### 3 New Utility Modules
+
 1. **lib/raci/state.ts** - State reducer and initialization
 2. **lib/raci/validation.ts** - Validation logic and error messages
 3. **lib/raci/persistence.ts** - LocalStorage + IndexedDB helpers
 
 ### ~800 Lines of Code
+
 ```
 ✅ Components: 300+ lines (handlers, event listeners)
 ✅ Hooks: 250+ lines (state, persistence, validation)
@@ -65,12 +71,14 @@ After Iteration 2, you'll see:
 ## 🎯 Main Objectives
 
 ### 1. Title Editor
+
 - [ ] Editable text field in `RaciHeaderBar`
 - [ ] Real-time state updates
 - [ ] Auto-save to localStorage
 - [ ] Character limit validation (max 100 chars)
 
 ### 2. Logo Upload
+
 - [ ] File input (PNG, JPG, SVG)
 - [ ] Size validation (max 5MB)
 - [ ] Image preview
@@ -78,6 +86,7 @@ After Iteration 2, you'll see:
 - [ ] Error handling (unsupported types, size exceeded)
 
 ### 3. Roles Editor (CRUD)
+
 - [ ] **Add**: Input field + "Add Role" button
 - [ ] **View**: List of roles with display names
 - [ ] **Edit**: Inline edit mode for each role
@@ -86,6 +95,7 @@ After Iteration 2, you'll see:
 - [ ] **Validation**: No duplicate names (case-insensitive), required fields
 
 ### 4. Tasks Editor (CRUD)
+
 - [ ] **Add**: Input field + "Add Task" button
 - [ ] **View**: List of tasks with descriptions
 - [ ] **Edit**: Inline edit mode (multi-line textarea)
@@ -94,6 +104,7 @@ After Iteration 2, you'll see:
 - [ ] **Validation**: No duplicate names, required fields, max 500 chars per task
 
 ### 5. State Management
+
 - [ ] Create `useRaciState` hook with reducer pattern
 - [ ] Actions: `addRole`, `editRole`, `deleteRole`, `reorderRoles`, etc.
 - [ ] Store chart state in React Context or custom hook
@@ -101,6 +112,7 @@ After Iteration 2, you'll see:
 - [ ] Load persisted state on page load (with version check)
 
 ### 6. Validation Layer
+
 - [ ] Real-time validation for each field
 - [ ] Display inline error messages
 - [ ] Disable/enable export buttons based on validation state
@@ -108,6 +120,7 @@ After Iteration 2, you'll see:
 - [ ] Provide helpful error recovery suggestions
 
 ### 7. Keyboard Navigation
+
 - [ ] Tab through editors in logical order
 - [ ] Shift+Tab to navigate backward
 - [ ] Esc to close delete confirmation dialogs
@@ -119,17 +132,20 @@ After Iteration 2, you'll see:
 ## 🎨 Implementation Order
 
 ### Phase 1: State Management (Day 1)
+
 1. Define `RaciChart` and related types in `types/raci.ts` (if not done)
 2. Create `lib/raci/state.ts` with reducer pattern
 3. Create `useRaciState` hook in a new file
 4. Create `lib/raci/persistence.ts` for localStorage helpers
 
 ### Phase 2: Validation (Day 1-2)
+
 1. Create `lib/raci/validation.ts` with all validation functions
 2. Create `useValidation` hook
 3. Add error types to `types/raci.ts`
 
 ### Phase 3: Component Implementation (Day 2-4)
+
 1. **RaciHeaderBar**: Title editor + logo upload
 2. **RolesEditor**: Full CRUD with validation
 3. **TasksEditor**: Full CRUD with validation
@@ -137,6 +153,7 @@ After Iteration 2, you'll see:
 5. **ResetControls**: Reset with confirmation
 
 ### Phase 4: Integration & Testing (Day 5)
+
 1. Connect all components to `useRaciState`
 2. Wire up localStorage persistence
 3. Test keyboard navigation
@@ -148,30 +165,35 @@ After Iteration 2, you'll see:
 ## 📋 Acceptance Criteria
 
 ### Feature Completeness
+
 - [ ] All CRUD operations work without errors
 - [ ] State persists across page reloads
 - [ ] Validation errors display clearly
 - [ ] Export buttons respect validation state
 
 ### User Experience
+
 - [ ] Keyboard navigation is smooth and intuitive
 - [ ] Touch targets are ≥48px on mobile
 - [ ] Error messages are helpful and actionable
 - [ ] Loading states (auto-save) provide feedback
 
 ### Code Quality
+
 - [ ] All TypeScript types are strict (no `any`)
 - [ ] Components are pure functions where possible
 - [ ] Hooks follow React best practices
 - [ ] No console errors or warnings
 
 ### Accessibility
+
 - [ ] WCAG 2.1 AA compliance for all components
 - [ ] ARIA labels on all form inputs
 - [ ] Live regions for validation errors
 - [ ] Focus management in dialogs
 
 ### Performance
+
 - [ ] Auto-save debounced (5s minimum between saves)
 - [ ] No unnecessary re-renders
 - [ ] Large role/task lists performant (100+ items)
@@ -181,6 +203,7 @@ After Iteration 2, you'll see:
 ## 🔧 Tech Stack & Tools
 
 ### Required Libraries (already installed)
+
 - **React 18** - Components & hooks
 - **TanStack Start** - SSR routing
 - **TypeScript** - Type safety
@@ -189,6 +212,7 @@ After Iteration 2, you'll see:
 - **React Hot Toast** - Notifications (optional for Iteration 2)
 
 ### Optional Libraries (for consideration)
+
 - **React DnD** or **React Beautiful DnD** - Drag-and-drop reordering
 - **Zustand** or **Jotai** - State management (if needed)
 - **Zod** - Schema validation
@@ -213,6 +237,7 @@ After Iteration 2, you'll see:
 ## 🎯 Success Metrics
 
 ### By End of Iteration 2, You Should Have:
+
 ✅ Fully functional CRUD editors for roles and tasks  
 ✅ Real-time validation with helpful error messages  
 ✅ State management hook that persists to localStorage  
@@ -220,7 +245,7 @@ After Iteration 2, you'll see:
 ✅ Logo upload with preview  
 ✅ Title editor with live updates  
 ✅ All Iteration 1 components enhanced with handlers  
-✅ 0 console errors or warnings  
+✅ 0 console errors or warnings
 
 ---
 
@@ -237,22 +262,27 @@ After Iteration 2, you'll see:
 ## ⚠️ Common Pitfalls to Avoid
 
 ### 1. **State Not Persisting**
+
 - ❌ Forgetting to call localStorage on state changes
 - ✅ Use auto-save hook with debounce
 
 ### 2. **Infinite Re-renders**
+
 - ❌ Passing inline objects as dependencies
 - ✅ Use `useCallback` and `useMemo` wisely
 
 ### 3. **Keyboard Navigation Not Working**
+
 - ❌ Not stopping event propagation in handlers
 - ✅ Always call `e.stopPropagation()` when needed
 
 ### 4. **Validation Logic Scattered**
+
 - ❌ Mixing validation in components
 - ✅ Centralize in `lib/raci/validation.ts`
 
 ### 5. **TypeScript Issues**
+
 - ❌ Using `any` types
 - ✅ Define proper interfaces first
 
@@ -261,12 +291,14 @@ After Iteration 2, you'll see:
 ## 📞 Quick Reference
 
 ### File Paths
+
 - Components: `src/components/raci/`
 - Hooks: `src/lib/raci/`
 - Types: `src/types/raci.ts`
 - Styles: `src/styles/raci.css`
 
 ### Key Types (define in `types/raci.ts`)
+
 ```typescript
 interface RaciChart {
   id: string;

@@ -68,7 +68,10 @@ export default function RaciHeaderBar({
     <div className="space-y-4 p-4 border-b border-border">
       {/* Title Section */}
       <div className="space-y-2">
-        <label htmlFor="title-input" className="text-sm font-medium text-foreground">
+        <label
+          htmlFor="title-input"
+          className="text-sm font-medium text-foreground"
+        >
           Project Title
         </label>
         <div className="relative">
@@ -104,7 +107,10 @@ export default function RaciHeaderBar({
 
       {/* Logo Section */}
       <div className="space-y-2">
-        <label htmlFor="logo-input" className="text-sm font-medium text-foreground">
+        <label
+          htmlFor="logo-input"
+          className="text-sm font-medium text-foreground"
+        >
           Logo
         </label>
         <div className="flex items-center gap-4">

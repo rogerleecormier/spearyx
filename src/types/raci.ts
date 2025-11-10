@@ -165,13 +165,19 @@ export type RaciAction =
   | { type: "deleteRole"; payload: { id: string } }
   | { type: "reorderRoles"; payload: { roles: RaciRole[] } }
   | { type: "addTask"; payload: { name: string; description?: string } }
-  | { type: "editTask"; payload: { id: string; name: string; description?: string } }
+  | {
+      type: "editTask";
+      payload: { id: string; name: string; description?: string };
+    }
   | { type: "deleteTask"; payload: { id: string } }
   | { type: "reorderTasks"; payload: { tasks: RaciTask[] } }
   | { type: "updateTitle"; payload: { title: string } }
   | { type: "updateLogo"; payload: { logo?: string } }
   | { type: "updateDescription"; payload: { description: string } }
-  | { type: "updateMatrix"; payload: { matrix: Record<string, Record<string, RaciValue>> } }
+  | {
+      type: "updateMatrix";
+      payload: { matrix: Record<string, Record<string, RaciValue>> };
+    }
   | { type: "updateTheme"; payload: { theme: string } }
   | { type: "reset" }
   | { type: "setState"; payload: { chart: RaciChart } };

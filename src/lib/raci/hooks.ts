@@ -47,9 +47,12 @@ export function useRaciState(initialChart?: RaciChart) {
     dispatch({ type: "addTask", payload: { name, description } });
   }, []);
 
-  const editTask = useCallback((id: string, name: string, description?: string) => {
-    dispatch({ type: "editTask", payload: { id, name, description } });
-  }, []);
+  const editTask = useCallback(
+    (id: string, name: string, description?: string) => {
+      dispatch({ type: "editTask", payload: { id, name, description } });
+    },
+    []
+  );
 
   const deleteTask = useCallback((id: string) => {
     dispatch({ type: "deleteTask", payload: { id } });
@@ -138,9 +141,11 @@ function useDebounce<T>(value: T, delay: number = 5000): T {
  * useAutoSave - Auto-save to localStorage with debounce
  * Falls back to IndexedDB if localStorage quota exceeded
  */
-export function useAutoSave(
-  chart: RaciChart
-): { isSaving: boolean; lastSaved: Date | null; error: Error | null } {
+export function useAutoSave(chart: RaciChart): {
+  isSaving: boolean;
+  lastSaved: Date | null;
+  error: Error | null;
+} {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -166,7 +171,10 @@ export function useAutoSave(
           setError(null);
         } catch (indexedDBError) {
           // Silent fail for auto-save - data is in memory
-          const errorMsg = indexedDBError instanceof Error ? indexedDBError : new Error("Unknown error");
+          const errorMsg =
+            indexedDBError instanceof Error
+              ? indexedDBError
+              : new Error("Unknown error");
           setError(errorMsg);
           console.error("Auto-save failed:", errorMsg);
         }
