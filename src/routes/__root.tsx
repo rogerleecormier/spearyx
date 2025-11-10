@@ -4,6 +4,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import Header from "../components/Header";
 
 import appCss from "../styles.css?url";
+import raciCss from "../styles/raci.css?url";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,6 +24,10 @@ export const Route = createRootRoute({
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "stylesheet",
+        href: raciCss,
       },
     ],
   }),

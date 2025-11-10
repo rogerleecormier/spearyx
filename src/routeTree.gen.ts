@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ToolsRaciGeneratorRouteImport } from './routes/tools/raci-generator'
 
 const TypographyRoute = TypographyRouteImport.update({
   id: '/typography',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsRaciGeneratorRoute = ToolsRaciGeneratorRouteImport.update({
+  id: '/tools/raci-generator',
+  path: '/tools/raci-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards' | '/typography'
+  fullPaths: '/' | '/cards' | '/typography' | '/tools/raci-generator'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/typography'
-  id: '__root__' | '/' | '/cards' | '/typography'
+  to: '/' | '/cards' | '/typography' | '/tools/raci-generator'
+  id: '__root__' | '/' | '/cards' | '/typography' | '/tools/raci-generator'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardsRoute: typeof CardsRoute
   TypographyRoute: typeof TypographyRoute
+  ToolsRaciGeneratorRoute: typeof ToolsRaciGeneratorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/raci-generator': {
+      id: '/tools/raci-generator'
+      path: '/tools/raci-generator'
+      fullPath: '/tools/raci-generator'
+      preLoaderRoute: typeof ToolsRaciGeneratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardsRoute: CardsRoute,
   TypographyRoute: TypographyRoute,
+  ToolsRaciGeneratorRoute: ToolsRaciGeneratorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

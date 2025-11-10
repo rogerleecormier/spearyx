@@ -39,40 +39,51 @@ export default function Header() {
           />
         </Link>
         {isDev && (
-          <div className="relative" ref={dropdownRef}>
-            <Button
-              variant="outline"
-              className="text-slate-900"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <Layers size={20} />
-              <span className="hidden sm:inline ml-2">Components</span>
-              <ChevronDown
-                size={16}
-                className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
-              />
-            </Button>
+          <div className="flex items-center gap-4">
+            {/* Components Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <Button
+                variant="outline"
+                className="text-slate-900"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <Layers size={20} />
+                <span className="hidden sm:inline ml-2">Components</span>
+                <ChevronDown
+                  size={16}
+                  className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                />
+              </Button>
 
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-                <Link
-                  to="/cards"
-                  onClick={handleLinkClick}
-                  className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-                >
-                  <Layers size={18} className="mr-2 text-primary-500" />
-                  <span>Card Library</span>
-                </Link>
-                <Link
-                  to="/typography"
-                  onClick={handleLinkClick}
-                  className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-                >
-                  <Layers size={18} className="mr-2 text-primary-500" />
-                  <span>Typography</span>
-                </Link>
-              </div>
-            )}
+              {isOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                  <Link
+                    to="/cards"
+                    onClick={handleLinkClick}
+                    className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                  >
+                    <Layers size={18} className="mr-2 text-primary-500" />
+                    <span>Card Library</span>
+                  </Link>
+                  <Link
+                    to="/typography"
+                    onClick={handleLinkClick}
+                    className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
+                  >
+                    <Layers size={18} className="mr-2 text-primary-500" />
+                    <span>Typography</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Tools Dropdown */}
+            <Link
+              to="/tools/raci-generator"
+              className="px-3 py-2 text-sm font-medium text-slate-900 hover:bg-slate-100 rounded transition-colors"
+            >
+              Tools
+            </Link>
           </div>
         )}
       </div>

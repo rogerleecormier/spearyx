@@ -1,0 +1,267 @@
+{
+  "mobile-app": {
+    "id": "mobile-app",
+    "name": "Mobile App Development",
+    "description": "E-commerce development team project",
+    "roles": [
+      { "id": "pm", "name": "Product Manager", "order": 0 },
+      { "id": "backend", "name": "Backend Developer", "order": 1 },
+      { "id": "frontend", "name": "Frontend Developer", "order": 2 },
+      { "id": "qa", "name": "QA Lead", "order": 3 },
+      { "id": "designer", "name": "Designer", "order": 4 }
+    ],
+    "tasks": [
+      {
+        "id": "req",
+        "name": "Requirements",
+        "description": "Define project scope and features",
+        "order": 0
+      },
+      {
+        "id": "arch",
+        "name": "Architecture",
+        "description": "Design system architecture",
+        "order": 1
+      },
+      {
+        "id": "impl",
+        "name": "Implementation",
+        "description": "Build application components",
+        "order": 2
+      },
+      {
+        "id": "test",
+        "name": "Testing",
+        "description": "QA and system testing",
+        "order": 3
+      },
+      {
+        "id": "deploy",
+        "name": "Deployment",
+        "description": "Release to production",
+        "order": 4
+      }
+    ],
+    "matrix": {
+      "pm": {
+        "req": "A",
+        "arch": "C",
+        "impl": "I",
+        "test": "C",
+        "deploy": "A"
+      },
+      "backend": {
+        "req": "C",
+        "arch": "R",
+        "impl": "R",
+        "test": "R",
+        "deploy": "R"
+      },
+      "frontend": {
+        "req": "C",
+        "arch": "R",
+        "impl": "R",
+        "test": "R",
+        "deploy": "R"
+      },
+      "qa": {
+        "req": "C",
+        "arch": "C",
+        "impl": "I",
+        "test": "A",
+        "deploy": "C"
+      },
+      "designer": {
+        "req": "R",
+        "arch": "C",
+        "impl": "C",
+        "test": "I",
+        "deploy": "I"
+      }
+    }
+  },
+  "web-redesign": {
+    "id": "web-redesign",
+    "name": "Web Redesign Project",
+    "description": "Marketing & design project for website overhaul",
+    "roles": [
+      { "id": "marketing", "name": "Marketing Lead", "order": 0 },
+      { "id": "design", "name": "Design Lead", "order": 1 },
+      { "id": "frontend", "name": "Frontend Developer", "order": 2 },
+      { "id": "content", "name": "Content Strategist", "order": 3 },
+      { "id": "pm", "name": "Project Manager", "order": 4 }
+    ],
+    "tasks": [
+      {
+        "id": "strategy",
+        "name": "Strategy",
+        "description": "Develop redesign strategy",
+        "order": 0
+      },
+      {
+        "id": "design",
+        "name": "Design",
+        "description": "Create UI/UX designs",
+        "order": 1
+      },
+      {
+        "id": "proto",
+        "name": "Prototyping",
+        "description": "Build interactive prototypes",
+        "order": 2
+      },
+      {
+        "id": "build",
+        "name": "Build",
+        "description": "Implement frontend code",
+        "order": 3
+      },
+      {
+        "id": "content",
+        "name": "Content",
+        "description": "Create and organize content",
+        "order": 4
+      },
+      {
+        "id": "launch",
+        "name": "Launch",
+        "description": "Go live with new design",
+        "order": 5
+      }
+    ],
+    "matrix": {
+      "marketing": {
+        "strategy": "A",
+        "design": "C",
+        "proto": "I",
+        "build": "I",
+        "content": "C",
+        "launch": "A"
+      },
+      "design": {
+        "strategy": "R",
+        "design": "A",
+        "proto": "R",
+        "build": "C",
+        "content": "I",
+        "launch": "C"
+      },
+      "frontend": {
+        "strategy": "C",
+        "design": "C",
+        "proto": "C",
+        "build": "A",
+        "content": "I",
+        "launch": "R"
+      },
+      "content": {
+        "strategy": "C",
+        "design": "I",
+        "proto": "I",
+        "build": "I",
+        "content": "A",
+        "launch": "C"
+      },
+      "pm": {
+        "strategy": "R",
+        "design": "C",
+        "proto": "C",
+        "build": "C",
+        "content": "C",
+        "launch": "R"
+      }
+    }
+  },
+  "crm-migration": {
+    "id": "crm-migration",
+    "name": "CRM Migration Project",
+    "description": "Legacy system upgrade and data migration",
+    "roles": [
+      { "id": "admin", "name": "CRM Administrator", "order": 0 },
+      { "id": "analyst", "name": "Data Analyst", "order": 1 },
+      { "id": "change", "name": "Change Manager", "order": 2 },
+      { "id": "user", "name": "Business User", "order": 3 },
+      { "id": "support", "name": "IT Support", "order": 4 }
+    ],
+    "tasks": [
+      {
+        "id": "assess",
+        "name": "Assessment",
+        "description": "Evaluate current system",
+        "order": 0
+      },
+      {
+        "id": "plan",
+        "name": "Planning",
+        "description": "Create migration plan",
+        "order": 1
+      },
+      {
+        "id": "map",
+        "name": "Data Mapping",
+        "description": "Map data between systems",
+        "order": 2
+      },
+      {
+        "id": "train",
+        "name": "Training",
+        "description": "Train users on new system",
+        "order": 3
+      },
+      {
+        "id": "cutover",
+        "name": "Cutover",
+        "description": "Execute data migration",
+        "order": 4
+      },
+      {
+        "id": "support-phase",
+        "name": "Support",
+        "description": "Post-go-live support",
+        "order": 5
+      }
+    ],
+    "matrix": {
+      "admin": {
+        "assess": "A",
+        "plan": "R",
+        "map": "A",
+        "train": "R",
+        "cutover": "A",
+        "support-phase": "A"
+      },
+      "analyst": {
+        "assess": "R",
+        "plan": "R",
+        "map": "A",
+        "train": "C",
+        "cutover": "R",
+        "support-phase": "I"
+      },
+      "change": {
+        "assess": "C",
+        "plan": "R",
+        "map": "I",
+        "train": "A",
+        "cutover": "C",
+        "support-phase": "R"
+      },
+      "user": {
+        "assess": "C",
+        "plan": "C",
+        "map": "I",
+        "train": "A",
+        "cutover": "C",
+        "support-phase": "C"
+      },
+      "support": {
+        "assess": "I",
+        "plan": "C",
+        "map": "I",
+        "train": "C",
+        "cutover": "R",
+        "support-phase": "A"
+      }
+    }
+  }
+}
