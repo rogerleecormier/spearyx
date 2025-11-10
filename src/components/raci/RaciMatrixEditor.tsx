@@ -36,7 +36,7 @@ export default function RaciMatrixEditor({
       case "A":
         return "bg-red-50 border-red-300 text-red-700";
       case "C":
-        return "bg-indigo-50 border-indigo-300 text-indigo-700";
+        return "bg-accent-50 border-accent-300 text-accent-700";
       case "I":
         return "bg-gray-50 border-gray-300 text-gray-700";
       default:

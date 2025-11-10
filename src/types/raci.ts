@@ -57,20 +57,32 @@ export interface RaciUndoState {
 }
 
 /**
- * Validation error details
+ * Validation error details with error code
  */
 export interface ValidationError {
   field: string; // e.g., "title", "roles", "matrix"
   message: string;
   severity: "error" | "warning";
+  code: string; // e.g., "ROLE_EMPTY", "ROLE_DUPLICATE"
 }
 
 /**
- * Validation result
+ * Validation warning details
+ */
+export interface ValidationWarning {
+  field: string;
+  message: string;
+  code: string;
+}
+
+/**
+ * Validation result with helper methods
  */
 export interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];
+  warnings: ValidationWarning[];
+  getFieldError: (field: string) => ValidationError | undefined;
 }
 
 /**
@@ -142,3 +154,24 @@ export interface ExportOptions {
   filename: string;
   theme: string;
 }
+
+/**
+ * Reducer action types for useRaciState
+ * Union type for all possible state mutations
+ */
+export type RaciAction =
+  | { type: "addRole"; payload: { name: string } }
+  | { type: "editRole"; payload: { id: string; name: string } }
+  | { type: "deleteRole"; payload: { id: string } }
+  | { type: "reorderRoles"; payload: { roles: RaciRole[] } }
+  | { type: "addTask"; payload: { name: string; description?: string } }
+  | { type: "editTask"; payload: { id: string; name: string; description?: string } }
+  | { type: "deleteTask"; payload: { id: string } }
+  | { type: "reorderTasks"; payload: { tasks: RaciTask[] } }
+  | { type: "updateTitle"; payload: { title: string } }
+  | { type: "updateLogo"; payload: { logo?: string } }
+  | { type: "updateDescription"; payload: { description: string } }
+  | { type: "updateMatrix"; payload: { matrix: Record<string, Record<string, RaciValue>> } }
+  | { type: "updateTheme"; payload: { theme: string } }
+  | { type: "reset" }
+  | { type: "setState"; payload: { chart: RaciChart } };

@@ -248,19 +248,19 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Primary Brand Colors - Vibrant Indigo
+        // Primary Brand Colors - Bold Red (matches logo)
         primary: {
-          "50": "#f0f4ff",
-          "100": "#e6ecff",
-          "200": "#c7d9ff",
-          "300": "#a8c5ff",
-          "400": "#89b1ff",
-          "500": "#6a9dff", // Main brand indigo
-          "600": "#5585e6",
-          "700": "#406dcc",
-          "800": "#2b55b3",
-          "900": "#1a3d99",
-          "950": "#0d2666",
+          "50": "#fef2f2",
+          "100": "#fee2e2",
+          "200": "#fecaca",
+          "300": "#fca5a5",
+          "400": "#f87171",
+          "500": "#ef4444", // Main brand red
+          "600": "#dc2626",
+          "700": "#b91c1c",
+          "800": "#991b1b",
+          "900": "#7f1d1d",
+          "950": "#450a0a",
         },
         // Sophisticated Slate - Modern foundation
         slate: {
