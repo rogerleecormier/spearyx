@@ -9,6 +9,8 @@ import {
   File,
   Image as ImageIcon,
   Presentation,
+  Link2,
+  Check,
 } from "lucide-react";
 import {
   exportToPdf,
@@ -18,6 +20,7 @@ import {
   exportToPptx,
 } from "@/lib/raci/exporters";
 import { triggerDownload, generateFilename } from "@/lib/raci/export-utils";
+import { generatePublicLink, EncodingError } from "@/lib/raci/encoding";
 
 interface ExportButtonsProps {
   chart: RaciChart;
@@ -34,6 +37,8 @@ interface ExportState {
   format: ExportFormat | null;
   error: string | null;
   hoveredTooltip: ExportFormat | null;
+  linkCopied: boolean;
+  linkError: string | null;
 }
 
 // Organized in 3 rows:
@@ -100,6 +105,8 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
     format: null,
     error: null,
     hoveredTooltip: null,
+    linkCopied: false,
+    linkError: null,
   });
 
   const handleExport = async (format: ExportFormat) => {
@@ -147,6 +154,46 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
         format: null,
         error: err.message,
       }));
+      onExportError?.(err);
+    }
+  };
+
+  const handleCopyPublicLink = async () => {
+    try {
+      setState((prev) => ({ ...prev, linkError: null }));
+      const link = generatePublicLink(chart);
+      
+      // Copy to clipboard
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        // Fallback for older browsers
+        const textarea = document.createElement("textarea");
+        textarea.value = link;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      
+      setState((prev) => ({ ...prev, linkCopied: true }));
+      
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, linkCopied: false }));
+      }, 2000);
+
+      onExportComplete?.("public-link");
+    } catch (error) {
+      const errorMessage = error instanceof EncodingError
+        ? error.message
+        : error instanceof Error 
+        ? error.message
+        : "Failed to generate public link";
+      
+      setState((prev) => ({ ...prev, linkError: errorMessage }));
+      
+      const err = error instanceof Error ? error : new Error(errorMessage);
       onExportError?.(err);
     }
   };
@@ -252,7 +299,65 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
         ))}
       </div>
 
-      {/* Error Message */}
+      {/* Public Link Section */}
+      <div className="pt-3 border-t border-slate-200 mt-3">
+        <div className="pb-2 mb-3">
+          <Body className="font-semibold text-slate-900">Share Chart</Body>
+          <Caption className="text-slate-600 mt-1">
+            Generate a permanent public link to share or import
+          </Caption>
+        </div>
+
+        <button
+          onClick={handleCopyPublicLink}
+          className={`
+            w-full flex items-center gap-3 p-3 rounded-lg
+            border-2 transition-all duration-200
+            ${
+              state.linkCopied
+                ? "border-emerald-400 bg-emerald-50"
+                : "border-slate-200 hover:border-blue-400 hover:bg-blue-50"
+            }
+          `}
+        >
+          {/* Icon */}
+          {state.linkCopied ? (
+            <Check className="w-6 h-6 flex-shrink-0 text-emerald-600" />
+          ) : (
+            <Link2 className="w-6 h-6 flex-shrink-0 text-slate-600" />
+          )}
+
+          {/* Text Content */}
+          <div className="flex-1 text-left min-w-0">
+            <div className="font-semibold text-sm text-slate-900 leading-tight">
+              {state.linkCopied ? "Link Copied!" : "Get Public Link"}
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              {state.linkCopied
+                ? "Link copied to clipboard"
+                : "Copy shareable link to clipboard"}
+            </div>
+          </div>
+
+          {/* Chevron */}
+          <span className="text-slate-400 transition-colors flex-shrink-0">
+            {state.linkCopied ? "✓" : "→"}
+          </span>
+        </button>
+
+        {/* Link Error */}
+        {state.linkError && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 animate-in fade-in mt-2">
+            <span className="text-lg flex-shrink-0">⚠️</span>
+            <div className="flex-1 min-w-0">
+              <Body className="text-xs font-semibold text-red-900">
+                Link generation failed
+              </Body>
+              <Caption className="text-red-700 text-xs">{state.linkError}</Caption>
+            </div>
+          </div>
+        )}
+      </div>
       {state.error && (
         <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 animate-in fade-in">
           <span className="text-lg flex-shrink-0">⚠️</span>

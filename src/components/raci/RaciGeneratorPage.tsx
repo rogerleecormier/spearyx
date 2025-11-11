@@ -6,12 +6,14 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearch } from "@tanstack/react-router";
 import { useRaciState } from "@/lib/raci/hooks";
 import { useValidation } from "@/lib/raci/hooks";
 import { useAutoSave } from "@/lib/raci/hooks";
 import { useTheme } from "@/lib/raci/hooks";
 import { loadChartFromStorage } from "@/lib/raci/hooks";
 import { loadTemplate as loadTemplateUtil } from "@/lib/raci/templates";
+import { decodeChart } from "@/lib/raci/encoding";
 import RaciHeaderBar from "./RaciHeaderBar";
 import RolesEditor from "./RolesEditor";
 import TasksEditor from "./TasksEditor";
@@ -35,10 +37,15 @@ import { RaciChart } from "@/types/raci";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
 export default function RaciGeneratorPage() {
+  const search = useSearch({ strict: false }) as { importData?: string };
   const [isInitialized, setIsInitialized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [importNotification, setImportNotification] = useState<{
+    chartTitle: string;
+    timestamp: string;
+  } | null>(null);
 
   // Initialize state
   const {
@@ -67,6 +74,49 @@ export default function RaciGeneratorPage() {
   useEffect(() => {
     const initializeChart = async () => {
       try {
+        // 1. Check for import data in URL search params (highest priority)
+        if (search.importData) {
+          try {
+            const importedChart = decodeChart(search.importData);
+            setChart(importedChart);
+            setImportNotification({
+              chartTitle: importedChart.title,
+              timestamp: new Date().toISOString(),
+            });
+            return;
+          } catch (err) {
+            console.error("Failed to decode chart from URL:", err);
+            // Fall through to other options
+          }
+        }
+
+        // 2. Check for imported chart from sessionStorage (cross-tab import)
+        const importedChartJson = sessionStorage.getItem("raci:importedChart");
+        if (importedChartJson) {
+          try {
+            const importedChart = JSON.parse(importedChartJson) as RaciChart;
+            setChart(importedChart);
+            // Clear so it's only used once
+            sessionStorage.removeItem("raci:importedChart");
+
+            // Check for notification
+            const importNotifJson = sessionStorage.getItem("raci:importNotification");
+            if (importNotifJson) {
+              try {
+                const notif = JSON.parse(importNotifJson);
+                setImportNotification(notif);
+                sessionStorage.removeItem("raci:importNotification");
+              } catch (err) {
+                console.warn("Failed to parse import notification:", err);
+              }
+            }
+            return;
+          } catch (err) {
+            console.warn("Failed to parse imported chart from sessionStorage:", err);
+          }
+        }
+
+        // 3. Fall back to stored chart from localStorage
         const storedChart = await loadChartFromStorage();
         if (storedChart) {
           setChart(storedChart);
@@ -80,7 +130,7 @@ export default function RaciGeneratorPage() {
     };
 
     initializeChart();
-  }, [setChart]);
+  }, [setChart, search.importData]);
 
   // Close error modal on Esc
   useEffect(() => {
@@ -153,6 +203,29 @@ export default function RaciGeneratorPage() {
 
   return (
     <main className="min-h-screen bg-white">
+      {/* Import Notification */}
+      {importNotification && (
+        <div className="bg-blue-50 border-b border-blue-200">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">
+                Imported: <span className="font-semibold">{importNotification.chartTitle}</span>
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Loaded from public link • {new Date(importNotification.timestamp).toLocaleString()}
+              </p>
+            </div>
+            <button
+              onClick={() => setImportNotification(null)}
+              className="text-blue-600 hover:text-blue-900 font-medium text-sm"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-6">

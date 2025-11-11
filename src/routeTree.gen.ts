@@ -13,6 +13,7 @@ import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsRaciGeneratorRouteImport } from './routes/tools/raci-generator'
+import { Route as ToolsRaciGeneratorImportRouteImport } from './routes/tools/raci-generator/import'
 
 const TypographyRoute = TypographyRouteImport.update({
   id: '/typography',
@@ -34,39 +35,64 @@ const ToolsRaciGeneratorRoute = ToolsRaciGeneratorRouteImport.update({
   path: '/tools/raci-generator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsRaciGeneratorImportRoute =
+  ToolsRaciGeneratorImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => ToolsRaciGeneratorRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
-  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
+  '/tools/raci-generator/import': typeof ToolsRaciGeneratorImportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
-  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
+  '/tools/raci-generator/import': typeof ToolsRaciGeneratorImportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
-  '/tools/raci-generator': typeof ToolsRaciGeneratorRoute
+  '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
+  '/tools/raci-generator/import': typeof ToolsRaciGeneratorImportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards' | '/typography' | '/tools/raci-generator'
+  fullPaths:
+    | '/'
+    | '/cards'
+    | '/typography'
+    | '/tools/raci-generator'
+    | '/tools/raci-generator/import'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/typography' | '/tools/raci-generator'
-  id: '__root__' | '/' | '/cards' | '/typography' | '/tools/raci-generator'
+  to:
+    | '/'
+    | '/cards'
+    | '/typography'
+    | '/tools/raci-generator'
+    | '/tools/raci-generator/import'
+  id:
+    | '__root__'
+    | '/'
+    | '/cards'
+    | '/typography'
+    | '/tools/raci-generator'
+    | '/tools/raci-generator/import'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardsRoute: typeof CardsRoute
   TypographyRoute: typeof TypographyRoute
-  ToolsRaciGeneratorRoute: typeof ToolsRaciGeneratorRoute
+  ToolsRaciGeneratorRoute: typeof ToolsRaciGeneratorRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -99,14 +125,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsRaciGeneratorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/raci-generator/import': {
+      id: '/tools/raci-generator/import'
+      path: '/import'
+      fullPath: '/tools/raci-generator/import'
+      preLoaderRoute: typeof ToolsRaciGeneratorImportRouteImport
+      parentRoute: typeof ToolsRaciGeneratorRoute
+    }
   }
 }
+
+interface ToolsRaciGeneratorRouteChildren {
+  ToolsRaciGeneratorImportRoute: typeof ToolsRaciGeneratorImportRoute
+}
+
+const ToolsRaciGeneratorRouteChildren: ToolsRaciGeneratorRouteChildren = {
+  ToolsRaciGeneratorImportRoute: ToolsRaciGeneratorImportRoute,
+}
+
+const ToolsRaciGeneratorRouteWithChildren =
+  ToolsRaciGeneratorRoute._addFileChildren(ToolsRaciGeneratorRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardsRoute: CardsRoute,
   TypographyRoute: TypographyRoute,
-  ToolsRaciGeneratorRoute: ToolsRaciGeneratorRoute,
+  ToolsRaciGeneratorRoute: ToolsRaciGeneratorRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
