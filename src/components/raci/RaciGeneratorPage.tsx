@@ -23,7 +23,7 @@ import ExportButtons from "./ExportButtons";
 import ResetControls from "./ResetControls";
 import RaciMatrixEditor from "./RaciMatrixEditor";
 import ErrorModal from "./ErrorModal";
-import { TemplateSelector, QuickPresets, PresetManager } from ".";
+import { ConfigurationPanel } from ".";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Hero,
@@ -40,7 +40,6 @@ export default function RaciGeneratorPage() {
   const search = useSearch({ strict: false }) as { importData?: string };
   const [isInitialized, setIsInitialized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [importNotification, setImportNotification] = useState<{
     chartTitle: string;
@@ -162,7 +161,6 @@ export default function RaciGeneratorPage() {
 
   const handleLoadTemplate = useCallback(
     (template: Parameters<typeof loadTemplateUtil>[0]) => {
-      setIsLoadingTemplate(true);
       try {
         const newChart = loadTemplateUtil(template);
         loadTemplate(
@@ -172,21 +170,14 @@ export default function RaciGeneratorPage() {
           newChart.title,
           newChart.description
         );
-      } finally {
-        setIsLoadingTemplate(false);
+      } catch (error) {
+        console.error("Error loading template:", error);
       }
     },
     [loadTemplate]
   );
 
   const handleApplyPreset = useCallback(
-    (matrix: RaciChart["matrix"]) => {
-      loadPreset(matrix);
-    },
-    [loadPreset]
-  );
-
-  const handleLoadPreset = useCallback(
     (matrix: RaciChart["matrix"]) => {
       loadPreset(matrix);
     },
@@ -299,25 +290,12 @@ export default function RaciGeneratorPage() {
                   </Headline>
                 </div>
 
-                {/* Template Loader */}
-                <TemplateSelector
-                  onLoadTemplate={handleLoadTemplate}
-                  isLoading={isLoadingTemplate}
-                />
-
-                {/* Quick Presets */}
-                <QuickPresets
+                {/* Configuration Panel */}
+                <ConfigurationPanel
                   roles={chart.roles}
                   tasks={chart.tasks}
+                  onLoadTemplate={handleLoadTemplate}
                   onApplyPreset={handleApplyPreset}
-                  isLoading={isLoadingTemplate}
-                />
-
-                {/* Custom Presets Manager */}
-                <PresetManager
-                  currentMatrix={chart.matrix}
-                  onLoadPreset={handleLoadPreset}
-                  isLoading={isLoadingTemplate}
                 />
               </div>
 

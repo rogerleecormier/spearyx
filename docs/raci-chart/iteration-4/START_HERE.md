@@ -57,28 +57,22 @@ Iteration 4 introduces **template loading**, **quick presets**, and **custom pre
 5. Optionally add a description
 6. Click **Save Preset**
 
-→ Your preset is saved to browser storage and appears in the list below!
-
-### Step 4: Load Your Custom Preset (10 seconds)
-
-1. Click the **Load** button on any saved preset
-2. Your matrix updates instantly!
+→ Your matrix is updated instantly!
 
 ---
 
 ## Template Architecture
 
-### Three Components
+### Two Components
 
 ```
 TemplateSelector          → Load demo templates from config
     ↓
-RaciGeneratorPage        → Orchestrates all three components
-    ↑ ↑
-QuickPresets   +   PresetManager
-    ↓                      ↓
-Apply patterns             Save/load custom presets
-to existing chart          to localStorage
+RaciGeneratorPage        → Orchestrates all components
+    ↑
+QuickPresets
+    ↓
+Apply patterns to existing chart
 ```
 
 ### Data Flow
@@ -110,7 +104,6 @@ src/
 ├── components/raci/
 │   ├── TemplateSelector.tsx       # Template loader UI
 │   ├── QuickPresets.tsx           # Quick preset patterns
-│   ├── PresetManager.tsx          # Custom preset manager
 │   └── RaciGeneratorPage.tsx      # Main integration point
 └── types/
     └── raci.ts                    # Updated with loadTemplate/loadPreset actions
@@ -140,22 +133,6 @@ loadTemplate(template, partial?): RaciChart
 
 // Apply preset matrix to existing chart
 loadPresetMatrix(chart, preset): RaciChart
-```
-
-### Custom Presets (localStorage)
-
-```typescript
-// Get all saved presets
-getCustomPresets(): RaciPreset[]
-
-// Save new preset
-saveCustomPreset(preset): RaciPreset
-
-// Delete preset by ID
-deleteCustomPreset(id: string): boolean
-
-// Update existing preset
-updateCustomPreset(id, updates): RaciPreset | null
 ```
 
 ### Quick Preset Patterns
@@ -208,25 +185,6 @@ QUICK_PRESETS = {
 - Disabled when no roles/tasks
 - Preview of selected pattern
 - Clear/cancel button
-
-### PresetManager
-
-```typescript
-<PresetManager
-  currentMatrix={chart.matrix}         // Matrix to save
-  onLoadPreset={(matrix) => {}}        // Called when load button clicked
-  isLoading={boolean}                  // Show loading state
-/>
-```
-
-**Features:**
-
-- Save current matrix as preset
-- List all saved presets
-- Load preset with one click
-- Delete preset with confirmation
-- Shows creation date
-- Scrollable list for many presets
 
 ---
 
@@ -325,21 +283,18 @@ const {
 
 1. Load "One Accountable per Task" preset
 2. Compare with "Distributed Accountability"
-3. Save the best one as custom preset
-4. Use as team standard
+3. Use as team standard
 
 ---
 
 ## Browser Compatibility
 
-| Feature        | Chrome | Firefox | Safari | Edge |
-| -------------- | ------ | ------- | ------ | ---- |
-| Templates      | ✅     | ✅      | ✅     | ✅   |
-| Quick Presets  | ✅     | ✅      | ✅     | ✅   |
-| Custom Presets | ✅     | ✅      | ✅     | ✅   |
-| localStorage   | ✅     | ✅      | ✅     | ✅   |
+| Feature       | Chrome | Firefox | Safari | Edge |
+| ------------- | ------ | ------- | ------ | ---- |
+| Templates     | ✅     | ✅      | ✅     | ✅   |
+| Quick Presets | ✅     | ✅      | ✅     | ✅   |
 
-**Note:** Custom presets use `localStorage`, which persists per domain/port.
+**Note:** All functionality works in modern browsers.
 
 ---
 
@@ -351,7 +306,6 @@ const {
 | Show preview    | Click "Show Preview"                 |
 | Load template   | Click "Load Template" or press Enter |
 | Apply preset    | Click "Apply Preset" or press Enter  |
-| Save preset     | Click "Save Preset" or press Enter   |
 | Cancel          | Press Escape or click "Cancel"       |
 
 ---

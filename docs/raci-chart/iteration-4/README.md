@@ -14,7 +14,6 @@ In Iteration 4, we've added:
 
 - 🎯 **Demo Templates** – Pre-configured RACI charts to get you started
 - ⚡ **Quick Presets** – Common assignment patterns (all R, one A per task, etc.)
-- 💾 **Custom Presets** – Save your own matrix patterns for reuse
 
 ---
 
@@ -159,17 +158,6 @@ Distributed                  Spread accountability
 Execution Model              Strict R+A+C+I
 ```
 
-### Custom Presets
-
-```
-Operation       Storage          Persistence
-─────────────────────────────────────────────────
-Save            localStorage     Across sessions
-Load            1-click          Instant apply
-Delete          1-click          Confirmed delete
-List            Auto-loaded      On mount
-```
-
 ---
 
 ## Key Improvements
@@ -178,14 +166,12 @@ List            Auto-loaded      On mount
 
 - Users had to manually create roles, tasks, matrix
 - No patterns or templates to reference
-- Starting from scratch every time
+- After Iteration 3: Starting from scratch every time
 
 ### After Iteration 4
 
 - Load template in 30 seconds
 - Apply preset pattern in 10 seconds
-- Save custom pattern for next time
-- Reuse patterns across projects
 
 ---
 
@@ -198,7 +184,6 @@ src/
 ├── components/raci/
 │   ├── TemplateSelector.tsx            # Template UI
 │   ├── QuickPresets.tsx                # Pattern UI
-│   ├── PresetManager.tsx               # Preset UI
 │   └── RaciGeneratorPage.tsx           # Integration
 ├── types/
 │   └── raci.ts                         # Updated types
@@ -222,14 +207,13 @@ docs/raci-chart/iteration-4/
 
 ### Lines of Code
 
-| Component        | Lines      | Purpose                   |
-| ---------------- | ---------- | ------------------------- |
-| templates.ts     | 400+       | Template/preset utilities |
-| TemplateSelector | 200+       | Template loader UI        |
-| QuickPresets     | 150+       | Quick pattern UI          |
-| PresetManager    | 250+       | Custom preset UI          |
-| Integration code | 150+       | State management          |
-| **Total**        | **1,100+** | Production code           |
+| Component        | Lines    | Purpose                  |
+| ---------------- | -------- | ------------------------ |
+| templates.ts     | 400+     | Template/quick utilities |
+| TemplateSelector | 200+     | Template loader UI       |
+| QuickPresets     | 150+     | Quick pattern UI         |
+| Integration code | 100+     | State management         |
+| **Total**        | **850+** | Production code          |
 
 ### Documentation
 
@@ -347,11 +331,6 @@ getTemplates(): RaciTemplate[]
 getTemplateById(id: string): RaciTemplate | null
 loadTemplate(template, partial?): RaciChart
 
-// Custom presets
-getCustomPresets(): RaciPreset[]
-saveCustomPreset(preset): RaciPreset
-deleteCustomPreset(id: string): boolean
-
 // Quick patterns
 QUICK_PRESETS.allResponsible(roleIds, taskIds)
 QUICK_PRESETS.oneAccountablePerTask(roleIds, taskIds)
@@ -363,22 +342,6 @@ Full API: [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
 ---
 
 ## Common Questions
-
-### Q: Where are my custom presets stored?
-
-**A:** In your browser's localStorage under the key `raci_custom_presets`.
-
-### Q: Will my presets sync across devices?
-
-**A:** No, presets are stored locally per browser/device.
-
-### Q: Can I export/import presets?
-
-**A:** Not yet (planned for future iteration).
-
-### Q: What if localStorage is full?
-
-**A:** You'll see an error. Delete old presets and try again.
 
 ### Q: Can I create custom templates?
 

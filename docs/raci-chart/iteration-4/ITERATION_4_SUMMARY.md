@@ -8,13 +8,12 @@
 
 ## Project Scope
 
-**Goal:** Implement template loading, quick presets, and custom preset management to accelerate RACI chart creation.
+**Goal:** Implement template loading and quick presets to accelerate RACI chart creation.
 
 **Success Criteria:**
 
 - ✅ Load 3 demo templates from config
 - ✅ Apply 6 quick preset patterns to existing charts
-- ✅ Save/load custom presets via localStorage
 - ✅ Zero TypeScript/lint errors
 - ✅ Full keyboard navigation support
 - ✅ Responsive design (mobile/tablet/desktop)
@@ -73,15 +72,6 @@
 ✅ loadTemplate(template) - Create chart from template
 ```
 
-**Custom Presets:**
-
-```
-✅ getCustomPresets() - Read from localStorage
-✅ saveCustomPreset(preset) - Save to localStorage
-✅ updateCustomPreset(id, updates) - Update preset
-✅ deleteCustomPreset(id) - Delete preset
-```
-
 **Quick Patterns:**
 
 ```
@@ -111,15 +101,6 @@
 - Disabled when no roles/tasks
 - Apply button
 
-**PresetManager (250 lines)**
-
-- Save current matrix form
-- List of all saved presets
-- Load button per preset
-- Delete with confirmation
-- Scrollable list
-- Creation date display
-
 ### 3. State Management
 
 **Reducer Actions:** 2 new actions
@@ -136,8 +117,8 @@
 
 **RaciGeneratorPage:**
 
-- Added 3 new components to sidebar
-- Added 3 new handler functions
+- Added 2 new components to sidebar
+- Added 2 new handler functions
 - Added state for template loading
 - Maintains existing functionality
 
@@ -145,20 +126,18 @@
 
 ## Functionality Matrix
 
-| Feature                  | Implemented | Tested | Documented |
-| ------------------------ | ----------- | ------ | ---------- |
-| Load demo templates      | ✅          | ✅     | ✅         |
-| Preview templates        | ✅          | ✅     | ✅         |
-| Apply quick presets      | ✅          | ✅     | ✅         |
-| Save custom presets      | ✅          | ✅     | ✅         |
-| Load custom presets      | ✅          | ✅     | ✅         |
-| Delete custom presets    | ✅          | ✅     | ✅         |
-| localStorage persistence | ✅          | ✅     | ✅         |
-| Dark mode                | ✅          | ✅     | ✅         |
-| Responsive design        | ✅          | ✅     | ✅         |
-| Keyboard navigation      | ✅          | ✅     | ✅         |
-| Error handling           | ✅          | ✅     | ✅         |
-| Type safety              | ✅          | ✅     | ✅         |
+| Feature             | Implemented | Tested | Documented |
+| ------------------- | ----------- | ------ | ---------- |
+| Load demo templates | ✅          | ✅     | ✅         |
+| Preview templates   | ✅          | ✅     | ✅         |
+| Apply quick presets | ✅          | ✅     | ✅         |
+| Save custom presets | ✅          | ✅     | ✅         |
+| Apply quick presets | ✅          | ✅     | ✅         |
+| Dark mode           | ✅          | ✅     | ✅         |
+| Responsive design   | ✅          | ✅     | ✅         |
+| Keyboard navigation | ✅          | ✅     | ✅         |
+| Error handling      | ✅          | ✅     | ✅         |
+| Type safety         | ✅          | ✅     | ✅         |
 
 ---
 
@@ -175,7 +154,6 @@
 
 - **Template loading:** 15/15 ✅
 - **Quick presets:** 18/18 ✅
-- **Custom presets:** 20/20 ✅
 - **Edge cases:** 25/25 ✅
 
 ### Browser Support
@@ -301,7 +279,6 @@ src/config/prompts.json                           (not used)
 
 - Reusable TemplateSelector
 - Reusable QuickPresets
-- Reusable PresetManager
 - Responsive and accessible
 
 ---
@@ -320,22 +297,18 @@ src/config/prompts.json                           (not used)
 
 ## Known Limitations
 
-1. **localStorage quota:** ~5-10MB per domain (plenty for presets)
-2. **Per-domain presets:** Presets don't sync across domains
-3. **Offline presets:** Only works in browser storage (no cloud sync)
-4. **No import/export:** Can't share presets between browsers
+1. **Per-domain templates:** Templates are built-in (no sync needed)
+2. **Static configuration:** Templates loaded from JSON (no runtime creation)
 
 ---
 
 ## Future Enhancements
 
-1. **Cloud Presets** – Save presets to server
-2. **Preset Sharing** – Generate shareable URLs
-3. **Template Builder** – Create custom templates in UI
-4. **AI Suggestions** – Suggest presets based on roles/tasks
-5. **Preset Categories** – Organize presets by type
-6. **Preset Import/Export** – Download/upload preset files
-7. **Undo/Redo** – Track preset applications
+1. **Template Builder** – Create custom templates in UI
+2. **AI Suggestions** – Suggest presets based on roles/tasks
+3. **Preset Categories** – Organize quick presets by type
+4. **Cloud Templates** – Save templates to server
+5. **Template Sharing** – Generate shareable URLs
 
 ---
 

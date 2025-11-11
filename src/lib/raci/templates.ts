@@ -16,15 +16,6 @@ export interface RaciTemplate {
   matrix: RaciChart["matrix"];
 }
 
-export interface RaciPreset {
-  id: string;
-  name: string;
-  description: string;
-  matrix: RaciChart["matrix"];
-  createdAt: string;
-  updatedAt: string;
-}
-
 /**
  * Get all available templates
  */
@@ -164,92 +155,9 @@ export function loadPresetMatrix(
 }
 
 /**
- * Get custom presets from localStorage
- */
-export function getCustomPresets(): RaciPreset[] {
-  try {
-    const stored = localStorage.getItem("raci_custom_presets");
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error("Failed to load custom presets:", error);
-    return [];
-  }
-}
-
-/**
- * Save custom preset to localStorage
- */
-export function saveCustomPreset(
-  preset: Omit<RaciPreset, "id" | "createdAt" | "updatedAt">
-): RaciPreset {
-  const newPreset: RaciPreset = {
-    ...preset,
-    id: `preset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  try {
-    const presets = getCustomPresets();
-    presets.push(newPreset);
-    localStorage.setItem("raci_custom_presets", JSON.stringify(presets));
-    return newPreset;
-  } catch (error) {
-    console.error("Failed to save custom preset:", error);
-    throw error;
-  }
-}
-
-/**
- * Delete custom preset from localStorage
- */
-export function deleteCustomPreset(id: string): boolean {
-  try {
-    const presets = getCustomPresets();
-    const filtered = presets.filter((p) => p.id !== id);
-    if (filtered.length === presets.length) return false; // Not found
-
-    localStorage.setItem("raci_custom_presets", JSON.stringify(filtered));
-    return true;
-  } catch (error) {
-    console.error("Failed to delete custom preset:", error);
-    return false;
-  }
-}
-
-/**
- * Update custom preset
- */
-export function updateCustomPreset(
-  id: string,
-  updates: Partial<RaciPreset>
-): RaciPreset | null {
-  try {
-    const presets = getCustomPresets();
-    const index = presets.findIndex((p) => p.id === id);
-
-    if (index === -1) return null;
-
-    const updated: RaciPreset = {
-      ...presets[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    presets[index] = updated;
-    localStorage.setItem("raci_custom_presets", JSON.stringify(presets));
-    return updated;
-  } catch (error) {
-    console.error("Failed to update custom preset:", error);
-    return null;
-  }
-}
-
-/**
  * Quick preset patterns for common RACI assignments
  * These generate matrix templates based on standard patterns
  */
-
 export const QUICK_PRESETS = {
   /**
    * All Responsible: All roles are Responsible

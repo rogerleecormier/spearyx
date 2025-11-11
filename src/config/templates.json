@@ -250,7 +250,7 @@
         "assess": "C",
         "plan": "C",
         "map": "I",
-        "train": "A",
+        "train": "R",
         "cutover": "C",
         "support-phase": "C"
       },
