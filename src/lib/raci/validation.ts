@@ -203,6 +203,20 @@ export function validateChart(chart: RaciChart): ValidationResult {
   chart.tasks.forEach((task) => {
     errors.push(...validateTaskName(task.name, chart.tasks, task.id));
     errors.push(...validateTaskDescription(task.description));
+
+    // Check if task has at least one Accountable
+    const hasAccountable = chart.roles.some(
+      (role) => chart.matrix[role.id]?.[task.id] === "A"
+    );
+
+    if (!hasAccountable && chart.roles.length > 0) {
+      errors.push({
+        field: "matrix",
+        message: `Task "${task.name}" must have at least one Accountable (A)`,
+        severity: "error",
+        code: "TASK_NO_ACCOUNTABLE",
+      });
+    }
   });
 
   // Separate errors and warnings
@@ -232,6 +246,7 @@ export function getErrorMessage(code: string): string {
     TASK_DUPLICATE: "Task name already exists",
     TASK_TOO_LONG: "Task name too long (max 100 characters)",
     TASK_DESC_TOO_LONG: "Task description too long (max 500 characters)",
+    TASK_NO_ACCOUNTABLE: "Task must have at least one Accountable (A)",
     TITLE_EMPTY: "Project title cannot be empty",
     TITLE_TOO_LONG: "Project title too long (max 100 characters)",
     LOGO_INVALID_TYPE: "Invalid file type (only PNG, JPG, SVG allowed)",

@@ -32,6 +32,7 @@ export default function RaciGeneratorPage() {
     updateTitle,
     updateLogo,
     updateDescription,
+    updateMatrix,
     updateTheme,
     reset,
     setState: setChart,
@@ -315,7 +316,10 @@ export default function RaciGeneratorPage() {
             {chart.roles.length > 0 && chart.tasks.length > 0 ? (
               <Card className="border-slate-200 shadow-sm">
                 <CardContent className="p-6">
-                  <RaciMatrixEditor chart={chart} onChange={setChart} />
+                  <RaciMatrixEditor
+                    chart={chart}
+                    onMatrixChange={updateMatrix}
+                  />
                 </CardContent>
               </Card>
             ) : (
