@@ -280,7 +280,7 @@ export default function RaciGeneratorPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar: Configuration Tools */}
           <div className="lg:col-span-3">
-            <div className="space-y-6 sticky top-32">
+            <div className="space-y-6">
               {/* Quick Access Section */}
               <div className="space-y-6">
                 <div>
