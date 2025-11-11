@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { RaciTemplate, getTemplates } from "@/lib/raci/templates";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Label, Caption } from "@/components/Typography";
 
 interface TemplateSelectorProps {
@@ -32,19 +32,18 @@ export function TemplateSelector({
   };
 
   return (
-    <Card className="w-full p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base font-semibold text-slate-900">
-            Load Template
-          </Label>
-          <Caption className="text-slate-600">
-            Start with a pre-configured template to quickly set up your RACI
-            chart
-          </Caption>
-        </div>
-
-        {/* Template Selection Grid */}
+    <Card className="w-full bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader>
+        <Label className="text-base font-semibold text-slate-900">
+          Load Template
+        </Label>
+        <Caption className="text-slate-600">
+          Start with a pre-configured template to quickly set up your RACI
+          chart
+        </Caption>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3">
           {templates.map((template) => (
             <button
@@ -173,7 +172,8 @@ export function TemplateSelector({
             Please select a template to load
           </div>
         )}
-      </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

@@ -276,3 +276,80 @@ export async function loadChartFromStorage(): Promise<RaciChart | null> {
 
   return null;
 }
+
+/**
+ * useTheme - Theme management hook with localStorage persistence
+ * Manages theme selection and high-contrast mode
+ */
+export function useTheme(initialTheme: string = "default") {
+  const [theme, setThemeState] = useState<string>(() => {
+    if (typeof window === "undefined") return initialTheme;
+    try {
+      const saved = localStorage.getItem("raci-theme");
+      return saved || initialTheme;
+    } catch {
+      return initialTheme;
+    }
+  });
+
+  const [highContrast, setHighContrastState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const saved = localStorage.getItem("raci-high-contrast");
+      return saved === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  // Update theme and persist
+  const setTheme = useCallback((newTheme: string) => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem("raci-theme", newTheme);
+    } catch (error) {
+      console.error("Failed to save theme to localStorage:", error);
+    }
+
+    // Update DOM data attribute
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute("data-theme", newTheme);
+    }
+  }, []);
+
+  // Update high contrast mode and persist
+  const setHighContrast = useCallback((isHC: boolean) => {
+    setHighContrastState(isHC);
+    try {
+      localStorage.setItem("raci-high-contrast", isHC.toString());
+    } catch (error) {
+      console.error("Failed to save high-contrast to localStorage:", error);
+    }
+
+    // Update DOM data attribute
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute(
+        "data-high-contrast",
+        isHC.toString()
+      );
+    }
+  }, []);
+
+  // Initialize DOM attributes on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute(
+        "data-high-contrast",
+        highContrast.toString()
+      );
+    }
+  }, [theme, highContrast]);
+
+  return {
+    theme,
+    setTheme,
+    highContrast,
+    setHighContrast,
+  };
+}

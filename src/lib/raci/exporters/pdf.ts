@@ -1,3 +1,5 @@
+"use client";
+
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { RaciChart } from "@/types/raci";
@@ -149,7 +151,7 @@ function addMatrixPage(doc: jsPDF, chart: RaciChart, theme: PdfTheme): void {
         { align: "center" }
       );
     },
-    headerStyles: {
+    headStyles: {
       fillColor: hexToRgb(theme.colors.primary),
       textColor: [255, 255, 255],
       fontStyle: "bold",

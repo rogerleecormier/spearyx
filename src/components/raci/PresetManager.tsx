@@ -9,7 +9,7 @@ import {
 } from "@/lib/raci/templates";
 import { RaciChart } from "@/types/raci";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Label, Caption } from "@/components/Typography";
 
 interface PresetManagerProps {
@@ -82,18 +82,17 @@ export function PresetManager({
   };
 
   return (
-    <Card className="w-full p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base font-semibold text-slate-900">
-            Custom Presets
-          </Label>
-          <Caption className="text-slate-600">
-            Save and load your own RACI matrix presets
-          </Caption>
-        </div>
-
-        {/* Save Preset Form */}
+    <Card className="w-full bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader>
+        <Label className="text-base font-semibold text-slate-900">
+          Custom Presets
+        </Label>
+        <Caption className="text-slate-600">
+          Save and load your own RACI matrix presets
+        </Caption>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
         {showSave && (
           <Card className="p-4 bg-slate-50 border border-slate-200 space-y-3">
             <div>
@@ -220,7 +219,8 @@ export function PresetManager({
               : "No custom presets yet. Save your first preset above!"}
           </div>
         )}
-      </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

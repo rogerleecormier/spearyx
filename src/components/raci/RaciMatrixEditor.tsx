@@ -13,10 +13,13 @@
 import { useCallback, useRef, useState } from "react";
 import { RaciChart, RaciValue } from "@/types/raci";
 import { Label, Caption } from "@/components/Typography";
+import themingConfig from "@/config/theming.json";
 
 interface RaciMatrixEditorProps {
   chart: RaciChart;
   onMatrixChange: (matrix: Record<string, Record<string, RaciValue>>) => void;
+  theme?: string;
+  highContrast?: boolean;
 }
 
 interface CellRef {
@@ -25,15 +28,58 @@ interface CellRef {
   element: HTMLButtonElement | null;
 }
 
+/**
+ * Darken a hex color for high-contrast mode
+ * @param hexColor - Color in hex format (#RRGGBB)
+ * @param amount - Percentage to darken (0-100), default 30%
+ */
+function darkenColor(hexColor: string, amount: number = 30): string {
+  // Remove '#' if present
+  const hex = hexColor.replace('#', '');
+  
+  // Parse hex to RGB
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+  
+  // Darken by reducing brightness
+  const factor = (100 - amount) / 100;
+  r = Math.max(0, Math.floor(r * factor));
+  g = Math.max(0, Math.floor(g * factor));
+  b = Math.max(0, Math.floor(b * factor));
+  
+  // Convert back to hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 export default function RaciMatrixEditor({
   chart,
   onMatrixChange,
+  theme = "default",
+  highContrast = false,
 }: RaciMatrixEditorProps) {
   const cellRefs = useRef<Map<string, CellRef>>(new Map());
   const [focusedCell, setFocusedCell] = useState<{
     roleId: string;
     taskId: string;
   } | null>(null);
+
+  // Get theme colors
+  const themeConfig = themingConfig[theme as keyof typeof themingConfig] || themingConfig.default;
+  const raciColors = themeConfig.colors.raci;
+
+  // Apply high-contrast adjustments - darken theme colors for better accessibility
+  const getContrastColor = (raciValue: "R" | "A" | "C" | "I"): string => {
+    const lowerValue = raciValue.toLowerCase() as "r" | "a" | "c" | "i";
+    const baseColor = raciColors[lowerValue] || "#f8fafc";
+    
+    if (!highContrast) {
+      return baseColor;
+    }
+    
+    // Darken the color by 35% for high-contrast mode
+    return darkenColor(baseColor, 35);
+  };
 
   // RACI value cycle: R → A → C → I → null
   const raciCycle: (RaciValue | null)[] = ["R", "A", "C", "I", null];
@@ -188,7 +234,7 @@ export default function RaciMatrixEditor({
   );
 
   /**
-   * Get RACI value color styling
+   * Get RACI value color styling with theme support
    */
   const getCellColor = (
     value: RaciValue,
@@ -199,43 +245,46 @@ export default function RaciMatrixEditor({
     text: string;
     label: string;
   } => {
-    switch (value) {
-      case "R":
-        return {
-          background: "bg-success-50 dark:bg-success-950",
-          border: "border-success-300 dark:border-success-700",
-          text: "text-success-700 dark:text-success-300",
-          label: "Responsible",
-        };
-      case "A":
-        return {
-          background: "bg-error-50 dark:bg-error-950",
-          border: "border-error-300 dark:border-error-700",
-          text: "text-error-700 dark:text-error-300",
-          label: "Accountable",
-        };
-      case "C":
-        return {
-          background: "bg-info-50 dark:bg-info-950",
-          border: "border-info-300 dark:border-info-700",
-          text: "text-info-700 dark:text-info-300",
-          label: "Consulted",
-        };
-      case "I":
-        return {
-          background: "bg-warning-50 dark:bg-warning-950",
-          border: "border-warning-300 dark:border-warning-700",
-          text: "text-warning-700 dark:text-warning-300",
-          label: "Informed",
-        };
-      default:
-        return {
-          background: "bg-white dark:bg-slate-900",
-          border: "border-slate-200 dark:border-slate-700",
-          text: "text-slate-600 dark:text-slate-400",
-          label: "Unassigned",
-        };
+    // Map RACI values to theme colors
+    const colorMap = {
+      R: {
+        color: getContrastColor("R"),
+        label: "Responsible",
+      },
+      A: {
+        color: getContrastColor("A"),
+        label: "Accountable",
+      },
+      C: {
+        color: getContrastColor("C"),
+        label: "Consulted",
+      },
+      I: {
+        color: getContrastColor("I"),
+        label: "Informed",
+      },
+    };
+
+    if (value && value in colorMap) {
+      const color = colorMap[value as keyof typeof colorMap];
+      return {
+        background: color.color,
+        border: color.color,
+        text: "#ffffff",
+        label: color.label,
+      };
     }
+
+    // Default/unassigned colors
+    const bgColor = highContrast ? "#f0f0f0" : "#f8fafc";
+    const borderColor = highContrast ? "#000000" : "#e2e8f0";
+    const textColor = highContrast ? "#000000" : "#64748b";
+    return {
+      background: bgColor,
+      border: borderColor,
+      text: textColor,
+      label: "Unassigned",
+    };
   };
 
   /**
@@ -352,11 +401,15 @@ export default function RaciMatrixEditor({
                           )
                         }
                         onClick={() => cycleCellForward(role.id, task.id)}
-                        className={`w-full h-12 flex items-center justify-center border-2 rounded font-bold text-lg transition-all ${colors.background} ${colors.border} ${colors.text} hover:shadow-md active:scale-95 focus:outline-none ${
-                          isFocused
-                            ? "ring-2 ring-primary-500 ring-offset-2"
-                            : ""
-                        }`}
+                        style={{
+                          backgroundColor: colors.background,
+                          borderColor: colors.border,
+                          color: colors.text,
+                          ...(isFocused && {
+                            boxShadow: `0 0 0 2px rgba(0, 0, 0, 0.05), 0 0 0 4px rgba(59, 130, 246, 0.5)`,
+                          }),
+                        }}
+                        className={`w-full h-12 flex items-center justify-center border-2 rounded font-bold text-lg transition-all hover:shadow-md active:scale-95 focus:outline-none`}
                         aria-label={`RACI cell for ${role.name} and ${task.name}. Current: ${value || "unassigned"}. Press Space to cycle (${raciCycle.join("→")})`}
                         title={`${role.name} - ${task.name}: ${value || "-"}`}
                       >
@@ -398,12 +451,19 @@ export default function RaciMatrixEditor({
         <div className="space-y-2">
           {chart.tasks.map((task) => {
             const isValid = getTaskValidationStatus(task.id);
+            // Use theme colors: R color for valid (good), A color for invalid (bad)
+            const statusColor = isValid 
+              ? getContrastColor("R")  // Good - use Responsible color
+              : getContrastColor("A"); // Bad - use Accountable color
+            
             return (
               <div key={task.id} className="flex items-center gap-2 text-sm">
                 <div
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                    isValid ? "bg-success-500" : "bg-error-500"
-                  }`}
+                  style={{
+                    backgroundColor: statusColor,
+                    color: "#ffffff",
+                  }}
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold"
                 >
                   {isValid ? "✓" : "!"}
                 </div>

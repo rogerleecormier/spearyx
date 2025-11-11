@@ -9,12 +9,14 @@ import { useEffect, useState, useCallback } from "react";
 import { useRaciState } from "@/lib/raci/hooks";
 import { useValidation } from "@/lib/raci/hooks";
 import { useAutoSave } from "@/lib/raci/hooks";
+import { useTheme } from "@/lib/raci/hooks";
 import { loadChartFromStorage } from "@/lib/raci/hooks";
 import { loadTemplate as loadTemplateUtil } from "@/lib/raci/templates";
 import RaciHeaderBar from "./RaciHeaderBar";
 import RolesEditor from "./RolesEditor";
 import TasksEditor from "./TasksEditor";
 import ThemeSelector from "./ThemeSelector";
+import RaciPreview from "./RaciPreview";
 import ExportButtons from "./ExportButtons";
 import ResetControls from "./ResetControls";
 import RaciMatrixEditor from "./RaciMatrixEditor";
@@ -36,6 +38,7 @@ export default function RaciGeneratorPage() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Initialize state
   const {
@@ -56,6 +59,9 @@ export default function RaciGeneratorPage() {
 
   // Auto-save
   const { isSaving, lastSaved } = useAutoSave(chart);
+
+  // Theme management
+  const { highContrast, setHighContrast } = useTheme(chart.theme);
 
   // Load from storage on mount
   useEffect(() => {
@@ -198,12 +204,12 @@ export default function RaciGeneratorPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar: Configuration Tools */}
           <div className="lg:col-span-3">
             <div className="space-y-6 sticky top-32">
               {/* Quick Access Section */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
                   <Overline className="text-red-600 mb-2">Quick Setup</Overline>
                   <Headline as="h3" className="text-black text-lg">
@@ -234,7 +240,7 @@ export default function RaciGeneratorPage() {
               </div>
 
               {/* Core Settings Section */}
-              <div className="space-y-4 pt-4 border-t border-slate-200">
+              <div className="space-y-6 pt-6 border-t border-slate-200">
                 <div>
                   <Overline className="text-red-600 mb-2">Settings</Overline>
                 </div>
@@ -251,6 +257,8 @@ export default function RaciGeneratorPage() {
                       <ThemeSelector
                         theme={chart.theme}
                         onChange={updateTheme}
+                        highContrast={highContrast}
+                        onHighContrastChange={setHighContrast}
                       />
                     </CardContent>
                   </Card>
@@ -295,10 +303,18 @@ export default function RaciGeneratorPage() {
           </div>
 
           {/* Right Content: Roles, Tasks, and Matrix */}
-          <div className="lg:col-span-9 space-y-8">
+          <div className="lg:col-span-9 space-y-6">
+            {/* Header */}
+            <div className="space-y-2">
+              <Overline className="text-red-600 mb-2">Build Your Chart</Overline>
+              <Headline as="h3" className="text-black text-lg">
+                Define Roles & Tasks
+              </Headline>
+            </div>
+
             {/* Step 1: Chart Details */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     1
@@ -324,7 +340,7 @@ export default function RaciGeneratorPage() {
 
             {/* Step 2: Description */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     2
@@ -355,7 +371,7 @@ export default function RaciGeneratorPage() {
 
             {/* Step 3: Roles */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     3
@@ -380,7 +396,7 @@ export default function RaciGeneratorPage() {
 
             {/* Step 4: Tasks */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     4
@@ -410,7 +426,7 @@ export default function RaciGeneratorPage() {
               {/* Step 5: Matrix Editor */}
               {chart.roles.length > 0 && chart.tasks.length > 0 ? (
                 <Card className="border-slate-200 shadow-sm">
-                  <CardHeader className="pb-4">
+                  <CardHeader>
                     <div className="flex items-start gap-3">
                       <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                         5
@@ -429,6 +445,8 @@ export default function RaciGeneratorPage() {
                     <RaciMatrixEditor
                       chart={chart}
                       onMatrixChange={updateMatrix}
+                      theme={chart.theme}
+                      highContrast={highContrast}
                     />
                   </CardContent>
                 </Card>
@@ -448,9 +466,37 @@ export default function RaciGeneratorPage() {
               )}
             </div>
 
+            {/* Live Theme Preview Toggle */}
+            {chart.roles.length > 0 && chart.tasks.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="mb-4 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                >
+                  {showPreview ? "🔍 Hide Preview" : "👁️ Show Live Preview"}
+                </button>
+
+                {showPreview && (
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-black">
+                        Live Theme Preview
+                      </CardTitle>
+                      <Caption className="text-slate-600 mt-1">
+                        See how your matrix looks with the current theme
+                      </Caption>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <RaciPreview chart={chart} highContrast={highContrast} />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
             {/* Tips Card */}
             <Card className="border-slate-200 bg-emerald-50 shadow-sm">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-center gap-3">
                   <Info className="w-5 h-5 text-emerald-600" />
                   <CardTitle className="text-base text-slate-900">

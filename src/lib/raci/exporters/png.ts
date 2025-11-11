@@ -1,3 +1,5 @@
+"use client";
+
 import html2canvas from "html2canvas";
 import { RaciChart } from "@/types/raci";
 import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
@@ -248,6 +250,10 @@ export async function exportToPng(
       useCORS: true,
       logging: false,
       allowTaint: true,
+      ignoreElements: (element: Element) => {
+        // Ignore style and link elements to avoid OKLch parsing
+        return element.tagName === 'STYLE' || element.tagName === 'LINK';
+      },
     });
 
     const pngBlob = await new Promise<Blob>((resolve) => {

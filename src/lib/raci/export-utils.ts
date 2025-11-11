@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Export Utilities
  * Shared functions for all export formats

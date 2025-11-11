@@ -1,3 +1,5 @@
+"use client";
+
 import PptxGenJS from "pptxgenjs";
 import { RaciChart } from "@/types/raci";
 import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
@@ -169,10 +171,6 @@ function addMatrixSlide(
     color: theme.colors.text,
     fontSize: 11,
     rowH: [0.35],
-    headerStyles: {
-      fill: { color: theme.colors.primary },
-      bold: true,
-    },
   });
 }
 
@@ -324,7 +322,7 @@ export async function exportToPptx(
 
   // Generate blob
   const pptxBlob = await prs.write({ outputType: "blob" });
-  return pptxBlob;
+  return pptxBlob as Blob;
 }
 
 export async function generatePptxPreview(chart: RaciChart): Promise<string> {

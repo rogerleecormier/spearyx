@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { RaciChart } from "@/types/raci";
 import { Body, Caption, Overline } from "@/components/Typography";

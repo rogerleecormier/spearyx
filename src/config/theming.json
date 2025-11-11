@@ -4,18 +4,18 @@
     "name": "Website Default",
     "description": "Clean, professional theme matching website branding",
     "colors": {
-      "primary": "#0066cc",
-      "accent": "#ff9500",
+      "primary": "#dc2626",
+      "accent": "#10b981",
       "background": "#ffffff",
-      "surface": "#f8fafc",
+      "surface": "#f1f5f9",
       "text": "#0f172a",
       "textSecondary": "#64748b",
       "border": "#e2e8f0",
       "raci": {
-        "r": "#22c55e",
-        "a": "#fb923c",
-        "c": "#3b82f6",
-        "i": "#9ca3af"
+        "r": "#10b981",
+        "a": "#dc2626",
+        "c": "#0ea5e9",
+        "i": "#64748b"
       }
     },
     "fonts": {

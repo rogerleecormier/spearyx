@@ -23,7 +23,9 @@
 ## Overview
 
 ### Purpose
+
 Create an interactive, server-side-rendered RACI Chart Generator that empowers teams to define responsibilities using:
+
 - **Intelligent AI suggestions** (via Cloudflare Workers AI)
 - **Multi-theme support** with live preview
 - **Professional exports** (PDF, XLSX, PPTX, PNG, CSV)
@@ -31,6 +33,7 @@ Create an interactive, server-side-rendered RACI Chart Generator that empowers t
 - **Session-persistent undo & auto-save**
 
 ### Key Principles
+
 - **Accessibility first**: WCAG 2.1 AA compliance, keyboard navigation, ARIA labels
 - **User-centric UX**: Color-coded matrix, instant validation, graceful error handling
 - **Developer velocity**: Modular routing, isolated components, clear separation of concerns
@@ -43,12 +46,14 @@ Create an interactive, server-side-rendered RACI Chart Generator that empowers t
 ### 1. Core Generator (SSR, Tools Menu, Accessibility)
 
 #### 1.1 Navigation & SSR
+
 - **Route**: `/tools/raci-generator`
 - **Entry point**: Server-rendered via TanStack Start
 - **Navigation**: Tools dropdown on index with RACI entry
 - **Code splitting**: Lazy-load RACI components to optimize main bundle
 
 #### 1.2 Interactive RACI Matrix Editor
+
 - **Color-coded assignments**: Green (R), Amber (A), Blue (C), Gray (I)
 - **Exclusive cells**: Each (role, task) cell has ≤1 RACI value
 - **Real-time validation**:
@@ -58,6 +63,7 @@ Create an interactive, server-side-rendered RACI Chart Generator that empowers t
 - **Matrix dimensions**: Up to 20 roles × 50 tasks (configurable)
 
 #### 1.3 Chart Editors
+
 - **Chart Title Editor**: Editable header, persisted in state
 - **Roles Editor**: CRUD (add, edit, delete, reorder), inline validation
 - **Tasks Editor**: CRUD, supports multi-line descriptions, inline validation
@@ -65,6 +71,7 @@ Create an interactive, server-side-rendered RACI Chart Generator that empowers t
 - **Demo Templates**: Pre-loaded templates (Mobile App, Web Redesign, CRM Migration)
 
 #### 1.4 Accessibility Requirements
+
 - **ARIA Labels**: All form fields, buttons, matrix cells labeled
 - **Keyboard Navigation**:
   - `Tab` through editors and matrix cells
@@ -80,25 +87,27 @@ Create an interactive, server-side-rendered RACI Chart Generator that empowers t
 ### 2. Templates & AI Prompts
 
 #### 2.1 Demo Templates
+
 **File**: `src/config/templates.json`
 
 Three pre-configured templates:
+
 1. **Mobile App Development**
    - Roles: Product Manager, Backend Dev, Frontend Dev, QA Lead, Designer
    - Tasks: Requirements, Architecture, Implementation, Testing, Deployment
-   
 2. **Web Redesign Project**
    - Roles: Marketing Lead, Design Lead, Frontend Dev, Content Strategist, Project Manager
    - Tasks: Strategy, Design, Prototyping, Build, Content, Launch
-   
 3. **CRM Migration**
    - Roles: CRM Admin, Data Analyst, Change Manager, Business User, IT Support
    - Tasks: Assessment, Planning, Data Mapping, Training, Cutover, Support
 
 #### 2.2 Prompts Configuration
+
 **File**: `src/config/prompts.json`
 
 Dynamic prompt templates with variable substitution:
+
 ```json
 {
   "roleExtraction": {
@@ -119,6 +128,7 @@ Dynamic prompt templates with variable substitution:
 **Admin Updates**: Direct file edits in version control; no runtime UI for prompt changes.
 
 #### 2.3 Cloudflare Workers AI Integration
+
 - **Endpoint**: Configured in `src/config/workers.ts`
 - **Fallback behavior**: If AI unavailable, suggest templates or user-provided data
 - **Rate limiting**: 10 requests/minute per session
@@ -129,9 +139,11 @@ Dynamic prompt templates with variable substitution:
 ### 3. Theming & Chart Styling
 
 #### 3.1 Theme Presets
+
 **File**: `src/config/theming.json`
 
 Predefined themes with color, typography, and export styling:
+
 ```json
 {
   "default": {
@@ -153,23 +165,30 @@ Predefined themes with color, typography, and export styling:
   },
   "corporate": {
     "name": "Corporate Blue",
-    "colors": { /* ... */ }
+    "colors": {
+      /* ... */
+    }
   },
   "minimal": {
     "name": "Minimal Grayscale",
-    "colors": { /* ... */ }
+    "colors": {
+      /* ... */
+    }
   }
 }
 ```
 
 #### 3.2 Theme Selection & Preview
+
 - **Chart theme selector**: Dropdown in editor with live preview
 - **Preview pane**: Real-time rendering of matrix + sample export with selected theme
 - **Persistence**: Theme choice stored per chart in state
 - **Default**: "Website Default" on new chart
 
 #### 3.3 Styled Exports
+
 All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
+
 - Color palette applied to matrix cells, headers, and branding
 - Logo embedded (sized for visibility)
 - Typography matches selected theme
@@ -180,6 +199,7 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 ### 4. Export & Import via Permanent Public Link
 
 #### 4.1 Chart Encoding & Public Links
+
 - **Payload structure**:
   ```json
   {
@@ -202,15 +222,16 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 
 #### 4.2 Export Formats
 
-| Format | Styling | Use Case | Size Limit |
-|--------|---------|----------|-----------|
-| **PDF** | ✅ Full theme | Print & share | 10 MB |
-| **XLSX** | ✅ Theme + formulas | Analysis & editing | 5 MB |
-| **PPTX** | ✅ Theme slides | Presentations | 8 MB |
-| **PNG** | ✅ Chart snapshot | Web embedding | 2 MB per image |
-| **CSV** | ❌ None | Data export | 1 MB |
+| Format   | Styling             | Use Case           | Size Limit     |
+| -------- | ------------------- | ------------------ | -------------- |
+| **PDF**  | ✅ Full theme       | Print & share      | 10 MB          |
+| **XLSX** | ✅ Theme + formulas | Analysis & editing | 5 MB           |
+| **PPTX** | ✅ Theme slides     | Presentations      | 8 MB           |
+| **PNG**  | ✅ Chart snapshot   | Web embedding      | 2 MB per image |
+| **CSV**  | ❌ None             | Data export        | 1 MB           |
 
 #### 4.3 Import Workflow
+
 1. User receives `/import?data=...` link
 2. Frontend decodes payload, validates structure
 3. **If valid**: Load chart into editor, display "Imported from shared link"
@@ -218,6 +239,7 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 5. **Last good state**: Auto-restored from localStorage if import fails
 
 #### 4.4 Version & Timestamp
+
 - Visible in UI: "Chart version: 1.0.0 (Updated 2025-11-10 14:30 UTC)"
 - Included in all exports as metadata/footer
 - Tracked in undo history
@@ -227,6 +249,7 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 ### 5. Error Feedback, Undo, and Reset Controls
 
 #### 5.1 Error Handling
+
 - **Error modal**: Accessible dialog with clear error message + recovery actions
 - **Error types**:
   - Validation: Duplicate role/task names, missing Accountable, file size exceeded
@@ -236,6 +259,7 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
   - Export: Browser memory limit, unsupported format
 
 **Error Modal Structure**:
+
 ```
 ┌─────────────────────────────────┐
 │ ⚠️  Error Title                 │
@@ -247,15 +271,16 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 ```
 
 #### 5.2 Reset Controls
+
 - **"Reset Chart Contents"**: Revert to currently selected template
   - User confirmation: "Are you sure? This cannot be undone."
   - Undo available after reset
-  
 - **"Reset Theme"**: Revert to "Website Default" preset
   - Immediate action, no confirmation
   - Undo available after reset
 
 #### 5.3 Undo System
+
 - **Scope**: Single-step reversal only (applies to in-app edits, resets)
 - **Excluded**: Exports, imports (final states)
 - **Trigger**: `Ctrl+Z` / `Cmd+Z` or UI button
@@ -267,10 +292,15 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 - **Undo history**: Session-persistent in state, auto-saved to localStorage
 
 #### 5.4 Undo State Structure
+
 ```json
 {
-  "current": { /* current chart state */ },
-  "previous": { /* prior state */ },
+  "current": {
+    /* current chart state */
+  },
+  "previous": {
+    /* prior state */
+  },
   "canUndo": true,
   "lastAction": "edit_role"
 }
@@ -281,18 +311,21 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 ### 6. State Persistence & Notifications
 
 #### 6.1 Client Auto-Save
+
 - **Strategy**: localStorage with IndexedDB fallback
 - **Interval**: Every 5 seconds (debounced)
 - **Scope**: All edits, theme changes, undo state
 - **Payload**: Full chart object + undo state + session metadata
 
 #### 6.2 Auto-Restore on Reload
+
 - Load chart from localStorage on component mount
 - Display toast: "Chart restored (last auto-saved at 14:30)"
 - If corrupted or missing, load default template
 - Undo state fully restored
 
 #### 6.3 Notifications
+
 - **Success**: Brief green toast (auto-dismiss 3s): "Chart auto-saved ✓"
 - **Error**: Red alert banner with retry option
 - **Import**: Blue info toast with chart title: "Imported: Mobile App RACI (v1.0.0)"
@@ -305,6 +338,7 @@ All export formats (PDF, XLSX, PPTX, PNG) inherit active theme:
 ### 7. Compliance, Architecture & Iteration
 
 #### 7.1 Architecture Overview
+
 ```
 TanStack Start (SSR)
 ├── Server Layout: __root.tsx
@@ -330,6 +364,7 @@ TanStack Start (SSR)
 ```
 
 #### 7.2 Separation of Concerns
+
 - **Components**: Pure UI, no business logic
 - **Hooks**: State management, side effects, persistence
 - **Utils**: Encoding/decoding, export logic, validation
@@ -337,6 +372,7 @@ TanStack Start (SSR)
 - **Types**: TypeScript interfaces (no enums, use string literals)
 
 #### 7.3 Responsive & Accessible
+
 - Mobile-first CSS Grid layout
 - Touch-friendly (48px minimum hit targets)
 - Collapsible editors on small screens
@@ -344,6 +380,7 @@ TanStack Start (SSR)
 - WCAG 2.1 AA compliance
 
 #### 7.4 Code Splitting
+
 - RACI route lazy-loaded
 - Export formatters: Dynamic imports
 - AI integration: Cloudflare Worker (separate domain)
@@ -428,18 +465,19 @@ src/
 ## State Management & Persistence
 
 ### 7.1 Chart State Interface
+
 ```typescript
 interface RaciChart {
-  id: string;                          // UUID
-  version: "1.0.0";                    // Semantic version
-  timestamp: string;                   // ISO 8601 UTC
+  id: string; // UUID
+  version: "1.0.0"; // Semantic version
+  timestamp: string; // ISO 8601 UTC
   title: string;
   description: string;
   roles: RaciRole[];
   tasks: RaciTask[];
-  matrix: Record<string, Record<string, RaciValue>>;  // roles -> tasks -> {R|A|C|I}
-  theme: string;                       // theme key from theming.json
-  logo?: string;                       // Base64 encoded image
+  matrix: Record<string, Record<string, RaciValue>>; // roles -> tasks -> {R|A|C|I}
+  theme: string; // theme key from theming.json
+  logo?: string; // Base64 encoded image
   createdAt: string;
   updatedAt: string;
 }
@@ -461,6 +499,7 @@ type RaciValue = "R" | "A" | "C" | "I" | null;
 ```
 
 ### 7.2 Session State Structure
+
 ```typescript
 interface RaciSessionState {
   chart: RaciChart;
@@ -499,6 +538,7 @@ interface ValidationError {
 ```
 
 ### 7.3 Persistence Layers
+
 - **Layer 1**: Memory (React state, instant)
 - **Layer 2**: Session storage (auto-save every 5s, debounced)
 - **Layer 3**: localStorage (backup, 5MB limit)
@@ -511,6 +551,7 @@ interface ValidationError {
 ## Build Plan – Modular Iterations
 
 ### Iteration 1: Navigation & Setup (Week 1)
+
 **Goal**: SSR page, basic layout, component scaffolding
 
 - [ ] Create `/tools/raci-generator.tsx` server route
@@ -522,6 +563,7 @@ interface ValidationError {
 - [ ] Test SSR rendering, lazy loading, route activation
 
 **Deliverables**:
+
 - Accessible page structure with ARIA landmarks
 - CSS Grid layout (responsive, mobile-first)
 - All component shells in place
@@ -529,6 +571,7 @@ interface ValidationError {
 ---
 
 ### Iteration 2: Editors – Roles, Tasks, Title, Logo (Week 2)
+
 **Goal**: CRUD operations, inline validation, UX polish
 
 - [ ] Implement `RaciHeaderBar`: Title editor, logo upload (Max 5MB, preview)
@@ -540,6 +583,7 @@ interface ValidationError {
 - [ ] Test keyboard navigation (Tab, Shift+Tab, Esc)
 
 **Deliverables**:
+
 - Fully functional editors with CRUD
 - Real-time validation feedback
 - WCAG 2.1 AA keyboard support
@@ -547,6 +591,7 @@ interface ValidationError {
 ---
 
 ### Iteration 3: RACI Matrix Editor (Week 2.5)
+
 **Goal**: Interactive color-coded matrix, exclusive assignments
 
 - [ ] Build `RaciMatrixEditor`: Grid of cells with R/A/C/I toggles
@@ -558,6 +603,7 @@ interface ValidationError {
 - [ ] Test large matrix performance (20 roles × 50 tasks)
 
 **Deliverables**:
+
 - Fully interactive RACI matrix
 - Color-coded, accessible cell selection
 - Real-time validation feedback
@@ -565,6 +611,7 @@ interface ValidationError {
 ---
 
 ### Iteration 4: Demo Templates & State Hooks (Week 3)
+
 **Goal**: Template loading, state management, persistence setup
 
 - [ ] Create `src/config/templates.json` with 3 demo templates
@@ -576,16 +623,53 @@ interface ValidationError {
 - [ ] Test template switching and state preservation
 
 **Deliverables**:
+
 - Demo templates fully integrated
 - State persists across page reloads
 - Auto-save visible feedback
 
 ---
 
-### Iteration 5: Theming & Live Preview (Week 3.5)
+### Iteration 5: Export Formats (Week 3.5)
+
+**Goal**: PDF, XLSX, PPTX, PNG, CSV exporters (styled except CSV)
+
+- [x] Implement `lib/exporters/pdf.ts` (jsPDF)
+  - Theme-aware color palette
+  - Logo embedding
+  - Matrix table + metadata
+- [x] Implement `lib/exporters/xlsx.ts` (ExcelJS)
+  - Styled cells, formulas
+  - Logo embedding
+  - Chart metadata sheet
+- [x] Implement `lib/exporters/pptx.ts` (PptxGenJS)
+  - Multi-slide format (overview, matrix, details)
+  - Theme colors applied
+  - Logo on each slide
+- [x] Implement `lib/exporters/png.ts` (html2canvas)
+  - Export full matrix as image
+  - Theme-aware rendering
+  - High-res output (300dpi for print)
+- [x] Implement `lib/exporters/csv.ts` (unstyled data export)
+  - RACI columns only
+  - Unicode support
+- [x] Build `ExportButtons` component with format selection
+- [x] Add download progress feedback
+- [x] Test file size limits (PDF 10MB, XLSX 5MB, etc.)
+
+**Deliverables**:
+
+- All 5 export formats fully functional
+- Styled exports inherit active theme
+- CSV export unstyled as per spec
+
+---
+
+### Iteration 6: Theming & Live Preview (Week 4)
+
 **Goal**: Theme configuration, selector, live preview
 
-- [ ] Create `src/config/theming.json` with 3+ theme presets
+- [ ] Create `src/config/theming.json` with 3+ theme presets (✅ Already exists)
 - [ ] Implement `ThemeSelector` dropdown component
 - [ ] Build `RaciPreview` component with live theme rendering
 - [ ] Add CSS custom properties for theme switching
@@ -594,58 +678,21 @@ interface ValidationError {
 - [ ] Test theme switching in preview and matrix
 
 **Deliverables**:
+
 - Dropdown theme selection with live preview
 - Multiple complete theme presets
 - High-contrast accessibility mode
 
 ---
 
-### Iteration 6: Export Formats (Week 4)
-**Goal**: PDF, XLSX, PPTX, PNG, CSV exporters (styled except CSV)
-
-- [ ] Implement `lib/exporters/pdf.ts` (React-PDF)
-  - Theme-aware color palette
-  - Logo embedding
-  - Matrix table + metadata
-  
-- [ ] Implement `lib/exporters/xlsx.ts` (ExcelJS)
-  - Styled cells, formulas
-  - Logo embedding
-  - Chart metadata sheet
-  
-- [ ] Implement `lib/exporters/pptx.ts` (PptxGenJS)
-  - Multi-slide format (overview, matrix, details)
-  - Theme colors applied
-  - Logo on each slide
-  
-- [ ] Implement `lib/exporters/png.ts` (html2canvas)
-  - Export full matrix as image
-  - Theme-aware rendering
-  - High-res output (300dpi for print)
-  
-- [ ] Implement `lib/exporters/csv.ts` (unstyled data export)
-  - RACI columns only
-  - Unicode support
-  
-- [ ] Build `ExportButtons` component with format selection
-- [ ] Add download progress feedback
-- [ ] Test file size limits (PDF 10MB, XLSX 5MB, etc.)
-
-**Deliverables**:
-- All 5 export formats fully functional
-- Styled exports inherit active theme
-- CSV export unstyled as per spec
-
----
-
 ### Iteration 7: Encoding & Public Links (Week 4.5)
+
 **Goal**: Chart encoding, permanent public links, import
 
 - [ ] Implement `lib/raci/encoding.ts`:
   - Chart → base64 URL encoding
   - Optional gzip compression
   - Version + timestamp embedding
-  
 - [ ] Create "Get Public Link" button in `ExportButtons`
 - [ ] Create `/tools/raci-generator/import.tsx` route
 - [ ] Implement import payload validation & error recovery
@@ -655,6 +702,7 @@ interface ValidationError {
 - [ ] Test one chart per link guarantee
 
 **Deliverables**:
+
 - Permanent public links for every chart
 - Full import workflow with validation
 - Error recovery with last-good-state
@@ -662,6 +710,7 @@ interface ValidationError {
 ---
 
 ### Iteration 8: AI Integration & Prompts (Week 5)
+
 **Goal**: Cloudflare Workers AI, prompt templates, context-aware suggestions
 
 - [ ] Create `src/config/prompts.json` with dynamic templates
@@ -669,13 +718,11 @@ interface ValidationError {
   - Cloudflare Worker endpoint configuration
   - Rate limiting (10 req/min)
   - Timeout handling (30s)
-  
 - [ ] Build `DescriptionPanel` component:
   - Project description input
   - "Generate from Description" button
   - AI suggestion polling
   - Fallback to templates if AI unavailable
-  
 - [ ] Implement role extraction AI prompt
 - [ ] Implement task generation AI prompt
 - [ ] Implement RACI advice AI prompt
@@ -683,6 +730,7 @@ interface ValidationError {
 - [ ] Test AI graceful degradation
 
 **Deliverables**:
+
 - DescriptionPanel with AI integration
 - All 3 AI prompt types functional
 - Graceful fallback if AI unavailable
@@ -690,33 +738,31 @@ interface ValidationError {
 ---
 
 ### Iteration 9: Error Handling, Undo, Reset (Week 5.5)
+
 **Goal**: Error modal, undo system, reset controls, keyboard shortcuts
 
 - [ ] Implement `useUndo` hook:
   - Single-step reversal only
   - Session-persistent state
   - No confirmation popup
-  
 - [ ] Build `ErrorModal` component:
   - Accessible dialog
   - Error categorization
   - Recovery action suggestions
   - "Contact Admin" fallback link
-  
 - [ ] Implement keyboard shortcuts:
   - `Ctrl+Z` / `Cmd+Z` for undo
   - `Esc` to close modals
   - Test accessibility (focus restoration, ARIA)
-  
 - [ ] Add reset controls:
   - "Reset Chart Contents" with confirmation
   - "Reset Theme" without confirmation
   - Both support undo
-  
 - [ ] Implement undo exclusions (exports, imports)
 - [ ] Test undo history persistence and restoration
 
 **Deliverables**:
+
 - Full error handling workflow
 - Single-step undo with keyboard support
 - Reset controls with proper confirmations
@@ -724,6 +770,7 @@ interface ValidationError {
 ---
 
 ### Iteration 10: Accessibility & Compliance (Week 6)
+
 **Goal**: WCAG 2.1 AA compliance, keyboard navigation, screen reader testing
 
 - [ ] Audit all components for ARIA labels, roles, live regions
@@ -732,7 +779,6 @@ interface ValidationError {
   - Keyboard event handlers
   - Focus management
   - Semantic HTML templates
-  
 - [ ] Add skip links for keyboard users
 - [ ] Test with screen readers (NVDA, JAWS, VoiceOver)
 - [ ] Ensure high-contrast mode works across all components
@@ -741,6 +787,7 @@ interface ValidationError {
 - [ ] Fix all WCAG 2.1 AA violations
 
 **Deliverables**:
+
 - WCAG 2.1 AA certification
 - Full keyboard navigation
 - Screen reader compatibility verified
@@ -748,6 +795,7 @@ interface ValidationError {
 ---
 
 ### Iteration 11: Notifications & Auto-Save (Week 6.5)
+
 **Goal**: Toast notifications, auto-save feedback, session persistence
 
 - [ ] Implement `Toaster` component:
@@ -755,23 +803,21 @@ interface ValidationError {
   - Auto-dismiss (3s for success)
   - ARIA live region
   - Accessible close button
-  
 - [ ] Build notification types:
   - Success (green): "Chart auto-saved ✓"
   - Error (red): With retry option
   - Import (blue): Chart title + version
   - Export (blue): Format + timestamp
-  
 - [ ] Enhance `useAutoSave`:
   - Show success toast every 5s
   - Error handling with retry
   - IndexedDB fallback logging
-  
 - [ ] Test notification stacking
 - [ ] Test auto-save reliability under slow network
 - [ ] Test session restoration after reload
 
 **Deliverables**:
+
 - All notification types functional
 - Auto-save feedback visible
 - Full session persistence working
@@ -779,6 +825,7 @@ interface ValidationError {
 ---
 
 ### Iteration 12: Performance & Polish (Week 7)
+
 **Goal**: Code splitting, bundle optimization, UX refinements
 
 - [ ] Implement lazy loading for export modules
@@ -792,6 +839,7 @@ interface ValidationError {
 - [ ] Run Lighthouse performance audit (target: >80)
 
 **Deliverables**:
+
 - Optimized bundle size
 - Lighthouse score >80
 - Smooth performance on large datasets
@@ -799,6 +847,7 @@ interface ValidationError {
 ---
 
 ### Iteration 13: Testing & Documentation (Week 7.5)
+
 **Goal**: Unit tests, integration tests, developer docs
 
 - [ ] Unit tests for validation, encoding, export logic (target: >80% coverage)
@@ -810,13 +859,15 @@ interface ValidationError {
 - [ ] Document config files (prompts.json, theming.json)
 
 **Deliverables**:
-- >80% test coverage
+
+- > 80% test coverage
 - E2E tests for all critical paths
 - Complete developer documentation
 
 ---
 
 ### Iteration 14: Deployment & Monitoring (Week 8)
+
 **Goal**: Build optimization, deployment pipeline, monitoring setup
 
 - [ ] Optimize build output (tree-shaking, minification)
@@ -829,6 +880,7 @@ interface ValidationError {
 - [ ] Set up performance monitoring (Core Web Vitals)
 
 **Deliverables**:
+
 - Production-ready build
 - Monitoring dashboard active
 - CI/CD pipeline operational
@@ -840,26 +892,31 @@ interface ValidationError {
 ### Error Categories & Recovery
 
 #### Validation Errors
+
 - **Duplicate role/task names**: Highlight offending field, suggest unique name
 - **Missing Accountable**: Red banner, show tasks without "A", suggest assignment
 - **File size exceeded**: Modal with size limit, suggest removing logo
 
 #### Upload Errors
+
 - **Unsupported file type**: Modal + retry, accepted types listed
 - **Image corruption**: Modal + fallback (use placeholder or skip logo)
 - **Quota exceeded**: Modal + guidance to clear storage
 
 #### Import Errors
+
 - **Malformed payload**: Modal with error details, "Load from backup" button
 - **Version mismatch**: Suggest updating to latest version
 - **Corrupted data**: Restore last-good-state from localStorage
 
 #### Network Errors
+
 - **AI timeout (>30s)**: Retry button, use template fallback
 - **CORS error**: Contact admin (backend issue)
 - **Export fails**: Retry or switch format
 
 ### Keyboard Navigation Map
+
 ```
 Ctrl+Z / Cmd+Z       → Undo last action
 Tab                  → Next focusable element
@@ -872,6 +929,7 @@ Alt+2                → Focus tasks editor (optional)
 ```
 
 ### ARIA Implementation
+
 - `role="main"` on RaciGeneratorPage
 - `role="region"` on editors with `aria-label`
 - `aria-live="polite"` on notification toasts
@@ -885,6 +943,7 @@ Alt+2                → Focus tasks editor (optional)
 ## Compliance & Performance
 
 ### Performance Targets
+
 - **Lighthouse Score**: >80 (Performance, Accessibility, Best Practices)
 - **Core Web Vitals**:
   - LCP (Largest Contentful Paint): <2.5s
@@ -895,12 +954,14 @@ Alt+2                → Focus tasks editor (optional)
 - **Matrix render**: <500ms for 20×50 cells
 
 ### Browser Support
+
 - Chrome/Edge ≥90
 - Firefox ≥88
 - Safari ≥14
 - Mobile Safari (iOS ≥14)
 
 ### Security Considerations
+
 - **XSS Prevention**: Sanitize user input (title, role, task names)
 - **CSRF Protection**: Use SameSite cookies + CSRF tokens
 - **File Upload**: Validate MIME type + file extension, virus scan if applicable
@@ -908,6 +969,7 @@ Alt+2                → Focus tasks editor (optional)
 - **API Rate Limiting**: 10 AI requests/minute per session
 
 ### WCAG 2.1 Compliance
+
 - **AA level** (minimum requirement)
 - Color contrast: 4.5:1 for normal text, 3:1 for large text
 - Focus indicators: 2px outline, visible on all interactive elements
@@ -916,6 +978,7 @@ Alt+2                → Focus tasks editor (optional)
 - Skip links: Keyboard users can skip to main content
 
 ### Data Privacy
+
 - **Client-side storage only**: No data sent to backend unless AI requested
 - **localStorage/IndexedDB**: User controls persistence
 - **No cookies for tracking**: Session cookies only (CSRF tokens)
@@ -926,11 +989,13 @@ Alt+2                → Focus tasks editor (optional)
 ## Deployment & Maintenance
 
 ### Prerequisites
+
 - Node.js ≥18 LTS
 - pnpm ≥8
 - Cloudflare account (for Workers AI integration)
 
 ### Build & Deploy
+
 ```bash
 # Install dependencies
 pnpm install
@@ -946,12 +1011,14 @@ pnpm run deploy
 ```
 
 ### Admin Tasks (No Code Changes)
+
 1. **Update templates**: Edit `src/config/templates.json`
 2. **Add AI prompts**: Edit `src/config/prompts.json`
 3. **Create themes**: Edit `src/config/theming.json`
 4. **Adjust Worker endpoint**: Edit `src/config/workers.ts`
 
 ### Monitoring Checklist
+
 - [ ] Auto-save success rate >99%
 - [ ] Export success rate >98%
 - [ ] Error modal display accuracy

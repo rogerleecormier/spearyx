@@ -44,7 +44,7 @@ export default function ResetControls({
         <Button
           onClick={() => setShowConfirm(true)}
           variant="outline"
-          className="w-full gap-2"
+          className="w-full gap-2 border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
           aria-label="Reset chart contents"
         >
           <RotateCcw className="w-4 h-4" />
@@ -54,7 +54,7 @@ export default function ResetControls({
           <Button
             onClick={onResetTheme}
             variant="outline"
-            className="w-full gap-2"
+            className="w-full gap-2 border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
             aria-label="Reset theme to default"
           >
             <RotateCcw className="w-4 h-4" />
@@ -73,15 +73,16 @@ export default function ResetControls({
           aria-describedby="reset-confirm-description"
         >
           <div
-            className="bg-background border-2 border-yellow-600 rounded-lg max-w-sm w-full space-y-4 p-6"
+            className="bg-white border-2 border-red-600 rounded-lg max-w-sm w-full space-y-4 p-6 shadow-lg"
+            style={{ backgroundColor: "#ffffff" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <h3
                 id="reset-confirm-title"
-                className="font-semibold text-foreground"
+                className="font-semibold text-slate-900"
               >
                 Reset Chart?
               </h3>
@@ -90,15 +91,15 @@ export default function ResetControls({
             {/* Description */}
             <div
               id="reset-confirm-description"
-              className="text-sm text-muted-foreground space-y-2"
+              className="text-sm text-slate-700 space-y-2"
             >
               <p>This will delete all current chart data including:</p>
-              <ul className="list-disc list-inside text-xs space-y-1">
+              <ul className="list-disc list-inside text-xs text-slate-700 space-y-1">
                 <li>All roles and tasks</li>
                 <li>All matrix assignments</li>
                 <li>All custom settings</li>
               </ul>
-              <p className="font-semibold text-yellow-700 dark:text-yellow-400">
+              <p className="font-semibold text-red-700">
                 This cannot be undone.
               </p>
             </div>
@@ -109,6 +110,7 @@ export default function ResetControls({
                 onClick={() => setShowConfirm(false)}
                 variant="outline"
                 size="sm"
+                className="border-slate-300 text-slate-700 hover:bg-slate-100"
                 aria-label="Cancel reset"
               >
                 Cancel
@@ -117,6 +119,7 @@ export default function ResetControls({
                 onClick={handleConfirmReset}
                 variant="destructive"
                 size="sm"
+                className="bg-red-600 hover:bg-red-700 text-white"
                 aria-label="Confirm reset"
               >
                 Reset
@@ -124,7 +127,7 @@ export default function ResetControls({
             </div>
 
             {/* Close Hint */}
-            <div className="text-xs text-muted-foreground text-center">
+            <div className="text-xs text-slate-500 text-center">
               Press Esc to cancel
             </div>
           </div>

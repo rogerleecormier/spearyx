@@ -1,4 +1,6 @@
-import { Workbook, Worksheet, Font, PatternFill } from "exceljs";
+"use client";
+
+import { Workbook, Worksheet } from "exceljs";
 import { RaciChart } from "@/types/raci";
 import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
 
@@ -51,25 +53,26 @@ function createMatrixSheet(
   const sheet = workbook.addWorksheet("RACI Matrix");
 
   // Header row with roles
-  const headerRow = sheet.addRow(["Task"]);
+  const headerValues = ["Task"];
   chart.roles.forEach((role) => {
-    headerRow.addCell(role.name);
+    headerValues.push(role.name);
   });
+  const headerRow = sheet.addRow(headerValues);
 
   // Style header row
-  const headerFont: Font = { bold: true, color: { argb: "FFFFFFFF" } };
-  const headerFill: PatternFill = {
-    type: "solid",
+  const headerFont = { bold: true, color: { argb: "FFFFFFFF" } };
+  
+  headerRow.font = headerFont;
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
     fgColor: { argb: `FF${theme.colors.primary}` },
   };
-
-  headerRow.font = headerFont;
-  headerRow.fill = headerFill;
-  headerRow.alignment = { horizontal: "center", vertical: "center" };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
 
   // Data rows
   for (const task of chart.tasks) {
-    const dataRow = sheet.addRow([task.name]);
+    const rowValues: string[] = [task.name];
 
     chart.roles.forEach((role) => {
       const value = chart.matrix[role.id]?.[task.id];
@@ -83,7 +86,16 @@ function createMatrixSheet(
               : "Informed"
         : "";
 
-      const cell = dataRow.addCell(label);
+      rowValues.push(label);
+    });
+
+    const dataRow = sheet.addRow(rowValues);
+
+    // Apply styling to each cell
+    chart.roles.forEach((role, roleIndex) => {
+      const cellIndex = roleIndex + 2; // +2 because Excel is 1-indexed and first column is task name
+      const cell = dataRow.getCell(cellIndex);
+      const value = chart.matrix[role.id]?.[task.id];
 
       if (value) {
         const colorMap: Record<string, string> = {
@@ -94,12 +106,13 @@ function createMatrixSheet(
         };
 
         cell.fill = {
-          type: "solid",
+          type: "pattern",
+          pattern: "solid",
           fgColor: { argb: `FF${colorMap[value]}` },
         };
       }
 
-      cell.alignment = { horizontal: "center", vertical: "center" };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
     });
   }
 
@@ -135,11 +148,12 @@ function createLegendSheet(workbook: Workbook, theme: XlsxTheme): Worksheet {
     const row = sheet.addRow([item.label]);
     const cell = row.getCell(1);
     cell.fill = {
-      type: "solid",
+      type: "pattern",
+      pattern: "solid",
       fgColor: { argb: `FF${item.color}` },
     };
     cell.font = { bold: true, size: 11 };
-    cell.alignment = { vertical: "center", wrapText: true };
+    cell.alignment = { vertical: "middle", wrapText: true };
   }
 
   sheet.getColumn(1).width = 40;
