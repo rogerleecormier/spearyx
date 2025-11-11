@@ -11,6 +11,8 @@ export interface RaciTemplate {
   id: string;
   name: string;
   description: string;
+  aiPrompt?: string;
+  aiPromptDescription?: string;
   roles: RaciRole[];
   tasks: RaciTask[];
   matrix: RaciChart["matrix"];
@@ -27,6 +29,8 @@ export function getTemplates(): RaciTemplate[] {
       id: templateData.id,
       name: templateData.name,
       description: templateData.description,
+      aiPrompt: templateData.aiPrompt,
+      aiPromptDescription: templateData.aiPromptDescription,
       roles: templateData.roles,
       tasks: templateData.tasks,
       matrix: templateData.matrix as RaciChart["matrix"],
@@ -51,6 +55,8 @@ export function getTemplateById(id: string): RaciTemplate | null {
     id: data.id,
     name: data.name,
     description: data.description,
+    aiPrompt: data.aiPrompt,
+    aiPromptDescription: data.aiPromptDescription,
     roles: data.roles,
     tasks: data.tasks,
     matrix: data.matrix as RaciChart["matrix"],

@@ -23,3 +23,4 @@ export { default as ProgressIndicator } from "./ProgressIndicator";
 export { ConfigurationPanel } from "./ConfigurationPanel";
 export { TemplateSelector } from "./TemplateSelector";
 export { QuickPresets } from "./QuickPresets";
+export { QuickPresetsGrid } from "./QuickPresetsGrid";

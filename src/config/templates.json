@@ -3,6 +3,8 @@
     "id": "mobile-app",
     "name": "Mobile App Development",
     "description": "E-commerce development team project",
+    "aiPrompt": "We're building a mobile e-commerce application using React Native for iOS and Android. The backend is Node.js with PostgreSQL. Key features include user authentication, payment processing integration, product catalog, shopping cart, and order management. The team consists of 5 engineers (2 backend, 2 mobile, 1 fullstack), 1 UI/UX designer, and 1 product manager. We follow agile methodology with 2-week sprints and need clear role definitions for requirements gathering, system architecture, implementation, testing, and production deployment.",
+    "aiPromptDescription": "Mobile e-commerce app with React Native, Node.js backend, and cross-functional team",
     "roles": [
       { "id": "pm", "name": "Product Manager", "order": 0 },
       { "id": "backend", "name": "Backend Developer", "order": 1 },
@@ -84,6 +86,8 @@
     "id": "web-redesign",
     "name": "Web Redesign Project",
     "description": "Marketing & design project for website overhaul",
+    "aiPrompt": "Our company is undergoing a complete website redesign to improve user experience and modernize our brand. The project spans 4 months and involves a cross-functional team: marketing lead (strategy & business goals), design lead (UI/UX design), frontend developer (implementation), content strategist (content creation & SEO), and project manager (coordination). The redesign includes strategy & research phase, design & prototyping, frontend development, content migration, and launch. We need clear accountability for each phase and clear communication channels between departments.",
+    "aiPromptDescription": "Complete website redesign with marketing, design, and frontend coordination",
     "roles": [
       { "id": "marketing", "name": "Marketing Lead", "order": 0 },
       { "id": "design", "name": "Design Lead", "order": 1 },
@@ -176,6 +180,8 @@
     "id": "crm-migration",
     "name": "CRM Migration Project",
     "description": "Legacy system upgrade and data migration",
+    "aiPrompt": "We're migrating from our legacy CRM system to a modern cloud-based solution over 6 months. The team includes: CRM administrator (system configuration), data analyst (data mapping & validation), change manager (user adoption), business users (requirements & UAT), and IT support (infrastructure & troubleshooting). The project phases are: current system assessment, migration planning, data mapping, user training, cutover execution, and post-go-live support. We need clear responsibility assignments for each phase to ensure successful adoption and minimize disruption to business operations.",
+    "aiPromptDescription": "Legacy CRM to cloud migration with data validation and change management",
     "roles": [
       { "id": "admin", "name": "CRM Administrator", "order": 0 },
       { "id": "analyst", "name": "Data Analyst", "order": 1 },

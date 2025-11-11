@@ -12,9 +12,9 @@ import { useValidation } from "@/lib/raci/hooks";
 import { useAutoSave } from "@/lib/raci/hooks";
 import { useTheme } from "@/lib/raci/hooks";
 import { loadChartFromStorage } from "@/lib/raci/hooks";
-import { loadTemplate as loadTemplateUtil } from "@/lib/raci/templates";
 import { decodeChart } from "@/lib/raci/encoding";
 import RaciHeaderBar from "./RaciHeaderBar";
+import DescriptionPanel from "./DescriptionPanel";
 import RolesEditor from "./RolesEditor";
 import TasksEditor from "./TasksEditor";
 import ThemeSelector from "./ThemeSelector";
@@ -23,7 +23,7 @@ import ExportButtons from "./ExportButtons";
 import ResetControls from "./ResetControls";
 import RaciMatrixEditor from "./RaciMatrixEditor";
 import ErrorModal from "./ErrorModal";
-import { ConfigurationPanel } from ".";
+import { QuickPresetsGrid } from "./QuickPresetsGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Hero,
@@ -41,6 +41,7 @@ export default function RaciGeneratorPage() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [isFallbackActive, setIsFallbackActive] = useState(false);
   const [importNotification, setImportNotification] = useState<{
     chartTitle: string;
     timestamp: string;
@@ -54,8 +55,6 @@ export default function RaciGeneratorPage() {
     updateDescription,
     updateMatrix,
     updateTheme,
-    loadTemplate,
-    loadPreset,
     reset,
     setState: setChart,
   } = useRaciState();
@@ -159,31 +158,6 @@ export default function RaciGeneratorPage() {
     updateTheme("default");
   }, [updateTheme]);
 
-  const handleLoadTemplate = useCallback(
-    (template: Parameters<typeof loadTemplateUtil>[0]) => {
-      try {
-        const newChart = loadTemplateUtil(template);
-        loadTemplate(
-          newChart.roles,
-          newChart.tasks,
-          newChart.matrix,
-          newChart.title,
-          newChart.description
-        );
-      } catch (error) {
-        console.error("Error loading template:", error);
-      }
-    },
-    [loadTemplate]
-  );
-
-  const handleApplyPreset = useCallback(
-    (matrix: RaciChart["matrix"]) => {
-      loadPreset(matrix);
-    },
-    [loadPreset]
-  );
-
   if (!isInitialized) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
@@ -253,6 +227,14 @@ export default function RaciGeneratorPage() {
                   <span className="font-medium">Valid</span>
                 </div>
               )}
+              {isFallbackActive && (
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                  <Info className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium text-xs">
+                    Using template data
+                  </span>
+                </div>
+              )}
               <div className="h-6 w-px bg-slate-200"></div>
               <div className="flex items-center gap-2 text-slate-600">
                 {isSaving && (
@@ -278,125 +260,8 @@ export default function RaciGeneratorPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Sidebar: Configuration Tools */}
-          <div className="lg:col-span-3">
-            <div className="space-y-6">
-              {/* Quick Access Section */}
-              <div className="space-y-6">
-                <div>
-                  <Overline className="text-red-600 mb-2">Quick Setup</Overline>
-                  <Headline as="h3" className="text-black text-lg">
-                    Configuration
-                  </Headline>
-                </div>
-
-                {/* Configuration Panel */}
-                <ConfigurationPanel
-                  roles={chart.roles}
-                  tasks={chart.tasks}
-                  onLoadTemplate={handleLoadTemplate}
-                  onApplyPreset={handleApplyPreset}
-                />
-              </div>
-
-              {/* Core Settings Section */}
-              <div className="space-y-6 pt-6 border-t border-slate-200">
-                <div>
-                  <Overline className="text-red-600 mb-2">Settings</Overline>
-                </div>
-
-                {/* Controls Row */}
-                <div className="space-y-3">
-                  <Card className="border-slate-200 shadow-sm">
-                    <CardHeader className="pb-3">
-                      <Label className="text-slate-700 font-semibold text-xs">
-                        Theme
-                      </Label>
-                    </CardHeader>
-                    <CardContent>
-                      <ThemeSelector
-                        theme={chart.theme}
-                        onChange={updateTheme}
-                        highContrast={highContrast}
-                        onHighContrastChange={setHighContrast}
-                      />
-                    </CardContent>
-                  </Card>
-
-                  {/* Preview Card - New */}
-                  <Card className="border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-4 border-b border-red-200">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">👁️</span>
-                        <div>
-                          <Label className="text-red-700 font-semibold text-sm block">
-                            Live Preview
-                          </Label>
-                          <p className="text-xs text-red-600">
-                            See your matrix with theme
-                          </p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      {chart.roles.length > 0 && chart.tasks.length > 0 ? (
-                        <button
-                          onClick={() => setShowPreviewModal(true)}
-                          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                        >
-                          Open Preview
-                        </button>
-                      ) : (
-                        <div className="text-center py-2">
-                          <p className="text-xs text-red-600 font-medium">
-                            Add roles & tasks to preview
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Export Card - Enhanced Design */}
-                  <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-4 border-b border-emerald-200">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">⬇️</span>
-                        <div>
-                          <Label className="text-emerald-700 font-semibold text-sm block">
-                            Export & Download
-                          </Label>
-                          <p className="text-xs text-emerald-600">
-                            Save your RACI chart in any format
-                          </p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <ExportButtons chart={chart} />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Danger Zone */}
-                <Card className="border-red-200 bg-red-50 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-xs text-red-600">
-                      Danger Zone
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResetControls
-                      onReset={handleReset}
-                      onResetTheme={handleResetTheme}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Content: Roles, Tasks, and Matrix */}
-          <div className="lg:col-span-9 space-y-6">
+          {/* Left Content: Steps 1-5 and Matrix */}
+          <div className="lg:col-span-9 space-y-6 order-1 lg:order-1">
             {/* Header */}
             <div className="space-y-2">
               <Overline className="text-red-600 mb-2">
@@ -414,8 +279,19 @@ export default function RaciGeneratorPage() {
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     1
                   </div>
-                  <div>
-                    <CardTitle className="text-black">Chart Details</CardTitle>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-black">
+                        Chart Details
+                      </CardTitle>
+                      <div className="group relative">
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                          Set your project name and upload a logo
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
+                        </div>
+                      </div>
+                    </div>
                     <Caption className="text-slate-600 mt-1">
                       Configure project metadata
                     </Caption>
@@ -433,34 +309,64 @@ export default function RaciGeneratorPage() {
               </CardContent>
             </Card>
 
-            {/* Step 2: Description */}
+            {/* Step 2: Description & AI Generation */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     2
                   </div>
-                  <div>
-                    <CardTitle className="text-black">Description</CardTitle>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-black">
+                        Description & AI Generation
+                      </CardTitle>
+                      <div className="group relative">
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                          Describe your project and use AI to generate initial
+                          roles and tasks
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
+                        </div>
+                      </div>
+                    </div>
                     <Caption className="text-slate-600 mt-1">
-                      Add optional context
+                      Add context and let AI suggest roles & tasks
                     </Caption>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <textarea
-                  value={chart.description}
-                  onChange={(e) => updateDescription(e.target.value)}
-                  placeholder="Add an optional description..."
-                  maxLength={500}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm resize-none"
-                  rows={3}
-                  aria-label="Chart description"
+              <CardContent>
+                <DescriptionPanel
+                  description={chart.description}
+                  onChange={(desc: string) => updateDescription(desc)}
+                  onGenerateRoles={(roles) => {
+                    console.log("RaciGeneratorPage received roles:", roles);
+                    console.log("Current chart before update:", chart);
+                    const newChart = { ...chart, roles };
+                    console.log("New chart after spread:", newChart);
+                    setChart(newChart);
+                  }}
+                  onGenerateTasks={(tasks) => {
+                    console.log("RaciGeneratorPage received tasks:", tasks);
+                    // Merge tasks with current chart (which should now have the roles from the previous setState)
+                    // But since setState is async, we need to use the current rendered chart
+                    setChart({ ...chart, tasks });
+                  }}
+                  onGenerateComplete={(roles, tasks) => {
+                    console.log(
+                      "RaciGeneratorPage received roles and tasks:",
+                      roles,
+                      tasks
+                    );
+                    console.log("Current chart before update:", chart);
+                    // Single setState call with both roles and tasks to avoid race condition
+                    const newChart = { ...chart, roles, tasks };
+                    console.log("New chart after spread:", newChart);
+                    setChart(newChart);
+                  }}
+                  onFallbackStatusChange={setIsFallbackActive}
                 />
-                <Body size="sm" className="text-slate-500">
-                  {chart.description?.length || 0} / 500
-                </Body>
               </CardContent>
             </Card>
 
@@ -471,10 +377,32 @@ export default function RaciGeneratorPage() {
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     3
                   </div>
-                  <div>
-                    <CardTitle className="text-black">Roles</CardTitle>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-black">
+                        Roles{" "}
+                        {chart.roles.length > 0 && (
+                          <span className="text-sm font-normal text-slate-500 ml-2">
+                            ({chart.roles.length})
+                          </span>
+                        )}
+                      </CardTitle>
+                      <div className="group relative">
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                          Add team members and their positions/titles
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
+                        </div>
+                      </div>
+                    </div>
                     <Caption className="text-slate-600 mt-1">
-                      Define team members and positions
+                      Define team members and positions{" "}
+                      {chart.roles.length > 0 && (
+                        <span className="text-green-600">
+                          ✓ {chart.roles.length} role
+                          {chart.roles.length !== 1 ? "s" : ""} added
+                        </span>
+                      )}
                     </Caption>
                   </div>
                 </div>
@@ -496,10 +424,32 @@ export default function RaciGeneratorPage() {
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     4
                   </div>
-                  <div>
-                    <CardTitle className="text-black">Tasks</CardTitle>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-black">
+                        Tasks{" "}
+                        {chart.tasks.length > 0 && (
+                          <span className="text-sm font-normal text-slate-500 ml-2">
+                            ({chart.tasks.length})
+                          </span>
+                        )}
+                      </CardTitle>
+                      <div className="group relative">
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                          Define activities, deliverables, and work items
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
+                        </div>
+                      </div>
+                    </div>
                     <Caption className="text-slate-600 mt-1">
-                      List activities and deliverables
+                      List activities and deliverables{" "}
+                      {chart.tasks.length > 0 && (
+                        <span className="text-green-600">
+                          ✓ {chart.tasks.length} task
+                          {chart.tasks.length !== 1 ? "s" : ""} added
+                        </span>
+                      )}
                     </Caption>
                   </div>
                 </div>
@@ -526,17 +476,40 @@ export default function RaciGeneratorPage() {
                       <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                         5
                       </div>
-                      <div>
-                        <CardTitle className="text-black">
-                          RACI Matrix
-                        </CardTitle>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-black">
+                            RACI Matrix
+                          </CardTitle>
+                          <div className="group relative">
+                            <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                              Apply patterns or assign R, A, C, I values to each
+                              role-task combination
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
+                            </div>
+                          </div>
+                        </div>
                         <Caption className="text-slate-600 mt-1">
                           Assign responsibilities
                         </Caption>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-6">
+                  <CardContent className="p-6 space-y-6">
+                    {/* Quick Presets Section - Before the matrix */}
+                    <div>
+                      <QuickPresetsGrid
+                        roles={chart.roles}
+                        tasks={chart.tasks}
+                        onApplyPreset={(matrix) => updateMatrix(matrix)}
+                      />
+                    </div>
+
+                    {/* Separator */}
+                    <div className="border-t border-slate-200" />
+
+                    {/* Matrix Editor */}
                     <RaciMatrixEditor
                       chart={chart}
                       onMatrixChange={updateMatrix}
@@ -602,6 +575,96 @@ export default function RaciGeneratorPage() {
                     <span>Click matrix cells to assign RACI values</span>
                   </li>
                 </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Sidebar: Controls, Export, and Danger Zone */}
+          <div className="lg:col-span-3 space-y-6 order-2 lg:order-2">
+            {/* Controls Row */}
+            <div className="space-y-3">
+              <Card className="border-slate-200 shadow-sm">
+                <CardHeader className="pb-3 border-b border-slate-200">
+                  <Label className="text-slate-700 font-semibold text-xs">
+                    Theme
+                  </Label>
+                </CardHeader>
+                <CardContent className="pt-4 pb-4 space-y-4">
+                  {/* Theme Selector */}
+                  <ThemeSelector
+                    theme={chart.theme}
+                    onChange={updateTheme}
+                    highContrast={highContrast}
+                    onHighContrastChange={setHighContrast}
+                  />
+
+                  {/* Divider */}
+                  <div className="border-t border-slate-200" />
+
+                  {/* Live Preview Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">👁️</span>
+                      <div>
+                        <Label className="text-slate-700 font-semibold text-xs block">
+                          Live Preview
+                        </Label>
+                        <p className="text-xs text-slate-600">
+                          See your matrix with theme
+                        </p>
+                      </div>
+                    </div>
+                    {chart.roles.length > 0 && chart.tasks.length > 0 ? (
+                      <button
+                        onClick={() => setShowPreviewModal(true)}
+                        className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium"
+                      >
+                        Open Preview
+                      </button>
+                    ) : (
+                      <div className="text-center py-2">
+                        <p className="text-xs text-slate-600 font-medium">
+                          Add roles & tasks to preview
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Export Card - Enhanced Design */}
+              <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-4 border-b border-emerald-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⬇️</span>
+                    <div>
+                      <Label className="text-emerald-700 font-semibold text-sm block">
+                        Export & Download
+                      </Label>
+                      <p className="text-xs text-emerald-600">
+                        Save your RACI chart in any format
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <ExportButtons chart={chart} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Danger Zone */}
+            <Card className="border-red-200 bg-red-50 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-xs text-red-600">
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResetControls
+                  onReset={handleReset}
+                  onResetTheme={handleResetTheme}
+                />
               </CardContent>
             </Card>
           </div>

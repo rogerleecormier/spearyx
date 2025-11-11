@@ -54,6 +54,18 @@ export default function RaciEditor({ state, setState }: RaciEditorProps) {
                     chart: { ...state.chart, description: desc },
                   });
                 }}
+                onGenerateRoles={(roles: RaciRole[]) => {
+                  setState({
+                    ...state,
+                    chart: { ...state.chart, roles },
+                  });
+                }}
+                onGenerateTasks={(tasks: RaciTask[]) => {
+                  setState({
+                    ...state,
+                    chart: { ...state.chart, tasks },
+                  });
+                }}
               />
             </CardContent>
           </Card>

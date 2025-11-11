@@ -118,14 +118,6 @@ export default function RaciPreview({
         >
           {chart.title || "Untitled Chart"}
         </h2>
-        {chart.description && (
-          <p
-            className="text-xs mt-1"
-            style={{ color: currentTheme.colors.text }}
-          >
-            {chart.description}
-          </p>
-        )}
       </div>
 
       {/* Matrix Preview */}

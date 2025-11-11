@@ -22,6 +22,32 @@ function generateUUID(): string {
 }
 
 /**
+ * Ensure matrix has entries for all role-task combinations
+ * This is needed when roles or tasks are added/replaced
+ */
+function ensureMatrixInitialized(
+  chart: RaciChart
+): Record<string, Record<string, any>> {
+  const newMatrix: Record<string, Record<string, any>> = {};
+
+  // Add entries for all roles
+  for (const role of chart.roles) {
+    if (!newMatrix[role.id]) {
+      newMatrix[role.id] = {};
+    }
+    // Ensure all tasks have entries in this role's map
+    for (const task of chart.tasks) {
+      if (!(task.id in newMatrix[role.id])) {
+        // Preserve existing value if it exists in the old matrix
+        newMatrix[role.id][task.id] = chart.matrix[role.id]?.[task.id] ?? null;
+      }
+    }
+  }
+
+  return newMatrix;
+}
+
+/**
  * Create initial chart with default values
  */
 export function createInitialChart(partial?: Partial<RaciChart>): RaciChart {
@@ -215,7 +241,14 @@ export function raciReducer(state: RaciChart, action: RaciAction): RaciChart {
     }
 
     case "setState": {
-      return action.payload.chart;
+      // When setting a new chart state (e.g., from AI generation or import),
+      // ensure the matrix is properly initialized for all role-task combinations
+      const chart = action.payload.chart;
+      const newMatrix = ensureMatrixInitialized(chart);
+      return {
+        ...chart,
+        matrix: newMatrix,
+      };
     }
 
     default:

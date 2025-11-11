@@ -1,8 +1,16 @@
 "use client";
 
-import { Workbook, Worksheet } from "exceljs";
 import { RaciChart } from "@/types/raci";
 import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
+
+// Lazy load exceljs to avoid SSR issues
+let ExcelJs: typeof import("exceljs") | null = null;
+const loadExcelJs = async () => {
+  if (!ExcelJs) {
+    ExcelJs = await import("exceljs");
+  }
+  return ExcelJs;
+};
 
 export interface XlsxExportOptions {
   themeId?: string;
@@ -46,10 +54,10 @@ function getXlsxTheme(themeId?: string): XlsxTheme {
 }
 
 function createMatrixSheet(
-  workbook: Workbook,
+  workbook: any,
   chart: RaciChart,
   theme: XlsxTheme
-): Worksheet {
+): any {
   const sheet = workbook.addWorksheet("RACI Matrix");
 
   // Title row - will share row with logo
@@ -231,7 +239,7 @@ function createMatrixSheet(
   return sheet;
 }
 
-function createLegendSheet(workbook: Workbook, theme: XlsxTheme): Worksheet {
+function createLegendSheet(workbook: any, theme: XlsxTheme): any {
   const sheet = workbook.addWorksheet("Legend");
 
   // Title
@@ -293,10 +301,10 @@ function createLegendSheet(workbook: Workbook, theme: XlsxTheme): Worksheet {
 }
 
 function createMetadataSheet(
-  workbook: Workbook,
+  workbook: any,
   chart: RaciChart,
   theme: XlsxTheme
-): Worksheet {
+): any {
   const sheet = workbook.addWorksheet("Metadata");
 
   // Title
@@ -360,6 +368,10 @@ export async function exportToXlsx(
   if (!validation.valid) {
     throw new Error(`Invalid RACI chart: ${validation.errors.join(", ")}`);
   }
+
+  // Load exceljs dynamically to avoid SSR errors
+  const exceljs = await loadExcelJs();
+  const { Workbook } = exceljs;
 
   const theme = getXlsxTheme(options.themeId);
   const workbook = new Workbook();

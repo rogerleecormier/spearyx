@@ -32,7 +32,7 @@ export default function RolesEditor({ roles, onChange }: RolesEditorProps) {
 
   return (
     <div className="space-y-3">
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {roles.map((role) => (
           <div key={role.id} className="flex gap-2">
             <input
