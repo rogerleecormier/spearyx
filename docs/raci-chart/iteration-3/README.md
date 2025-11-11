@@ -158,14 +158,14 @@ For complete project context, see:
 
 ### Key Features
 
-| Feature | Implementation | Details |
-|---------|-----------------|---------|
-| **Interactive Cells** | Button elements | Click to cycle R→A→C→I→null |
-| **Color Coding** | Tailwind classes | Green (R), Red (A), Blue (C), Amber (I) |
-| **Keyboard Shortcuts** | 8 key bindings | Arrow keys, Space, Tab, Shift combinations |
-| **Validation** | Real-time | At least one A per task; visual indicators |
-| **Focus Management** | Focus ring | Clear indication of current cell |
-| **Responsive Layout** | Sticky headers | Horizontal scroll for large matrices |
+| Feature                | Implementation   | Details                                    |
+| ---------------------- | ---------------- | ------------------------------------------ |
+| **Interactive Cells**  | Button elements  | Click to cycle R→A→C→I→null                |
+| **Color Coding**       | Tailwind classes | Green (R), Red (A), Blue (C), Amber (I)    |
+| **Keyboard Shortcuts** | 8 key bindings   | Arrow keys, Space, Tab, Shift combinations |
+| **Validation**         | Real-time        | At least one A per task; visual indicators |
+| **Focus Management**   | Focus ring       | Clear indication of current cell           |
+| **Responsive Layout**  | Sticky headers   | Horizontal scroll for large matrices       |
 
 ---
 
@@ -197,6 +197,7 @@ src/
 ### 1. Interactive RACI Matrix ✅
 
 Build an interactive color-coded matrix where users can:
+
 - Click cells to cycle through RACI values
 - See real-time color changes
 - Navigate with keyboard
@@ -205,6 +206,7 @@ Build an interactive color-coded matrix where users can:
 ### 2. Full Keyboard Navigation ✅
 
 Users can:
+
 - Navigate with Arrow keys (up, down, left, right)
 - Cycle values with Space key
 - Move through grid with Tab key
@@ -213,6 +215,7 @@ Users can:
 ### 3. Real-Time Validation ✅
 
 The matrix shows:
+
 - Visual indication of valid/invalid tasks
 - At least one Accountable (A) per task
 - Real-time error badges
@@ -221,6 +224,7 @@ The matrix shows:
 ### 4. Color-Coded Assignments ✅
 
 Clear visual distinction:
+
 - **Green** (#22c55e) = Responsible (R)
 - **Red** (#dc2626) = Accountable (A)
 - **Blue** (#3b82f6) = Consulted (C)
@@ -230,6 +234,7 @@ Clear visual distinction:
 ### 5. Responsive Design ✅
 
 Works on all screen sizes:
+
 - Mobile: Single column with scroll
 - Tablet: Multi-column with scroll
 - Desktop: Full matrix visible with sticky headers
@@ -238,6 +243,7 @@ Works on all screen sizes:
 ### 6. Accessibility ✅
 
 Full WCAG 2.1 AA compliance:
+
 - Keyboard-only navigation
 - ARIA labels on all cells
 - Focus indicators visible
@@ -247,6 +253,7 @@ Full WCAG 2.1 AA compliance:
 ### 7. Performance ✅
 
 Handles large matrices efficiently:
+
 - Tested with 20 roles × 50 tasks (1,000 cells)
 - Smooth cell interactions
 - No lag during navigation or cycling
@@ -258,38 +265,38 @@ Handles large matrices efficiently:
 
 ### Code Quality
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Lines of code | < 400 | 350+ | ✅ |
-| TypeScript | 100% | 100% | ✅ |
-| Type safety | No `any` | 0 | ✅ |
-| Lint errors | 0 | 0 | ✅ |
+| Metric        | Target   | Actual | Status |
+| ------------- | -------- | ------ | ------ |
+| Lines of code | < 400    | 350+   | ✅     |
+| TypeScript    | 100%     | 100%   | ✅     |
+| Type safety   | No `any` | 0      | ✅     |
+| Lint errors   | 0        | 0      | ✅     |
 
 ### Testing
 
-| Type | Count | Status |
-|------|-------|--------|
-| Manual functional tests | 15+ | ✅ |
-| Edge case tests | 8+ | ✅ |
-| Accessibility tests | 6+ | ✅ |
-| Visual tests | 5+ | ✅ |
+| Type                    | Count | Status |
+| ----------------------- | ----- | ------ |
+| Manual functional tests | 15+   | ✅     |
+| Edge case tests         | 8+    | ✅     |
+| Accessibility tests     | 6+    | ✅     |
+| Visual tests            | 5+    | ✅     |
 
 ### Performance
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Cell update | < 100ms | ~5-10ms | ✅ |
-| Focus switch | < 50ms | ~2-5ms | ✅ |
-| Validation run | < 200ms | ~10-20ms | ✅ |
+| Metric         | Target  | Actual   | Status |
+| -------------- | ------- | -------- | ------ |
+| Cell update    | < 100ms | ~5-10ms  | ✅     |
+| Focus switch   | < 50ms  | ~2-5ms   | ✅     |
+| Validation run | < 200ms | ~10-20ms | ✅     |
 
 ### Accessibility
 
-| Standard | Target | Status |
-|----------|--------|--------|
-| WCAG 2.1 | AA | ✅ |
-| Keyboard nav | Full | ✅ |
-| ARIA labels | All cells | ✅ |
-| Focus visible | Yes | ✅ |
+| Standard      | Target    | Status |
+| ------------- | --------- | ------ |
+| WCAG 2.1      | AA        | ✅     |
+| Keyboard nav  | Full      | ✅     |
+| ARIA labels   | All cells | ✅     |
+| Focus visible | Yes       | ✅     |
 
 ---
 
@@ -383,16 +390,19 @@ Use this to verify the implementation:
 ### Common Issues
 
 **Matrix not showing?**
+
 - Ensure you've added roles and tasks
 - Check browser console for errors
 - Verify chart.roles.length > 0 and chart.tasks.length > 0
 
 **Keyboard shortcuts not working?**
+
 - Focus must be on the matrix (click a cell first)
 - Check if browser has default bindings that conflict
 - Try in different browser if unsure
 
 **Colors not displaying?**
+
 - Check dark mode is not enabled (or verify dark: variants)
 - Ensure Tailwind classes are purged (run build)
 - Check browser DevTools for CSS loading
@@ -404,6 +414,7 @@ Use this to verify the implementation:
 **Iteration 3 is COMPLETE!**
 
 You have successfully built:
+
 - ✅ Interactive RACI matrix with keyboard navigation
 - ✅ Color-coded assignments
 - ✅ Real-time validation
@@ -411,6 +422,7 @@ You have successfully built:
 - ✅ Comprehensive documentation
 
 **Next:**
+
 - Review the code
 - Test with your own data
 - Prepare for Iteration 4
@@ -420,16 +432,16 @@ You have successfully built:
 
 ## 📊 Statistics
 
-| Metric | Value |
-|--------|-------|
-| **Documentation Files** | 5 |
-| **Total Doc Lines** | 2,500+ |
-| **Component Files** | 1 enhanced |
-| **Code Lines** | 350+ |
-| **Test Cases** | 30+ |
-| **Keyboard Shortcuts** | 8 |
-| **Color Variants** | 5 (R, A, C, I, empty) |
-| **Time to Complete** | ~1 week |
+| Metric                  | Value                 |
+| ----------------------- | --------------------- |
+| **Documentation Files** | 5                     |
+| **Total Doc Lines**     | 2,500+                |
+| **Component Files**     | 1 enhanced            |
+| **Code Lines**          | 350+                  |
+| **Test Cases**          | 30+                   |
+| **Keyboard Shortcuts**  | 8                     |
+| **Color Variants**      | 5 (R, A, C, I, empty) |
+| **Time to Complete**    | ~1 week               |
 
 ---
 
@@ -438,6 +450,7 @@ You have successfully built:
 Iteration 3 transforms the RACI matrix from a static display into a **powerful, accessible, interactive tool** that teams can use to quickly and accurately define roles and responsibilities.
 
 The implementation is:
+
 - **Robust** ✅ (handles edge cases)
 - **Accessible** ✅ (WCAG 2.1 AA)
 - **Performant** ✅ (smooth 1,000-cell matrices)

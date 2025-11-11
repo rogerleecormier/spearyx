@@ -129,10 +129,10 @@ interface CellRef {
 }
 
 interface CellColor {
-  background: string;      // Tailwind class
-  border: string;          // Tailwind class
-  text: string;            // Tailwind class
-  label: string;           // "Responsible", "Accountable", etc.
+  background: string; // Tailwind class
+  border: string; // Tailwind class
+  text: string; // Tailwind class
+  label: string; // "Responsible", "Accountable", etc.
 }
 ```
 
@@ -242,11 +242,11 @@ const { state: chart, updateMatrix, ... } = useRaciState();
 
 ### Props Comparison
 
-| Prop | Before | After | Benefit |
-|------|--------|-------|---------|
-| **chart** | RaciChart | RaciChart | Same (no change) |
-| **onChange** | `(chart: RaciChart) => void` | ❌ Removed | - |
-| **onMatrixChange** | ❌ N/A | `(matrix) => void` | Cleaner API, less data |
+| Prop               | Before                       | After              | Benefit                |
+| ------------------ | ---------------------------- | ------------------ | ---------------------- |
+| **chart**          | RaciChart                    | RaciChart          | Same (no change)       |
+| **onChange**       | `(chart: RaciChart) => void` | ❌ Removed         | -                      |
+| **onMatrixChange** | ❌ N/A                       | `(matrix) => void` | Cleaner API, less data |
 
 ---
 
@@ -257,6 +257,7 @@ const { state: chart, updateMatrix, ... } = useRaciState();
 **Single Responsibility**: Render and handle matrix interactions
 
 **Handles**:
+
 - ✅ Render matrix table with cells
 - ✅ Handle keyboard input (arrow keys, space)
 - ✅ Handle mouse click input
@@ -267,6 +268,7 @@ const { state: chart, updateMatrix, ... } = useRaciState();
 - ✅ Display keyboard help
 
 **Does NOT Handle**:
+
 - ❌ Chart state management (parent does)
 - ❌ Validation logic (parent does via useValidation)
 - ❌ Persistence/auto-save (parent does via useAutoSave)
@@ -278,6 +280,7 @@ const { state: chart, updateMatrix, ... } = useRaciState();
 **Single Responsibility**: Orchestrate all components
 
 **Handles**:
+
 - ✅ Initialize state via useRaciState
 - ✅ Manage chart state
 - ✅ Load/save state (useAutoSave)
@@ -394,22 +397,22 @@ onBlur={() => setFocusedCell(null)}
 ```typescript
 const getCellColor = (value: RaciValue, isFocused: boolean) => {
   const colorMap = {
-    "R": {
+    R: {
       background: "bg-success-50 dark:bg-success-950",
       border: "border-success-300 dark:border-success-700",
       text: "text-success-700 dark:text-success-300",
     },
-    "A": {
+    A: {
       background: "bg-error-50 dark:bg-error-950",
       border: "border-error-300 dark:border-error-700",
       text: "text-error-700 dark:text-error-300",
     },
-    "C": {
+    C: {
       background: "bg-info-50 dark:bg-info-950",
       border: "border-info-300 dark:border-info-700",
       text: "text-info-700 dark:text-info-300",
     },
-    "I": {
+    I: {
       background: "bg-warning-50 dark:bg-warning-950",
       border: "border-warning-300 dark:border-warning-700",
       text: "text-warning-700 dark:text-warning-300",
@@ -450,8 +453,11 @@ const getCellColor = (value: RaciValue, isFocused: boolean) => {
         Role / Task
       </th>
       {/* Task headers */}
-      {chart.tasks.map(task => (
-        <th key={task.id} className="px-3 py-2 min-w-[90px] border-r border-border">
+      {chart.tasks.map((task) => (
+        <th
+          key={task.id}
+          className="px-3 py-2 min-w-[90px] border-r border-border"
+        >
           {task.name}
         </th>
       ))}
@@ -459,18 +465,19 @@ const getCellColor = (value: RaciValue, isFocused: boolean) => {
   </thead>
   <tbody>
     {/* Row for each role */}
-    {chart.roles.map(role => (
+    {chart.roles.map((role) => (
       <tr key={role.id} className="border-b border-border">
         {/* Sticky role header */}
         <td className="px-4 py-3 sticky left-0 z-10 bg-muted/50 border-r border-border">
           {role.name}
         </td>
         {/* Cells for each task */}
-        {chart.tasks.map(task => (
-          <td key={`${role.id}-${task.id}`} className="px-1 py-1 border-r border-border">
-            <button className="w-full h-12 ...">
-              {value || "-"}
-            </button>
+        {chart.tasks.map((task) => (
+          <td
+            key={`${role.id}-${task.id}`}
+            className="px-1 py-1 border-r border-border"
+          >
+            <button className="w-full h-12 ...">{value || "-"}</button>
           </td>
         ))}
       </tr>
@@ -496,9 +503,12 @@ const getCellColor = (value: RaciValue, isFocused: boolean) => {
 
 ```typescript
 // Prevent function recreation on every render
-const updateCell = useCallback((roleId, taskId, value) => {
-  // ...
-}, [chart.matrix, onMatrixChange]);
+const updateCell = useCallback(
+  (roleId, taskId, value) => {
+    // ...
+  },
+  [chart.matrix, onMatrixChange]
+);
 
 // Dependency array includes only required dependencies
 ```
@@ -534,8 +544,8 @@ if (chart.roles.length === 0 || chart.tasks.length === 0) {
 ### ARIA Labels
 
 ```typescript
-aria-label={`RACI cell for ${role.name} and ${task.name}. 
-             Current: ${value || "unassigned"}. 
+aria-label={`RACI cell for ${role.name} and ${task.name}.
+             Current: ${value || "unassigned"}.
              Press Space to cycle (R→A→C→I→empty)`}
 ```
 
@@ -564,16 +574,14 @@ className={`... focus:outline-none ${
 
 ```tsx
 // Display text label, not just color
-<button>
-  {value || "-"}  // Shows "R", "A", "C", "I", or "-"
-</button>
+<button>{value || "-"} // Shows "R", "A", "C", "I", or "-"</button>;
 
 // Validation uses icon + color, not color alone
-{!isValid && (
-  <div className="text-error-600">
-    ⚠️ Missing A  {/* Icon + text */}
-  </div>
-)}
+{
+  !isValid && (
+    <div className="text-error-600">⚠️ Missing A {/* Icon + text */}</div>
+  );
+}
 ```
 
 ---

@@ -12,14 +12,14 @@ Iteration 3 transforms the static matrix display into a **fully interactive, key
 
 ### Key Design Decisions
 
-| Decision | Rationale | Alternatives Considered |
-|----------|-----------|-------------------------|
-| **Button-based cells** | More accessible than select dropdowns; better touch support | Select elements, custom checkbox groups |
-| **Space key for cycling** | Standard for toggles/cycling; intuitive; non-invasive | Enter key, context menu, dedicated buttons |
-| **Arrow keys for navigation** | Standard UI pattern; familiar to users; works with Tab | Only Tab navigation; mouse only |
-| **Real-time validation** | Immediate feedback; prevents invalid exports | Validation only on export; manual check button |
-| **Sticky role header** | Better UX for large matrices; standard table pattern | No sticky header; horizontal scroll only |
-| **useRef for cell refs** | Efficient focus management; minimal re-renders | Context API, Redux for cell state |
+| Decision                      | Rationale                                                   | Alternatives Considered                        |
+| ----------------------------- | ----------------------------------------------------------- | ---------------------------------------------- |
+| **Button-based cells**        | More accessible than select dropdowns; better touch support | Select elements, custom checkbox groups        |
+| **Space key for cycling**     | Standard for toggles/cycling; intuitive; non-invasive       | Enter key, context menu, dedicated buttons     |
+| **Arrow keys for navigation** | Standard UI pattern; familiar to users; works with Tab      | Only Tab navigation; mouse only                |
+| **Real-time validation**      | Immediate feedback; prevents invalid exports                | Validation only on export; manual check button |
+| **Sticky role header**        | Better UX for large matrices; standard table pattern        | No sticky header; horizontal scroll only       |
+| **useRef for cell refs**      | Efficient focus management; minimal re-renders              | Context API, Redux for cell state              |
 
 ---
 
@@ -109,17 +109,17 @@ interface CellColor {
 
 ### Key Bindings
 
-| Key | Behavior | Code Path |
-|-----|----------|-----------|
-| `Space` | Cycle forward (R→A→C→I→null) | `cycleCellForward()` → `updateCell()` |
-| `Shift+Space` | Cycle backward (null→I→C→A→R) | `cycleCellBackward()` → `updateCell()` |
-| `Arrow Up` | Move to previous role | Set focused cell, scroll into view |
-| `Arrow Down` | Move to next role | Set focused cell, scroll into view |
-| `Arrow Left` | Move to previous task | Set focused cell, scroll into view |
-| `Arrow Right` | Move to next task | Set focused cell, scroll into view |
-| `Tab` | Move to next cell (browser default) | Native browser behavior |
-| `Shift+Tab` | Move to previous cell | Native browser behavior |
-| `Click` | Cycle forward | `cycleCellForward()` on click |
+| Key           | Behavior                            | Code Path                              |
+| ------------- | ----------------------------------- | -------------------------------------- |
+| `Space`       | Cycle forward (R→A→C→I→null)        | `cycleCellForward()` → `updateCell()`  |
+| `Shift+Space` | Cycle backward (null→I→C→A→R)       | `cycleCellBackward()` → `updateCell()` |
+| `Arrow Up`    | Move to previous role               | Set focused cell, scroll into view     |
+| `Arrow Down`  | Move to next role                   | Set focused cell, scroll into view     |
+| `Arrow Left`  | Move to previous task               | Set focused cell, scroll into view     |
+| `Arrow Right` | Move to next task                   | Set focused cell, scroll into view     |
+| `Tab`         | Move to next cell (browser default) | Native browser behavior                |
+| `Shift+Tab`   | Move to previous cell               | Native browser behavior                |
+| `Click`       | Cycle forward                       | `cycleCellForward()` on click          |
 
 ### Focus Management
 
@@ -141,22 +141,22 @@ interface CellColor {
 
 ```typescript
 const raciColorMap = {
-  "R": {
+  R: {
     background: "bg-success-50 dark:bg-success-950",
     border: "border-success-300 dark:border-success-700",
     text: "text-success-700 dark:text-success-300",
   },
-  "A": {
+  A: {
     background: "bg-error-50 dark:bg-error-950",
     border: "border-error-300 dark:border-error-700",
     text: "text-error-700 dark:text-error-300",
   },
-  "C": {
+  C: {
     background: "bg-info-50 dark:bg-info-950",
     border: "border-info-300 dark:border-info-700",
     text: "text-info-700 dark:text-info-300",
   },
-  "I": {
+  I: {
     background: "bg-warning-50 dark:bg-warning-950",
     border: "border-warning-300 dark:border-warning-700",
     text: "text-warning-700 dark:text-warning-300",
@@ -171,13 +171,13 @@ const raciColorMap = {
 
 ### Semantic Meaning
 
-| Value | Color | Meaning | Example |
-|-------|-------|---------|---------|
-| **R** | Green | **Responsible** - Does the work | Developer implements feature |
-| **A** | Red | **Accountable** - Final decision maker | Project manager approves |
-| **C** | Blue | **Consulted** - Provides input | Designer gives feedback |
-| **I** | Amber | **Informed** - Kept in loop | Stakeholder gets updates |
-| **-** | Gray | Unassigned | Not involved in task |
+| Value | Color | Meaning                                | Example                      |
+| ----- | ----- | -------------------------------------- | ---------------------------- |
+| **R** | Green | **Responsible** - Does the work        | Developer implements feature |
+| **A** | Red   | **Accountable** - Final decision maker | Project manager approves     |
+| **C** | Blue  | **Consulted** - Provides input         | Designer gives feedback      |
+| **I** | Amber | **Informed** - Kept in loop            | Stakeholder gets updates     |
+| **-** | Gray  | Unassigned                             | Not involved in task         |
 
 ---
 
@@ -249,12 +249,12 @@ Below Matrix:
 
 ### Matrix Size Handling
 
-| Size | Cells | Status | Notes |
-|------|-------|--------|-------|
-| 5×10 | 50 | ✅ Optimal | Instant response |
-| 10×20 | 200 | ✅ Good | Smooth interaction |
-| 20×50 | 1,000 | ✅ Acceptable | Minor scroll lag on initial render |
-| 50×100 | 5,000 | ⚠️ Slow | Not recommended; consider pagination |
+| Size   | Cells | Status        | Notes                                |
+| ------ | ----- | ------------- | ------------------------------------ |
+| 5×10   | 50    | ✅ Optimal    | Instant response                     |
+| 10×20  | 200   | ✅ Good       | Smooth interaction                   |
+| 20×50  | 1,000 | ✅ Acceptable | Minor scroll lag on initial render   |
+| 50×100 | 5,000 | ⚠️ Slow       | Not recommended; consider pagination |
 
 ### Optimization Techniques
 
@@ -289,8 +289,8 @@ Below Matrix:
 ### ARIA Labels
 
 ```tsx
-aria-label={`RACI cell for ${role.name} and ${task.name}. 
-            Current: ${value || "unassigned"}. 
+aria-label={`RACI cell for ${role.name} and ${task.name}.
+            Current: ${value || "unassigned"}.
             Press Space to cycle (R→A→C→I→empty)`}
 ```
 
@@ -399,9 +399,9 @@ if (roleIndex === totalRoles - 1) {
 useEffect(() => {
   // Reset focus if focused role/task no longer exists
   if (focusedCell) {
-    const roleExists = chart.roles.some(r => r.id === focusedCell.roleId);
-    const taskExists = chart.tasks.some(t => t.id === focusedCell.taskId);
-    
+    const roleExists = chart.roles.some((r) => r.id === focusedCell.roleId);
+    const taskExists = chart.tasks.some((t) => t.id === focusedCell.taskId);
+
     if (!roleExists || !taskExists) {
       setFocusedCell(null);
     }
@@ -417,10 +417,7 @@ useEffect(() => {
 
 ```tsx
 // Old: onChange handler received entire chart
-<RaciMatrixEditor
-  chart={chart}
-  onChange={(newChart) => setChart(newChart)}
-/>
+<RaciMatrixEditor chart={chart} onChange={(newChart) => setChart(newChart)} />
 ```
 
 ### After Iteration 3

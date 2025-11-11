@@ -50,9 +50,12 @@ export default function RaciMatrixEditor({
   /**
    * Get previous value in RACI cycle
    */
-  const getPreviousRaciValue = (current: RaciValue | null): RaciValue | null => {
+  const getPreviousRaciValue = (
+    current: RaciValue | null
+  ): RaciValue | null => {
     const currentIndex = raciCycle.indexOf(current);
-    const prevIndex = currentIndex === 0 ? raciCycle.length - 1 : currentIndex - 1;
+    const prevIndex =
+      currentIndex === 0 ? raciCycle.length - 1 : currentIndex - 1;
     return raciCycle[prevIndex];
   };
 
@@ -175,7 +178,13 @@ export default function RaciMatrixEditor({
         return;
       }
     },
-    [chart.roles, chart.tasks, chart.matrix, cycleCellForward, cycleCellBackward]
+    [
+      chart.roles,
+      chart.tasks,
+      chart.matrix,
+      cycleCellForward,
+      cycleCellBackward,
+    ]
   );
 
   /**
@@ -190,7 +199,6 @@ export default function RaciMatrixEditor({
     text: string;
     label: string;
   } => {
-
     switch (value) {
       case "R":
         return {
@@ -330,14 +338,24 @@ export default function RaciMatrixEditor({
                             });
                           }
                         }}
-                        onFocus={() => setFocusedCell({ roleId: role.id, taskId: task.id })}
+                        onFocus={() =>
+                          setFocusedCell({ roleId: role.id, taskId: task.id })
+                        }
                         onBlur={() => setFocusedCell(null)}
                         onKeyDown={(e) =>
-                          handleCellKeyDown(e, roleIndex, taskIndex, role.id, task.id)
+                          handleCellKeyDown(
+                            e,
+                            roleIndex,
+                            taskIndex,
+                            role.id,
+                            task.id
+                          )
                         }
                         onClick={() => cycleCellForward(role.id, task.id)}
                         className={`w-full h-12 flex items-center justify-center border-2 rounded font-bold text-lg transition-all ${colors.background} ${colors.border} ${colors.text} hover:shadow-md active:scale-95 focus:outline-none ${
-                          isFocused ? "ring-2 ring-primary-500 ring-offset-2" : ""
+                          isFocused
+                            ? "ring-2 ring-primary-500 ring-offset-2"
+                            : ""
                         }`}
                         aria-label={`RACI cell for ${role.name} and ${task.name}. Current: ${value || "unassigned"}. Press Space to cycle (${raciCycle.join("→")})`}
                         title={`${role.name} - ${task.name}: ${value || "-"}`}
@@ -381,10 +399,7 @@ export default function RaciMatrixEditor({
           {chart.tasks.map((task) => {
             const isValid = getTaskValidationStatus(task.id);
             return (
-              <div
-                key={task.id}
-                className="flex items-center gap-2 text-sm"
-              >
+              <div key={task.id} className="flex items-center gap-2 text-sm">
                 <div
                   className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white ${
                     isValid ? "bg-success-500" : "bg-error-500"
@@ -393,7 +408,8 @@ export default function RaciMatrixEditor({
                   {isValid ? "✓" : "!"}
                 </div>
                 <span className="text-foreground">
-                  {task.name}: {isValid ? "Has Accountable" : "Missing Accountable (A)"}
+                  {task.name}:{" "}
+                  {isValid ? "Has Accountable" : "Missing Accountable (A)"}
                 </span>
               </div>
             );

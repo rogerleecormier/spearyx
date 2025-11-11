@@ -9,17 +9,17 @@
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action | Code |
-|----------|--------|------|
-| **Space** | Cycle cell value forward | `cycleCellForward()` |
-| **Shift+Space** | Cycle cell value backward | `cycleCellBackward()` |
-| **↑ Arrow Up** | Move to previous role | `handleCellKeyDown()` |
-| **↓ Arrow Down** | Move to next role | `handleCellKeyDown()` |
-| **← Arrow Left** | Move to previous task | `handleCellKeyDown()` |
-| **→ Arrow Right** | Move to next task | `handleCellKeyDown()` |
-| **Tab** | Move to next cell (browser default) | Native |
-| **Shift+Tab** | Move to previous cell (browser default) | Native |
-| **Click** | Cycle cell value forward | `onClick` handler |
+| Shortcut          | Action                                  | Code                  |
+| ----------------- | --------------------------------------- | --------------------- |
+| **Space**         | Cycle cell value forward                | `cycleCellForward()`  |
+| **Shift+Space**   | Cycle cell value backward               | `cycleCellBackward()` |
+| **↑ Arrow Up**    | Move to previous role                   | `handleCellKeyDown()` |
+| **↓ Arrow Down**  | Move to next role                       | `handleCellKeyDown()` |
+| **← Arrow Left**  | Move to previous task                   | `handleCellKeyDown()` |
+| **→ Arrow Right** | Move to next task                       | `handleCellKeyDown()` |
+| **Tab**           | Move to next cell (browser default)     | Native                |
+| **Shift+Tab**     | Move to previous cell (browser default) | Native                |
+| **Click**         | Cycle cell value forward                | `onClick` handler     |
 
 ---
 
@@ -27,13 +27,13 @@
 
 ### Tailwind Color Mapping
 
-| Value | Color Name | Hex | CSS Class | Meaning |
-|-------|-----------|-----|-----------|---------|
+| Value | Color Name      | Hex     | CSS Class       | Meaning     |
+| ----- | --------------- | ------- | --------------- | ----------- |
 | **R** | Success (Green) | #22c55e | `bg-success-50` | Responsible |
-| **A** | Error (Red) | #dc2626 | `bg-error-50` | Accountable |
-| **C** | Info (Blue) | #3b82f6 | `bg-info-50` | Consulted |
-| **I** | Warning (Amber) | #f59e0b | `bg-warning-50` | Informed |
-| **-** | Slate (Gray) | #f9fafb | `bg-white` | Unassigned |
+| **A** | Error (Red)     | #dc2626 | `bg-error-50`   | Accountable |
+| **C** | Info (Blue)     | #3b82f6 | `bg-info-50`    | Consulted   |
+| **I** | Warning (Amber) | #f59e0b | `bg-warning-50` | Informed    |
+| **-** | Slate (Gray)    | #f9fafb | `bg-white`      | Unassigned  |
 
 ### Dark Mode Classes
 
@@ -51,12 +51,12 @@ bg-slate-900 (empty dark)
 
 ### Matrix Validation
 
-| Rule | Condition | Error Code | Severity |
-|------|-----------|-----------|----------|
-| **At least one A per task** | Every task must have at least one Accountable | `TASK_NO_ACCOUNTABLE` | Error |
-| **Exclusive cell values** | Max one RACI value per cell | Built-in UI | Error |
-| **Roles not empty** | Must have role names | `ROLE_EMPTY` | Error |
-| **Tasks not empty** | Must have task names | `TASK_EMPTY` | Error |
+| Rule                        | Condition                                     | Error Code            | Severity |
+| --------------------------- | --------------------------------------------- | --------------------- | -------- |
+| **At least one A per task** | Every task must have at least one Accountable | `TASK_NO_ACCOUNTABLE` | Error    |
+| **Exclusive cell values**   | Max one RACI value per cell                   | Built-in UI           | Error    |
+| **Roles not empty**         | Must have role names                          | `ROLE_EMPTY`          | Error    |
+| **Tasks not empty**         | Must have task names                          | `TASK_EMPTY`          | Error    |
 
 ### Validation in Component
 
@@ -87,10 +87,10 @@ interface RaciMatrixEditorProps {
 
 ### Props Description
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| **chart** | RaciChart | Yes | Complete chart data with roles, tasks, matrix |
-| **onMatrixChange** | Function | Yes | Callback when matrix value changes |
+| Prop               | Type      | Required | Description                                   |
+| ------------------ | --------- | -------- | --------------------------------------------- |
+| **chart**          | RaciChart | Yes      | Complete chart data with roles, tasks, matrix |
+| **onMatrixChange** | Function  | Yes      | Callback when matrix value changes            |
 
 ### Internal State
 
@@ -221,7 +221,8 @@ const getNextRaciValue = (current: RaciValue | null): RaciValue | null => {
 const getPreviousRaciValue = (current: RaciValue | null): RaciValue | null => {
   const raciCycle = ["R", "A", "C", "I", null];
   const currentIndex = raciCycle.indexOf(current);
-  const prevIndex = currentIndex === 0 ? raciCycle.length - 1 : currentIndex - 1;
+  const prevIndex =
+    currentIndex === 0 ? raciCycle.length - 1 : currentIndex - 1;
   return raciCycle[prevIndex];
 };
 ```
@@ -379,15 +380,15 @@ console.log("Errors:", validation.errors);
 
 ## 📚 Related Files
 
-| File | Purpose | Location |
-|------|---------|----------|
-| **RaciMatrixEditor.tsx** | Component implementation | `src/components/raci/` |
-| **hooks.ts** | State management | `src/lib/raci/` |
-| **validation.ts** | Validation logic | `src/lib/raci/` |
-| **RaciGeneratorPage.tsx** | Main page | `src/components/raci/` |
-| **raci.ts** | Type definitions | `src/types/` |
-| **START_HERE.md** | Quick start | `docs/raci-chart/iteration-3/` |
-| **ARCHITECTURE.md** | Design details | `docs/raci-chart/iteration-3/` |
+| File                      | Purpose                  | Location                       |
+| ------------------------- | ------------------------ | ------------------------------ |
+| **RaciMatrixEditor.tsx**  | Component implementation | `src/components/raci/`         |
+| **hooks.ts**              | State management         | `src/lib/raci/`                |
+| **validation.ts**         | Validation logic         | `src/lib/raci/`                |
+| **RaciGeneratorPage.tsx** | Main page                | `src/components/raci/`         |
+| **raci.ts**               | Type definitions         | `src/types/`                   |
+| **START_HERE.md**         | Quick start              | `docs/raci-chart/iteration-3/` |
+| **ARCHITECTURE.md**       | Design details           | `docs/raci-chart/iteration-3/` |
 
 ---
 

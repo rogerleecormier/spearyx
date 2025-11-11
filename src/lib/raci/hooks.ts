@@ -74,12 +74,9 @@ export function useRaciState(initialChart?: RaciChart) {
     dispatch({ type: "updateDescription", payload: { description } });
   }, []);
 
-  const updateMatrix = useCallback(
-    (matrix: RaciChart["matrix"]) => {
-      dispatch({ type: "updateMatrix", payload: { matrix } });
-    },
-    []
-  );
+  const updateMatrix = useCallback((matrix: RaciChart["matrix"]) => {
+    dispatch({ type: "updateMatrix", payload: { matrix } });
+  }, []);
 
   const updateTheme = useCallback((theme: string) => {
     dispatch({ type: "updateTheme", payload: { theme } });

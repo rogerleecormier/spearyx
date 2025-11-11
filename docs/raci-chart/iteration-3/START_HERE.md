@@ -43,15 +43,15 @@ After Iteration 3, you'll see:
 
 ### Matrix Features
 
-| Feature | Implementation | Details |
-|---------|-----------------|---------|
-| **Cell Interaction** | Click or keyboard | Cycle through R→A→C→I→null |
-| **Keyboard Navigation** | Arrow keys + Tab | Move between cells, focus ring |
-| **Cell Value Cycle** | Space key | Forward cycle; Shift+Space backward |
-| **Color Coding** | Tailwind theme | Green (R), Red (A), Blue (C), Amber (I), Gray (empty) |
-| **Validation** | Real-time | At least one A per task; visual error indicator |
-| **Accessibility** | WCAG 2.1 AA | ARIA labels, keyboard only navigation, focus visible |
-| **Performance** | Optimized rendering | Handles 20 roles × 50 tasks smoothly |
+| Feature                 | Implementation      | Details                                               |
+| ----------------------- | ------------------- | ----------------------------------------------------- |
+| **Cell Interaction**    | Click or keyboard   | Cycle through R→A→C→I→null                            |
+| **Keyboard Navigation** | Arrow keys + Tab    | Move between cells, focus ring                        |
+| **Cell Value Cycle**    | Space key           | Forward cycle; Shift+Space backward                   |
+| **Color Coding**        | Tailwind theme      | Green (R), Red (A), Blue (C), Amber (I), Gray (empty) |
+| **Validation**          | Real-time           | At least one A per task; visual error indicator       |
+| **Accessibility**       | WCAG 2.1 AA         | ARIA labels, keyboard only navigation, focus visible  |
+| **Performance**         | Optimized rendering | Handles 20 roles × 50 tasks smoothly                  |
 
 ### ~400 Lines of Code
 
@@ -295,10 +295,7 @@ if (!hasAccountable && chart.roles.length > 0) {
 `RaciGeneratorPage.tsx` calls:
 
 ```tsx
-<RaciMatrixEditor
-  chart={chart}
-  onMatrixChange={updateMatrix}
-/>
+<RaciMatrixEditor chart={chart} onMatrixChange={updateMatrix} />
 ```
 
 ### State Management
@@ -346,6 +343,7 @@ if (!hasAccountable && chart.roles.length > 0) {
 - ✅ Handles large datasets smoothly
 
 **Next steps:**
+
 1. Review the code in `RaciMatrixEditor.tsx`
 2. Test the matrix with your own data
 3. Provide feedback on UX/accessibility

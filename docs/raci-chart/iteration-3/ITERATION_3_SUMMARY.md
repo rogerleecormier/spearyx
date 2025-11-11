@@ -107,16 +107,16 @@ const raciCycle = ["R", "A", "C", "I", null];
 
 **Implementation**: Full keyboard-only navigation support
 
-| Key | Action | Status |
-|-----|--------|--------|
-| Arrow Up | Move to previous role | ✅ Working |
-| Arrow Down | Move to next role | ✅ Working |
-| Arrow Left | Move to previous task | ✅ Working |
-| Arrow Right | Move to next task | ✅ Working |
-| Tab | Move to next cell (browser) | ✅ Working |
-| Shift+Tab | Move to previous cell (browser) | ✅ Working |
-| Space | Cycle forward | ✅ Working |
-| Shift+Space | Cycle backward | ✅ Working |
+| Key         | Action                          | Status     |
+| ----------- | ------------------------------- | ---------- |
+| Arrow Up    | Move to previous role           | ✅ Working |
+| Arrow Down  | Move to next role               | ✅ Working |
+| Arrow Left  | Move to previous task           | ✅ Working |
+| Arrow Right | Move to next task               | ✅ Working |
+| Tab         | Move to next cell (browser)     | ✅ Working |
+| Shift+Tab   | Move to previous cell (browser) | ✅ Working |
+| Space       | Cycle forward                   | ✅ Working |
+| Shift+Space | Cycle backward                  | ✅ Working |
 
 **Files Modified**: `RaciMatrixEditor.tsx`
 
@@ -197,14 +197,14 @@ const raciCycle = ["R", "A", "C", "I", null];
 
 ### Code Statistics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| **Component Size** | < 400 lines | 350+ lines | ✅ On target |
-| **Test Coverage** | Basic tests | Manual tested | ⚠️ Unit tests pending |
-| **Performance** | < 100ms cell update | ~5-10ms | ✅ Excellent |
-| **Matrix Size** | 20×50 cells | Tested 1,000 cells | ✅ Exceeds target |
-| **Accessibility** | WCAG 2.1 AA | Full compliance | ✅ Complete |
-| **Type Safety** | 100% TypeScript | Full coverage | ✅ Complete |
+| Metric             | Target              | Actual             | Status                |
+| ------------------ | ------------------- | ------------------ | --------------------- |
+| **Component Size** | < 400 lines         | 350+ lines         | ✅ On target          |
+| **Test Coverage**  | Basic tests         | Manual tested      | ⚠️ Unit tests pending |
+| **Performance**    | < 100ms cell update | ~5-10ms            | ✅ Excellent          |
+| **Matrix Size**    | 20×50 cells         | Tested 1,000 cells | ✅ Exceeds target     |
+| **Accessibility**  | WCAG 2.1 AA         | Full compliance    | ✅ Complete           |
+| **Type Safety**    | 100% TypeScript     | Full coverage      | ✅ Complete           |
 
 ### Type Coverage
 
@@ -233,6 +233,7 @@ const raciCycle = ["R", "A", "C", "I", null];
 **Purpose**: Interactive RACI matrix editor with keyboard support
 
 **Props**:
+
 ```typescript
 interface RaciMatrixEditorProps {
   chart: RaciChart;
@@ -243,6 +244,7 @@ interface RaciMatrixEditorProps {
 **Exports**: Default export (component)
 
 **Key Features**:
+
 - Color-coded cells (R, A, C, I)
 - Keyboard and mouse interaction
 - Real-time validation
@@ -250,18 +252,14 @@ interface RaciMatrixEditorProps {
 - Responsive design
 
 **Usage Example**:
+
 ```tsx
 import RaciMatrixEditor from "@/components/raci/RaciMatrixEditor";
 
 function App() {
   const { state: chart, updateMatrix } = useRaciState();
-  
-  return (
-    <RaciMatrixEditor
-      chart={chart}
-      onMatrixChange={updateMatrix}
-    />
-  );
+
+  return <RaciMatrixEditor chart={chart} onMatrixChange={updateMatrix} />;
 }
 ```
 
@@ -373,14 +371,14 @@ function App() {
 ✅ **Color Coding**: Clear visual distinction via Tailwind  
 ✅ **Performance**: Handles large matrices without lag  
 ✅ **Validation**: Real-time feedback helps users  
-✅ **Accessibility**: Full keyboard support, WCAG AA compliance  
+✅ **Accessibility**: Full keyboard support, WCAG AA compliance
 
 ### Challenges Addressed
 
 ⚠️ **Focus Management**: Solved with useRef and setTimeout  
 ⚠️ **Matrix Performance**: Optimized with useCallback and memoization  
 ⚠️ **Keyboard Conflicts**: No browser default conflicts  
-⚠️ **Responsive Design**: Sticky headers work on mobile  
+⚠️ **Responsive Design**: Sticky headers work on mobile
 
 ---
 
@@ -410,16 +408,16 @@ function App() {
 
 ## 📊 Statistics
 
-| Metric | Value |
-|--------|-------|
-| **New Lines of Code** | ~400 |
-| **Files Created** | 3 (docs) |
-| **Files Modified** | 3 (components/hooks) |
-| **Components Enhanced** | 1 |
-| **Test Cases** | 15+ manual tests |
-| **Accessibility Issues** | 0 |
-| **TypeScript Errors** | 0 |
-| **Performance Issues** | 0 |
+| Metric                   | Value                |
+| ------------------------ | -------------------- |
+| **New Lines of Code**    | ~400                 |
+| **Files Created**        | 3 (docs)             |
+| **Files Modified**       | 3 (components/hooks) |
+| **Components Enhanced**  | 1                    |
+| **Test Cases**           | 15+ manual tests     |
+| **Accessibility Issues** | 0                    |
+| **TypeScript Errors**    | 0                    |
+| **Performance Issues**   | 0                    |
 
 ---
 
@@ -430,6 +428,7 @@ function App() {
 The RACI Matrix Editor is now a fully functional, keyboard-accessible, and visually appealing component. With real-time validation and color-coded assignments, users can quickly and accurately define roles and responsibilities.
 
 The implementation is:
+
 - ✅ Robust (handles edge cases)
 - ✅ Accessible (WCAG 2.1 AA)
 - ✅ Performant (smooth 20×50 matrices)
