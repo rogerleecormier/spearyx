@@ -252,7 +252,7 @@ export async function exportToPng(
       allowTaint: true,
       ignoreElements: (element: Element) => {
         // Ignore style and link elements to avoid OKLch parsing
-        return element.tagName === 'STYLE' || element.tagName === 'LINK';
+        return element.tagName === "STYLE" || element.tagName === "LINK";
       },
     });
 

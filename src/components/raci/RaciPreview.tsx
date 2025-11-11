@@ -3,8 +3,8 @@
  * Live preview component showing matrix with selected theme
  */
 
-import { RaciChart } from '@/types/raci';
-import themes from '@/config/theming.json';
+import { RaciChart } from "@/types/raci";
+import themes from "@/config/theming.json";
 
 interface RaciPreviewProps {
   chart: RaciChart;
@@ -37,21 +37,21 @@ interface Theme {
  */
 function darkenColor(hexColor: string, amount: number = 30): string {
   // Remove '#' if present
-  const hex = hexColor.replace('#', '');
-  
+  const hex = hexColor.replace("#", "");
+
   // Parse hex to RGB
   let r = parseInt(hex.substring(0, 2), 16);
   let g = parseInt(hex.substring(2, 4), 16);
   let b = parseInt(hex.substring(4, 6), 16);
-  
+
   // Darken by reducing brightness
   const factor = (100 - amount) / 100;
   r = Math.max(0, Math.floor(r * factor));
   g = Math.max(0, Math.floor(g * factor));
   b = Math.max(0, Math.floor(b * factor));
-  
+
   // Convert back to hex
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
 export default function RaciPreview({
@@ -61,7 +61,8 @@ export default function RaciPreview({
   highContrast = false,
 }: RaciPreviewProps) {
   const themeList = Object.values(themes) as Theme[];
-  const currentTheme = themeList.find((t) => t.id === chart.theme) || themeList[0];
+  const currentTheme =
+    themeList.find((t) => t.id === chart.theme) || themeList[0];
 
   // Limit preview to avoid oversized preview pane
   const previewRoles = chart.roles.slice(0, maxCols);
@@ -76,11 +77,11 @@ export default function RaciPreview({
       I: currentTheme.colors.raci.i,
     };
     const baseColor = colorMap[raciValue] || currentTheme.colors.background;
-    
+
     if (!highContrast) {
       return baseColor;
     }
-    
+
     // Darken the color by 35% for high-contrast mode
     return darkenColor(baseColor, 35);
   };
@@ -91,14 +92,14 @@ export default function RaciPreview({
   };
 
   const getRaciLabel = (value: string | null): string => {
-    if (!value) return '';
+    if (!value) return "";
     const labelMap: Record<string, string> = {
-      R: 'R',
-      A: 'A',
-      C: 'C',
-      I: 'I',
+      R: "R",
+      A: "A",
+      C: "C",
+      I: "I",
     };
-    return labelMap[value] || '';
+    return labelMap[value] || "";
   };
 
   return (
@@ -115,7 +116,7 @@ export default function RaciPreview({
           className="text-base font-bold"
           style={{ color: currentTheme.colors.primary }}
         >
-          {chart.title || 'Untitled Chart'}
+          {chart.title || "Untitled Chart"}
         </h2>
         {chart.description && (
           <p
@@ -135,7 +136,7 @@ export default function RaciPreview({
               <th
                 className="px-2 py-1 text-left font-semibold border"
                 style={{
-                  color: 'white',
+                  color: "white",
                   borderColor: currentTheme.colors.border,
                 }}
               >
@@ -146,7 +147,7 @@ export default function RaciPreview({
                   key={role.id}
                   className="px-2 py-1 text-center font-semibold border whitespace-nowrap"
                   style={{
-                    color: 'white',
+                    color: "white",
                     borderColor: currentTheme.colors.border,
                   }}
                   title={role.name}
@@ -162,7 +163,9 @@ export default function RaciPreview({
                 key={task.id}
                 style={{
                   backgroundColor:
-                    taskIdx % 2 === 0 ? currentTheme.colors.background : '#f9fafb',
+                    taskIdx % 2 === 0
+                      ? currentTheme.colors.background
+                      : "#f9fafb",
                 }}
               >
                 <td
@@ -187,7 +190,7 @@ export default function RaciPreview({
                       style={{
                         backgroundColor: cellColor,
                         borderColor: currentTheme.colors.border,
-                        color: value ? 'white' : currentTheme.colors.text,
+                        color: value ? "white" : currentTheme.colors.text,
                       }}
                     >
                       {label}
@@ -201,7 +204,10 @@ export default function RaciPreview({
       </div>
 
       {/* Legend */}
-      <div className="grid grid-cols-4 gap-2 pt-2 border-t" style={{ borderTopColor: currentTheme.colors.border }}>
+      <div
+        className="grid grid-cols-4 gap-2 pt-2 border-t"
+        style={{ borderTopColor: currentTheme.colors.border }}
+      >
         <div className="flex items-center gap-1">
           <div
             className="w-3 h-3 rounded"
@@ -258,8 +264,8 @@ export default function RaciPreview({
           className="text-xs italic"
           style={{ color: currentTheme.colors.text }}
         >
-          Preview showing {previewRoles.length} of {chart.roles.length} roles and{' '}
-          {previewTasks.length} of {chart.tasks.length} tasks
+          Preview showing {previewRoles.length} of {chart.roles.length} roles
+          and {previewTasks.length} of {chart.tasks.length} tasks
         </p>
       )}
     </div>

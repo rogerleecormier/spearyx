@@ -35,21 +35,21 @@ interface CellRef {
  */
 function darkenColor(hexColor: string, amount: number = 30): string {
   // Remove '#' if present
-  const hex = hexColor.replace('#', '');
-  
+  const hex = hexColor.replace("#", "");
+
   // Parse hex to RGB
   let r = parseInt(hex.substring(0, 2), 16);
   let g = parseInt(hex.substring(2, 4), 16);
   let b = parseInt(hex.substring(4, 6), 16);
-  
+
   // Darken by reducing brightness
   const factor = (100 - amount) / 100;
   r = Math.max(0, Math.floor(r * factor));
   g = Math.max(0, Math.floor(g * factor));
   b = Math.max(0, Math.floor(b * factor));
-  
+
   // Convert back to hex
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
 export default function RaciMatrixEditor({
@@ -65,18 +65,19 @@ export default function RaciMatrixEditor({
   } | null>(null);
 
   // Get theme colors
-  const themeConfig = themingConfig[theme as keyof typeof themingConfig] || themingConfig.default;
+  const themeConfig =
+    themingConfig[theme as keyof typeof themingConfig] || themingConfig.default;
   const raciColors = themeConfig.colors.raci;
 
   // Apply high-contrast adjustments - darken theme colors for better accessibility
   const getContrastColor = (raciValue: "R" | "A" | "C" | "I"): string => {
     const lowerValue = raciValue.toLowerCase() as "r" | "a" | "c" | "i";
     const baseColor = raciColors[lowerValue] || "#f8fafc";
-    
+
     if (!highContrast) {
       return baseColor;
     }
-    
+
     // Darken the color by 35% for high-contrast mode
     return darkenColor(baseColor, 35);
   };
@@ -452,10 +453,10 @@ export default function RaciMatrixEditor({
           {chart.tasks.map((task) => {
             const isValid = getTaskValidationStatus(task.id);
             // Use theme colors: R color for valid (good), A color for invalid (bad)
-            const statusColor = isValid 
-              ? getContrastColor("R")  // Good - use Responsible color
+            const statusColor = isValid
+              ? getContrastColor("R") // Good - use Responsible color
               : getContrastColor("A"); // Bad - use Accountable color
-            
+
             return (
               <div key={task.id} className="flex items-center gap-2 text-sm">
                 <div

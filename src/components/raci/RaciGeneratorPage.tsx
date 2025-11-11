@@ -306,7 +306,9 @@ export default function RaciGeneratorPage() {
           <div className="lg:col-span-9 space-y-6">
             {/* Header */}
             <div className="space-y-2">
-              <Overline className="text-red-600 mb-2">Build Your Chart</Overline>
+              <Overline className="text-red-600 mb-2">
+                Build Your Chart
+              </Overline>
               <Headline as="h3" className="text-black text-lg">
                 Define Roles & Tasks
               </Headline>

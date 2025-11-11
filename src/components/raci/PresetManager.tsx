@@ -93,132 +93,132 @@ export function PresetManager({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-        {showSave && (
-          <Card className="p-4 bg-slate-50 border border-slate-200 space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Preset Name
-              </label>
-              <input
-                type="text"
-                value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
-                placeholder="e.g., Mobile App Standard"
-                className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </div>
+          {showSave && (
+            <Card className="p-4 bg-slate-50 border border-slate-200 space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Preset Name
+                </label>
+                <input
+                  type="text"
+                  value={presetName}
+                  onChange={(e) => setPresetName(e.target.value)}
+                  placeholder="e.g., Mobile App Standard"
+                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Description (Optional)
-              </label>
-              <textarea
-                value={presetDescription}
-                onChange={(e) => setPresetDescription(e.target.value)}
-                placeholder="Describe when to use this preset..."
-                className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                rows={2}
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={presetDescription}
+                  onChange={(e) => setPresetDescription(e.target.value)}
+                  placeholder="Describe when to use this preset..."
+                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                  rows={2}
+                />
+              </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handleSavePreset}
-                disabled={isSaving || !presetName.trim()}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-              >
-                {isSaving ? "Saving..." : "Save Preset"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowSave(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Save Button */}
-        {!showSave && (
-          <Button
-            onClick={() => setShowSave(true)}
-            className="w-full bg-red-100 text-red-700 hover:bg-red-200"
-          >
-            Save Current Matrix as Preset
-          </Button>
-        )}
-
-        {/* Presets List */}
-        {presets.length > 0 ? (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-slate-700">
-              Your Presets ({presets.length})
-            </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {presets.map((preset) => (
-                <div
-                  key={preset.id}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedPresetId === preset.id
-                      ? "border-red-500 bg-red-50"
-                      : "border-slate-200 hover:border-red-300"
-                  }`}
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSavePreset}
+                  disabled={isSaving || !presetName.trim()}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                 >
-                  <div className="flex justify-between items-start gap-2">
-                    <div
-                      className="flex-1 cursor-pointer"
-                      onClick={() =>
-                        setSelectedPresetId(
-                          selectedPresetId === preset.id ? null : preset.id
-                        )
-                      }
-                    >
-                      <div className="font-medium text-sm text-slate-900">
-                        {preset.name}
-                      </div>
-                      {preset.description && (
-                        <div className="text-xs text-slate-600 mt-1">
-                          {preset.description}
-                        </div>
-                      )}
-                      <div className="text-xs text-slate-500 mt-1">
-                        {new Date(preset.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
+                  {isSaving ? "Saving..." : "Save Preset"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSave(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Card>
+          )}
 
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleLoadPreset(preset)}
-                        disabled={isLoading}
-                        className="text-xs px-2 py-1"
+          {/* Save Button */}
+          {!showSave && (
+            <Button
+              onClick={() => setShowSave(true)}
+              className="w-full bg-red-100 text-red-700 hover:bg-red-200"
+            >
+              Save Current Matrix as Preset
+            </Button>
+          )}
+
+          {/* Presets List */}
+          {presets.length > 0 ? (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-slate-700">
+                Your Presets ({presets.length})
+              </div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {presets.map((preset) => (
+                  <div
+                    key={preset.id}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedPresetId === preset.id
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-200 hover:border-red-300"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() =>
+                          setSelectedPresetId(
+                            selectedPresetId === preset.id ? null : preset.id
+                          )
+                        }
                       >
-                        Load
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeletePreset(preset.id)}
-                        className="text-xs px-2 py-1 text-red-600 hover:bg-red-50"
-                      >
-                        Delete
-                      </Button>
+                        <div className="font-medium text-sm text-slate-900">
+                          {preset.name}
+                        </div>
+                        {preset.description && (
+                          <div className="text-xs text-slate-600 mt-1">
+                            {preset.description}
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-500 mt-1">
+                          {new Date(preset.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLoadPreset(preset)}
+                          disabled={isLoading}
+                          className="text-xs px-2 py-1"
+                        >
+                          Load
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeletePreset(preset.id)}
+                          className="text-xs px-2 py-1 text-red-600 hover:bg-red-50"
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="p-4 text-center text-sm text-slate-500">
-            {showSave
-              ? "Enter a name to save your first preset"
-              : "No custom presets yet. Save your first preset above!"}
-          </div>
-        )}
+          ) : (
+            <div className="p-4 text-center text-sm text-slate-500">
+              {showSave
+                ? "Enter a name to save your first preset"
+                : "No custom presets yet. Save your first preset above!"}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

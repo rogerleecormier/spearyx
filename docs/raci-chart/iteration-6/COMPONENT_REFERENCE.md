@@ -3,28 +3,26 @@
 ## ThemeSelector Component
 
 ### Import
+
 ```tsx
-import { ThemeSelector } from '@/components/raci';
+import { ThemeSelector } from "@/components/raci";
 ```
 
 ### Usage
+
 ```tsx
-import { useState } from 'react';
-import { ThemeSelector } from '@/components/raci';
+import { useState } from "react";
+import { ThemeSelector } from "@/components/raci";
 
 export function MyComponent() {
-  const [theme, setTheme] = useState('default');
+  const [theme, setTheme] = useState("default");
 
-  return (
-    <ThemeSelector 
-      theme={theme}
-      onChange={setTheme}
-    />
-  );
+  return <ThemeSelector theme={theme} onChange={setTheme} />;
 }
 ```
 
 ### Visual Layout
+
 ```
 ┌─────────────────────────────────┐
 │ Theme                           │
@@ -34,22 +32,24 @@ export function MyComponent() {
     │
     └─ Color Preview:
        [■ Green] [■ Amber] [■ Blue] [■ Gray]
-    
+
     └─ Description:
        Clean, professional theme...
 ```
 
 ### Props
+
 ```typescript
 interface ThemeSelectorProps {
-  theme: string;                    // Current theme ID
-  onChange: (theme: string) => void;  // Callback on change
+  theme: string; // Current theme ID
+  onChange: (theme: string) => void; // Callback on change
 }
 ```
 
 ### Themes
+
 - `"default"` - Website Default
-- `"corporate"` - Corporate Blue  
+- `"corporate"` - Corporate Blue
 - `"minimal"` - Minimal Grayscale
 
 ---
@@ -57,31 +57,28 @@ interface ThemeSelectorProps {
 ## RaciPreview Component
 
 ### Import
+
 ```tsx
-import { RaciPreview } from '@/components/raci';
+import { RaciPreview } from "@/components/raci";
 ```
 
 ### Usage
+
 ```tsx
-import { RaciPreview } from '@/components/raci';
-import type { RaciChart } from '@/types/raci';
+import { RaciPreview } from "@/components/raci";
+import type { RaciChart } from "@/types/raci";
 
 interface Props {
   chart: RaciChart;
 }
 
 export function MyComponent({ chart }: Props) {
-  return (
-    <RaciPreview 
-      chart={chart}
-      maxRows={5}
-      maxCols={6}
-    />
-  );
+  return <RaciPreview chart={chart} maxRows={5} maxCols={6} />;
 }
 ```
 
 ### Visual Layout
+
 ```
 ┌─────────────────────────────────────────┐
 │ Mobile App RACI Chart                   │
@@ -102,15 +99,17 @@ Showing 4 of 5 roles and 4 of 8 tasks      │
 ```
 
 ### Props
+
 ```typescript
 interface RaciPreviewProps {
-  chart: RaciChart;        // Chart data
-  maxRows?: number;        // Max preview rows (default: 5)
-  maxCols?: number;        // Max preview columns (default: 6)
+  chart: RaciChart; // Chart data
+  maxRows?: number; // Max preview rows (default: 5)
+  maxCols?: number; // Max preview columns (default: 6)
 }
 ```
 
 ### Features
+
 - Live theme colors applied
 - Responsive horizontal scroll
 - RACI legend
@@ -121,28 +120,26 @@ interface RaciPreviewProps {
 ## HighContrastToggle Component
 
 ### Import
+
 ```tsx
-import { HighContrastToggle } from '@/components/raci';
+import { HighContrastToggle } from "@/components/raci";
 ```
 
 ### Usage
+
 ```tsx
-import { useState } from 'react';
-import { HighContrastToggle } from '@/components/raci';
+import { useState } from "react";
+import { HighContrastToggle } from "@/components/raci";
 
 export function MyComponent() {
   const [isHC, setIsHC] = useState(false);
 
-  return (
-    <HighContrastToggle 
-      enabled={isHC}
-      onChange={setIsHC}
-    />
-  );
+  return <HighContrastToggle enabled={isHC} onChange={setIsHC} />;
 }
 ```
 
 ### Visual Layout
+
 ```
 ┌─────────────────────────────────┐
 │ Accessibility                   │
@@ -156,14 +153,16 @@ export function MyComponent() {
 ```
 
 ### Props
+
 ```typescript
 interface HighContrastToggleProps {
-  enabled: boolean;                    // Current state
-  onChange: (enabled: boolean) => void;  // Callback on toggle
+  enabled: boolean; // Current state
+  onChange: (enabled: boolean) => void; // Callback on toggle
 }
 ```
 
 ### Persistence
+
 - Saves to `localStorage.raci-high-contrast`
 - Persists across page reloads
 - Auto-restores on mount
@@ -173,34 +172,33 @@ interface HighContrastToggleProps {
 ## useTheme Hook
 
 ### Import
+
 ```tsx
-import { useTheme } from '@/lib/raci/hooks';
+import { useTheme } from "@/lib/raci/hooks";
 ```
 
 ### Usage
+
 ```tsx
-import { useTheme } from '@/lib/raci/hooks';
+import { useTheme } from "@/lib/raci/hooks";
 
 export function MyComponent() {
-  const { 
-    theme, 
-    setTheme, 
-    highContrast, 
-    setHighContrast 
-  } = useTheme('default');
+  const { theme, setTheme, highContrast, setHighContrast } =
+    useTheme("default");
 
   // Use theme...
-  console.log(theme);  // 'default' | 'corporate' | 'minimal'
-  
+  console.log(theme); // 'default' | 'corporate' | 'minimal'
+
   // Update theme
-  setTheme('corporate');
-  
+  setTheme("corporate");
+
   // Toggle high-contrast
   setHighContrast(true);
 }
 ```
 
 ### Return Type
+
 ```typescript
 {
   theme: string;                        // Current theme ID
@@ -211,12 +209,14 @@ export function MyComponent() {
 ```
 
 ### Persistence
+
 - Automatically saves to localStorage
 - Automatically loads on mount
 - No manual restoration needed
 - SSR-safe (checks `typeof window`)
 
 ### localStorage Keys
+
 ```
 raci-theme              // Theme ID string
 raci-high-contrast      // Boolean as string ("true" or "false")
@@ -227,6 +227,7 @@ raci-high-contrast      // Boolean as string ("true" or "false")
 ## CSS Variables
 
 ### Available Variables
+
 ```css
 --raci-primary          /* Primary brand color */
 --raci-accent           /* Accent brand color */
@@ -242,6 +243,7 @@ raci-high-contrast      // Boolean as string ("true" or "false")
 ```
 
 ### Usage in CSS
+
 ```css
 .my-element {
   color: var(--raci-text);
@@ -256,6 +258,7 @@ raci-high-contrast      // Boolean as string ("true" or "false")
 ```
 
 ### Theme Application
+
 ```css
 /* Default theme (automatic) */
 :root {
@@ -287,26 +290,29 @@ raci-high-contrast      // Boolean as string ("true" or "false")
 ## Integration Example
 
 ### Full Page Integration
+
 ```tsx
-import { useState } from 'react';
-import { 
-  ThemeSelector, 
-  RaciPreview, 
-  HighContrastToggle 
-} from '@/components/raci';
-import { useTheme } from '@/lib/raci/hooks';
-import { useRaciState } from '@/lib/raci/hooks';
-import type { RaciChart } from '@/types/raci';
+import { useState } from "react";
+import {
+  ThemeSelector,
+  RaciPreview,
+  HighContrastToggle,
+} from "@/components/raci";
+import { useTheme } from "@/lib/raci/hooks";
+import { useRaciState } from "@/lib/raci/hooks";
+import type { RaciChart } from "@/types/raci";
 
 export function RaciEditorPage() {
   const { chart, dispatch } = useRaciState();
-  const { theme, setTheme, highContrast, setHighContrast } = useTheme(chart.theme);
+  const { theme, setTheme, highContrast, setHighContrast } = useTheme(
+    chart.theme
+  );
 
   const handleThemeChange = (newTheme: string) => {
     // Update chart state
-    dispatch({ 
-      type: 'updateChart', 
-      payload: { ...chart, theme: newTheme } 
+    dispatch({
+      type: "updateChart",
+      payload: { ...chart, theme: newTheme },
     });
     // Sync theme hook
     setTheme(newTheme);
@@ -316,27 +322,17 @@ export function RaciEditorPage() {
     <div className="raci-editor-container">
       {/* Sidebar */}
       <aside className="raci-sidebar">
-        <ThemeSelector 
-          theme={theme}
-          onChange={handleThemeChange}
-        />
-        
-        <HighContrastToggle
-          enabled={highContrast}
-          onChange={setHighContrast}
-        />
+        <ThemeSelector theme={theme} onChange={handleThemeChange} />
+
+        <HighContrastToggle enabled={highContrast} onChange={setHighContrast} />
       </aside>
 
       {/* Main Content */}
       <main className="raci-main">
         {/* Editors go here */}
-        
+
         {/* Preview */}
-        <RaciPreview 
-          chart={chart}
-          maxRows={5}
-          maxCols={6}
-        />
+        <RaciPreview chart={chart} maxRows={5} maxCols={6} />
       </main>
     </div>
   );

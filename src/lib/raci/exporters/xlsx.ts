@@ -61,7 +61,7 @@ function createMatrixSheet(
 
   // Style header row
   const headerFont = { bold: true, color: { argb: "FFFFFFFF" } };
-  
+
   headerRow.font = headerFont;
   headerRow.fill = {
     type: "pattern",
