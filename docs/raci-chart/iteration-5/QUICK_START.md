@@ -10,23 +10,23 @@
 
 ```typescript
 // PDF Export
-import { exportToPdf } from '@/lib/raci/exporters';
-const blob = await exportToPdf(chart, { themeId: 'default' });
+import { exportToPdf } from "@/lib/raci/exporters";
+const blob = await exportToPdf(chart, { themeId: "default" });
 
 // Excel Export
-import { exportToXlsx } from '@/lib/raci/exporters';
-const blob = await exportToXlsx(chart, { themeId: 'default' });
+import { exportToXlsx } from "@/lib/raci/exporters";
+const blob = await exportToXlsx(chart, { themeId: "default" });
 
 // CSV Export
-import { exportToCsv } from '@/lib/raci/exporters';
-const blob = await exportToCsv(chart, { delimiter: ',' });
+import { exportToCsv } from "@/lib/raci/exporters";
+const blob = await exportToCsv(chart, { delimiter: "," });
 
 // PNG Export
-import { exportToPng } from '@/lib/raci/exporters';
+import { exportToPng } from "@/lib/raci/exporters";
 const blob = await exportToPng(chart, { dpi: 300 });
 
 // PowerPoint Export
-import { exportToPptx } from '@/lib/raci/exporters';
+import { exportToPptx } from "@/lib/raci/exporters";
 const blob = await exportToPptx(chart);
 ```
 
@@ -35,22 +35,22 @@ const blob = await exportToPptx(chart);
 ```typescript
 // Export Buttons - Format selector with download
 import { ExportButtons } from '@/components/raci';
-<ExportButtons 
-  chart={raci} 
+<ExportButtons
+  chart={raci}
   themeId="default"
   onExportComplete={(format) => console.log(`Exported as ${format}`)}
 />
 
 // Format Selector - Manual format selection
 import { FormatSelector } from '@/components/raci';
-<FormatSelector 
+<FormatSelector
   selected="pdf"
   onChange={(format) => setFormat(format)}
 />
 
 // Progress Indicator - Show export progress
 import { ProgressIndicator } from '@/components/raci';
-<ProgressIndicator 
+<ProgressIndicator
   current={50}
   total={100}
   status="processing"
@@ -61,14 +61,14 @@ import { ProgressIndicator } from '@/components/raci';
 ### Utilities
 
 ```typescript
-import { 
-  validateChart, 
-  getActiveTheme, 
+import {
+  validateChart,
+  getActiveTheme,
   generateFilename,
   triggerDownload,
   formatFileSize,
-  checkSizeLimit
-} from '@/lib/raci/export-utils';
+  checkSizeLimit,
+} from "@/lib/raci/export-utils";
 
 // Validate before export
 const validation = validateChart(chart);
@@ -77,11 +77,11 @@ if (!validation.valid) {
 }
 
 // Get theme colors
-const theme = getActiveTheme('default');
+const theme = getActiveTheme("default");
 console.log(theme.colors.primary); // '#DC2626'
 
 // Generate filename
-const filename = generateFilename('Q1 Planning', 'pdf'); 
+const filename = generateFilename("Q1 Planning", "pdf");
 // 'Q1 Planning - RACI Matrix.pdf'
 
 // Trigger download
@@ -112,40 +112,45 @@ src/
 
 All exports automatically use the active theme:
 
-| Color | Default | CSS Class |
-|-------|---------|-----------|
-| Primary | #DC2626 (Red) | `bg-red-600` |
-| Accent | #059669 (Emerald) | `bg-emerald-600` |
-| Background | #FFFFFF | `bg-white` |
-| Text | #0f172a (Slate-900) | `text-slate-900` |
+| Color      | Default             | CSS Class        |
+| ---------- | ------------------- | ---------------- |
+| Primary    | #DC2626 (Red)       | `bg-red-600`     |
+| Accent     | #059669 (Emerald)   | `bg-emerald-600` |
+| Background | #FFFFFF             | `bg-white`       |
+| Text       | #0f172a (Slate-900) | `text-slate-900` |
 
 ## Export Formats
 
 ### PDF Document
+
 - Multi-page with title, matrix, and legend
 - Page numbering
 - Theme-colored table cells
 - A4 and Letter sizes
 
 ### Excel Spreadsheet
+
 - Multiple worksheets (Matrix, Legend, Metadata)
 - Formatted headers
 - Color-coded cells
 - Auto-sized columns
 
 ### CSV File
+
 - Configurable delimiters
 - Proper character escaping
 - Metadata section
 - Legend included
 
 ### PNG Image
+
 - Configurable DPI (96, 150, 300)
 - Theme-aware styling
 - High-quality rendering
 - Automatic scaling
 
 ### PowerPoint Presentation
+
 - Title slide with statistics
 - Matrix slide with colored table
 - Role breakdown slide
@@ -214,7 +219,7 @@ interface PdfExportOptions {
   themeId?: string;
   includeLogo?: boolean;
   includeMetadata?: boolean;
-  pageSize?: 'a4' | 'letter';
+  pageSize?: "a4" | "letter";
 }
 
 interface XlsxExportOptions {
@@ -225,7 +230,7 @@ interface XlsxExportOptions {
 
 interface CsvExportOptions {
   includeMetadata?: boolean;
-  delimiter?: ',' | ';' | '\t';
+  delimiter?: "," | ";" | "\t";
 }
 
 interface PngExportOptions {
@@ -246,27 +251,27 @@ interface PptxExportOptions {
 ✅ **All code**: Zero TypeScript errors  
 ✅ **Type safety**: Full strict mode compliance  
 ✅ **Null safety**: Proper null checking throughout  
-✅ **Error handling**: Comprehensive try-catch and validation  
+✅ **Error handling**: Comprehensive try-catch and validation
 
 ## Browser Compatibility
 
 | Format | Chrome | Firefox | Safari | Edge |
-|--------|--------|---------|--------|------|
-| PDF | ✅ | ✅ | ✅ | ✅ |
-| XLSX | ✅ | ✅ | ✅ | ✅ |
-| CSV | ✅ | ✅ | ✅ | ✅ |
-| PNG | ✅ | ✅ | ✅ | ✅ |
-| PPTX | ✅ | ✅ | ✅ | ✅ |
+| ------ | ------ | ------- | ------ | ---- |
+| PDF    | ✅     | ✅      | ✅     | ✅   |
+| XLSX   | ✅     | ✅      | ✅     | ✅   |
+| CSV    | ✅     | ✅      | ✅     | ✅   |
+| PNG    | ✅     | ✅      | ✅     | ✅   |
+| PPTX   | ✅     | ✅      | ✅     | ✅   |
 
 ## Performance
 
 | Format | Typical Time | Max Size |
-|--------|--------------|----------|
-| PDF | ~1.5s | 10MB |
-| XLSX | ~1.2s | 20MB |
-| CSV | ~0.1s | 50MB |
-| PNG | ~2.0s | 5MB |
-| PPTX | ~2.5s | 15MB |
+| ------ | ------------ | -------- |
+| PDF    | ~1.5s        | 10MB     |
+| XLSX   | ~1.2s        | 20MB     |
+| CSV    | ~0.1s        | 50MB     |
+| PNG    | ~2.0s        | 5MB      |
+| PPTX   | ~2.5s        | 15MB     |
 
 ## Next Steps
 

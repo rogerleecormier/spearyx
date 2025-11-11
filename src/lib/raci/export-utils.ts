@@ -3,7 +3,7 @@
  * Shared functions for all export formats
  */
 
-import { RaciChart } from '@/types/raci';
+import { RaciChart } from "@/types/raci";
 
 /**
  * Validation result type
@@ -29,20 +29,20 @@ export interface SizeCheckResult {
 export function validateChart(chart: RaciChart): ValidationResult {
   const errors: string[] = [];
 
-  if (!chart.title || chart.title.trim() === '') {
-    errors.push('Chart title is required');
+  if (!chart.title || chart.title.trim() === "") {
+    errors.push("Chart title is required");
   }
 
   if (!chart.roles || chart.roles.length === 0) {
-    errors.push('At least one role is required');
+    errors.push("At least one role is required");
   }
 
   if (!chart.tasks || chart.tasks.length === 0) {
-    errors.push('At least one task is required');
+    errors.push("At least one task is required");
   }
 
   if (!chart.matrix || Object.keys(chart.matrix).length === 0) {
-    errors.push('Matrix is empty');
+    errors.push("Matrix is empty");
   }
 
   // Check if matrix has at least one assignment
@@ -50,7 +50,8 @@ export function validateChart(chart: RaciChart): ValidationResult {
   for (const role in chart.matrix) {
     for (const task in chart.matrix[role]) {
       const value = chart.matrix[role][task];
-      if (value) {  // value is 'R' | 'A' | 'C' | 'I' | null
+      if (value) {
+        // value is 'R' | 'A' | 'C' | 'I' | null
         hasAssignments = true;
         break;
       }
@@ -59,7 +60,7 @@ export function validateChart(chart: RaciChart): ValidationResult {
   }
 
   if (!hasAssignments) {
-    errors.push('At least one RACI assignment is required');
+    errors.push("At least one RACI assignment is required");
   }
 
   return {
@@ -75,59 +76,59 @@ export function getActiveTheme(themeId: string) {
   // Import theme config
   const themes: Record<string, any> = {
     default: {
-      id: 'default',
-      name: 'Website Default',
+      id: "default",
+      name: "Website Default",
       colors: {
-        primary: '#DC2626',
-        accent: '#059669',
-        background: '#ffffff',
-        surface: '#f8fafc',
-        text: '#0f172a',
-        textSecondary: '#64748b',
-        border: '#e2e8f0',
+        primary: "#DC2626",
+        accent: "#059669",
+        background: "#ffffff",
+        surface: "#f8fafc",
+        text: "#0f172a",
+        textSecondary: "#64748b",
+        border: "#e2e8f0",
         raci: {
-          r: '#22c55e',
-          a: '#fb923c',
-          c: '#3b82f6',
-          i: '#9ca3af',
+          r: "#22c55e",
+          a: "#fb923c",
+          c: "#3b82f6",
+          i: "#9ca3af",
         },
       },
     },
     corporate: {
-      id: 'corporate',
-      name: 'Corporate Blue',
+      id: "corporate",
+      name: "Corporate Blue",
       colors: {
-        primary: '#003d82',
-        accent: '#d4a574',
-        background: '#ffffff',
-        surface: '#f0f4f8',
-        text: '#1a1a1a',
-        textSecondary: '#666666',
-        border: '#d0d0d0',
+        primary: "#003d82",
+        accent: "#d4a574",
+        background: "#ffffff",
+        surface: "#f0f4f8",
+        text: "#1a1a1a",
+        textSecondary: "#666666",
+        border: "#d0d0d0",
         raci: {
-          r: '#0fb338',
-          a: '#e8b923',
-          c: '#0066ff',
-          i: '#a0a0a0',
+          r: "#0fb338",
+          a: "#e8b923",
+          c: "#0066ff",
+          i: "#a0a0a0",
         },
       },
     },
     minimal: {
-      id: 'minimal',
-      name: 'Minimal Grayscale',
+      id: "minimal",
+      name: "Minimal Grayscale",
       colors: {
-        primary: '#000000',
-        accent: '#666666',
-        background: '#ffffff',
-        surface: '#f5f5f5',
-        text: '#000000',
-        textSecondary: '#666666',
-        border: '#cccccc',
+        primary: "#000000",
+        accent: "#666666",
+        background: "#ffffff",
+        surface: "#f5f5f5",
+        text: "#000000",
+        textSecondary: "#666666",
+        border: "#cccccc",
         raci: {
-          r: '#333333',
-          a: '#666666',
-          c: '#999999',
-          i: '#cccccc',
+          r: "#333333",
+          a: "#666666",
+          c: "#999999",
+          i: "#cccccc",
         },
       },
     },
@@ -141,17 +142,18 @@ export function getActiveTheme(themeId: string) {
  */
 export function generateFilename(chartTitle: string, format: string): string {
   const sanitized = chartTitle
-    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
     .trim()
     .substring(0, 50);
 
-  const extension = {
-    pdf: '.pdf',
-    xlsx: '.xlsx',
-    csv: '.csv',
-    png: '.png',
-    pptx: '.pptx',
-  }[format] || '.bin';
+  const extension =
+    {
+      pdf: ".pdf",
+      xlsx: ".xlsx",
+      csv: ".csv",
+      png: ".png",
+      pptx: ".pptx",
+    }[format] || ".bin";
 
   return `${sanitized} - RACI Matrix${extension}`;
 }
@@ -161,7 +163,7 @@ export function generateFilename(chartTitle: string, format: string): string {
  */
 export function triggerDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
@@ -174,22 +176,19 @@ export function triggerDownload(blob: Blob, filename: string): void {
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }
 
 /**
  * Check if file size within limits
  */
-export function checkSizeLimit(
-  blob: Blob,
-  format: string
-): SizeCheckResult {
+export function checkSizeLimit(blob: Blob, format: string): SizeCheckResult {
   const limits: Record<string, number> = {
     pdf: 10 * 1024 * 1024, // 10MB
     xlsx: 5 * 1024 * 1024, // 5MB
@@ -221,11 +220,11 @@ export function calculateEstimatedSize(
 
   // Format multipliers
   const multipliers: Record<string, number> = {
-    pdf: 0.5,    // ~450KB for typical
-    xlsx: 0.2,   // ~180KB for typical
-    csv: 0.05,   // ~35KB for typical
-    png: 2.8,    // ~2.8MB for typical (300dpi)
-    pptx: 0.3,   // ~350KB for typical
+    pdf: 0.5, // ~450KB for typical
+    xlsx: 0.2, // ~180KB for typical
+    csv: 0.05, // ~35KB for typical
+    png: 2.8, // ~2.8MB for typical (300dpi)
+    pptx: 0.3, // ~350KB for typical
   };
 
   const multiplier = multipliers[format] || 0.5;
@@ -237,13 +236,13 @@ export function calculateEstimatedSize(
  */
 export function handleExportError(error: unknown): string {
   if (error instanceof Error) {
-    if (error.message.includes('Size exceeded')) {
-      return 'File size exceeds limit. Try a different format or reduce chart complexity.';
+    if (error.message.includes("Size exceeded")) {
+      return "File size exceeds limit. Try a different format or reduce chart complexity.";
     }
-    if (error.message.includes('Browser')) {
-      return 'Your browser does not support this export format. Please try a different one.';
+    if (error.message.includes("Browser")) {
+      return "Your browser does not support this export format. Please try a different one.";
     }
     return error.message;
   }
-  return 'An unexpected error occurred during export.';
+  return "An unexpected error occurred during export.";
 }

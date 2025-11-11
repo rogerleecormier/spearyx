@@ -85,7 +85,9 @@ export function PresetManager({
     <Card className="w-full p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-semibold text-slate-900">Custom Presets</Label>
+          <Label className="text-base font-semibold text-slate-900">
+            Custom Presets
+          </Label>
           <Caption className="text-slate-600">
             Save and load your own RACI matrix presets
           </Caption>

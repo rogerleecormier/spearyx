@@ -28,12 +28,12 @@
  * @param chart - RACI chart to validate
  * @returns { valid: boolean, errors: string[] }
  */
-function validateChart(chart: RaciChart): ValidationResult
+function validateChart(chart: RaciChart): ValidationResult;
 
 // Example
 const result = validateChart(myChart);
 if (!result.valid) {
-  console.error('Validation errors:', result.errors);
+  console.error("Validation errors:", result.errors);
   // → ['At least one role required', 'At least one task required']
 }
 ```
@@ -45,7 +45,7 @@ if (!result.valid) {
  * Get active theme from state
  * @returns Current theme configuration
  */
-function getActiveTheme(): Theme
+function getActiveTheme(): Theme;
 
 // Example
 const theme = getActiveTheme();
@@ -64,10 +64,10 @@ const theme = getActiveTheme();
  * @param format - Export format (pdf, xlsx, csv, png, pptx)
  * @returns Generated filename
  */
-function generateFilename(chartTitle: string, format: ExportFormat): string
+function generateFilename(chartTitle: string, format: ExportFormat): string;
 
 // Example
-const filename = generateFilename('Mobile App Dev', 'pdf');
+const filename = generateFilename("Mobile App Dev", "pdf");
 // → 'Mobile App Dev - RACI Matrix.pdf'
 ```
 
@@ -79,11 +79,11 @@ const filename = generateFilename('Mobile App Dev', 'pdf');
  * @param blob - File blob
  * @param filename - Download filename
  */
-function triggerDownload(blob: Blob, filename: string): void
+function triggerDownload(blob: Blob, filename: string): void;
 
 // Example
-const blob = new Blob([data], { type: 'application/pdf' });
-triggerDownload(blob, 'chart.pdf');
+const blob = new Blob([data], { type: "application/pdf" });
+triggerDownload(blob, "chart.pdf");
 // → Browser downloads file automatically
 ```
 
@@ -96,10 +96,10 @@ triggerDownload(blob, 'chart.pdf');
  * @param format - Export format
  * @returns { withinLimit: boolean, sizeLimit: string }
  */
-function checkSizeLimit(blob: Blob, format: ExportFormat): SizeCheckResult
+function checkSizeLimit(blob: Blob, format: ExportFormat): SizeCheckResult;
 
 // Example
-const check = checkSizeLimit(pdfBlob, 'pdf');
+const check = checkSizeLimit(pdfBlob, "pdf");
 if (!check.withinLimit) {
   console.warn(`Exceeds ${check.sizeLimit} limit`);
 }
@@ -116,11 +116,11 @@ if (!check.withinLimit) {
  * @param theme - Active theme
  * @returns Promise<Blob>
  */
-async function exportToPdf(chart: RaciChart, theme: Theme): Promise<Blob>
+async function exportToPdf(chart: RaciChart, theme: Theme): Promise<Blob>;
 
 // Example
 const pdfBlob = await exportToPdf(myChart, activeTheme);
-triggerDownload(pdfBlob, generateFilename(myChart.title, 'pdf'));
+triggerDownload(pdfBlob, generateFilename(myChart.title, "pdf"));
 ```
 
 ---
@@ -134,11 +134,11 @@ triggerDownload(pdfBlob, generateFilename(myChart.title, 'pdf'));
  * @param theme - Active theme
  * @returns Promise<Blob>
  */
-async function exportToXlsx(chart: RaciChart, theme: Theme): Promise<Blob>
+async function exportToXlsx(chart: RaciChart, theme: Theme): Promise<Blob>;
 
 // Example
 const xlsxBlob = await exportToXlsx(myChart, activeTheme);
-triggerDownload(xlsxBlob, generateFilename(myChart.title, 'xlsx'));
+triggerDownload(xlsxBlob, generateFilename(myChart.title, "xlsx"));
 ```
 
 ---
@@ -151,11 +151,11 @@ triggerDownload(xlsxBlob, generateFilename(myChart.title, 'xlsx'));
  * @param chart - RACI chart data
  * @returns Promise<Blob>
  */
-async function exportToCsv(chart: RaciChart): Promise<Blob>
+async function exportToCsv(chart: RaciChart): Promise<Blob>;
 
 // Example
 const csvBlob = await exportToCsv(myChart);
-triggerDownload(csvBlob, generateFilename(myChart.title, 'csv'));
+triggerDownload(csvBlob, generateFilename(myChart.title, "csv"));
 ```
 
 ---
@@ -169,11 +169,11 @@ triggerDownload(csvBlob, generateFilename(myChart.title, 'csv'));
  * @param theme - Active theme
  * @returns Promise<Blob>
  */
-async function exportToPng(chart: RaciChart, theme: Theme): Promise<Blob>
+async function exportToPng(chart: RaciChart, theme: Theme): Promise<Blob>;
 
 // Example
 const pngBlob = await exportToPng(myChart, activeTheme);
-triggerDownload(pngBlob, generateFilename(myChart.title, 'png'));
+triggerDownload(pngBlob, generateFilename(myChart.title, "png"));
 ```
 
 ---
@@ -187,11 +187,11 @@ triggerDownload(pngBlob, generateFilename(myChart.title, 'png'));
  * @param theme - Active theme
  * @returns Promise<Blob>
  */
-async function exportToPptx(chart: RaciChart, theme: Theme): Promise<Blob>
+async function exportToPptx(chart: RaciChart, theme: Theme): Promise<Blob>;
 
 // Example
 const pptxBlob = await exportToPptx(myChart, activeTheme);
-triggerDownload(pptxBlob, generateFilename(myChart.title, 'pptx'));
+triggerDownload(pptxBlob, generateFilename(myChart.title, "pptx"));
 ```
 
 ---
@@ -221,6 +221,7 @@ interface ExportButtonsProps {
 ```
 
 **Props:**
+
 - `chart` (required): RACI chart data
 - `theme` (required): Active theme
 - `disabled` (optional): Disable export button
@@ -229,6 +230,7 @@ interface ExportButtonsProps {
 - `onExportError` (optional): Callback on export error
 
 **States:**
+
 - Normal (ready to export)
 - Loading (export in progress)
 - Error (export failed)
@@ -254,6 +256,7 @@ interface FormatSelectorProps {
 ```
 
 **Formats:**
+
 - `pdf` – PDF Document
 - `xlsx` – Excel Spreadsheet
 - `csv` – CSV Data
@@ -288,7 +291,7 @@ interface ProgressIndicatorProps {
 ### ExportFormat Type
 
 ```typescript
-type ExportFormat = 'pdf' | 'xlsx' | 'csv' | 'png' | 'pptx';
+type ExportFormat = "pdf" | "xlsx" | "csv" | "png" | "pptx";
 ```
 
 ### ExportOptions Interface
@@ -393,7 +396,11 @@ interface SizeCheckResult {
 ### Task 1: Basic Export (PDF)
 
 ```typescript
-import { exportToPdf, triggerDownload, generateFilename } from '@/lib/raci/exporters';
+import {
+  exportToPdf,
+  triggerDownload,
+  generateFilename,
+} from "@/lib/raci/exporters";
 
 const chart = myChart; // Your RACI chart
 const theme = getActiveTheme();
@@ -402,7 +409,7 @@ const theme = getActiveTheme();
 const pdfBlob = await exportToPdf(chart, theme);
 
 // Download
-const filename = generateFilename(chart.title, 'pdf');
+const filename = generateFilename(chart.title, "pdf");
 triggerDownload(pdfBlob, filename);
 ```
 
@@ -430,10 +437,10 @@ const handleExport = async (format: ExportFormat) => {
     // Export based on format
     let blob: Blob;
     switch (format) {
-      case 'pdf':
+      case "pdf":
         blob = await exportToPdf(chart, theme);
         break;
-      case 'xlsx':
+      case "xlsx":
         blob = await exportToXlsx(chart, theme);
         break;
       // ... etc
@@ -466,19 +473,19 @@ const handleExport = async (format: ExportFormat) => {
 ```typescript
 const exportAllFormats = async (chart: RaciChart) => {
   const theme = getActiveTheme();
-  
+
   const exports = await Promise.allSettled([
     exportToPdf(chart, theme),
     exportToXlsx(chart, theme),
     exportToCsv(chart),
     exportToPng(chart, theme),
-    exportToPptx(chart, theme)
+    exportToPptx(chart, theme),
   ]);
 
-  const formats: ExportFormat[] = ['pdf', 'xlsx', 'csv', 'png', 'pptx'];
-  
+  const formats: ExportFormat[] = ["pdf", "xlsx", "csv", "png", "pptx"];
+
   exports.forEach((result, index) => {
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       const filename = generateFilename(chart.title, formats[index]);
       triggerDownload(result.value, filename);
     } else {
@@ -492,7 +499,10 @@ const exportAllFormats = async (chart: RaciChart) => {
 
 ```typescript
 class RaciExporter {
-  constructor(private chart: RaciChart, private theme: Theme) {}
+  constructor(
+    private chart: RaciChart,
+    private theme: Theme
+  ) {}
 
   async exportToPdf(): Promise<Blob> {
     const validation = validateChart(this.chart);
@@ -514,18 +524,23 @@ class RaciExporter {
 
   private async exportMethod(format: ExportFormat): Promise<Blob> {
     switch (format) {
-      case 'pdf': return this.exportToPdf();
-      case 'xlsx': return this.exportToXlsx();
-      case 'csv': return exportToCsv(this.chart);
-      case 'png': return exportToPng(this.chart, this.theme);
-      case 'pptx': return exportToPptx(this.chart, this.theme);
+      case "pdf":
+        return this.exportToPdf();
+      case "xlsx":
+        return this.exportToXlsx();
+      case "csv":
+        return exportToCsv(this.chart);
+      case "png":
+        return exportToPng(this.chart, this.theme);
+      case "pptx":
+        return exportToPptx(this.chart, this.theme);
     }
   }
 }
 
 // Usage
 const exporter = new RaciExporter(myChart, activeTheme);
-await exporter.download('pdf');
+await exporter.download("pdf");
 ```
 
 ---
@@ -536,12 +551,14 @@ await exporter.download('pdf');
 
 **Reason:** Chart validation failed  
 **Check:**
+
 ```typescript
 const validation = validateChart(chart);
 console.log(validation.errors); // See what's wrong
 ```
 
 **Common Issues:**
+
 - No roles defined
 - No tasks defined
 - No RACI assignments
@@ -556,12 +573,13 @@ console.log(validation.errors); // See what's wrong
 
 **Reason 2:** Export function failed  
 **Check:**
+
 ```typescript
 try {
   const blob = await exportToPdf(chart, theme);
-  console.log('Blob created:', blob.size, 'bytes');
+  console.log("Blob created:", blob.size, "bytes");
 } catch (error) {
-  console.error('Export error:', error);
+  console.error("Export error:", error);
 }
 ```
 
@@ -570,13 +588,15 @@ try {
 ### File Too Large?
 
 **Check Size:**
+
 ```typescript
-const sizeCheck = checkSizeLimit(blob, 'pdf');
+const sizeCheck = checkSizeLimit(blob, "pdf");
 console.log(sizeCheck);
 // { withinLimit: false, sizeLimit: '10MB', actualSize: '12.5MB' }
 ```
 
 **Solutions:**
+
 - Reduce number of roles/tasks
 - Use CSV format (smaller)
 - Compress logo image
@@ -587,6 +607,7 @@ console.log(sizeCheck);
 ### Colors Wrong in Export?
 
 **Check Theme:**
+
 ```typescript
 const theme = getActiveTheme();
 console.log(theme.colors);
@@ -594,6 +615,7 @@ console.log(theme.colors);
 ```
 
 **Check Exporter:**
+
 ```typescript
 // Make sure theme is passed
 const blob = await exportToPdf(chart, activeTheme);
@@ -604,6 +626,7 @@ const blob = await exportToPdf(chart, activeTheme);
 ### Export Timeout?
 
 **For large charts:**
+
 - CSV is fastest (~100ms)
 - XLSX is second (~1s)
 - PDF takes ~2s
@@ -611,6 +634,7 @@ const blob = await exportToPdf(chart, activeTheme);
 - PPTX takes ~2s
 
 **If timing out:**
+
 - Try CSV format first
 - Check browser console for errors
 - Reduce chart complexity

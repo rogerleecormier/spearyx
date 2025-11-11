@@ -1,7 +1,7 @@
 # Iteration 4: Architecture & Design Decisions
 
 **Status:** ✅ Complete  
-**Last Updated:** 2024  
+**Last Updated:** 2024
 
 ---
 
@@ -25,6 +25,7 @@
 **Goal:** Enable rapid RACI chart creation through templates, quick presets, and custom preset management.
 
 **Scope:**
+
 - Demo template loading (3 pre-configured templates)
 - Quick preset patterns (6 common RACI assignment styles)
 - Custom preset persistence (localStorage-based)
@@ -75,15 +76,15 @@
 
 ### Key Components
 
-| Component | Purpose | Status |
-|-----------|---------|--------|
-| RaciGeneratorPage | Main orchestrator, integrates all components | ✅ Integration Complete |
-| TemplateSelector | Displays and loads demo templates | ✅ Complete |
-| QuickPresets | Applies preset patterns to existing chart | ✅ Complete |
-| PresetManager | Saves/loads custom presets | ✅ Complete |
-| templates.ts | Template utilities and pattern generators | ✅ Complete |
-| state.ts | Reducer with new loadTemplate/loadPreset actions | ✅ Enhanced |
-| hooks.ts | useRaciState with new callbacks | ✅ Enhanced |
+| Component         | Purpose                                          | Status                  |
+| ----------------- | ------------------------------------------------ | ----------------------- |
+| RaciGeneratorPage | Main orchestrator, integrates all components     | ✅ Integration Complete |
+| TemplateSelector  | Displays and loads demo templates                | ✅ Complete             |
+| QuickPresets      | Applies preset patterns to existing chart        | ✅ Complete             |
+| PresetManager     | Saves/loads custom presets                       | ✅ Complete             |
+| templates.ts      | Template utilities and pattern generators        | ✅ Complete             |
+| state.ts          | Reducer with new loadTemplate/loadPreset actions | ✅ Enhanced             |
+| hooks.ts          | useRaciState with new callbacks                  | ✅ Enhanced             |
 
 ---
 
@@ -243,7 +244,7 @@ const {
   addTask, editTask, deleteTask, reorderTasks,
   updateTitle, updateLogo, updateDescription,
   updateMatrix, updateTheme, reset, setState,
-  
+
   // NEW callbacks
   loadTemplate: (roles, tasks, matrix, title?, desc?) => void,
   loadPreset: (matrix) => void
@@ -274,12 +275,12 @@ State updated via loadTemplate reducer action
 
 ```typescript
 interface RaciTemplate {
-  id: string,              // Unique identifier
-  name: string,            // Display name
-  description: string,     // What this template is for
-  roles: RaciRole[],       // Pre-configured roles
-  tasks: RaciTask[],       // Pre-configured tasks
-  matrix: RaciChart["matrix"]  // Pre-filled assignments
+  id: string; // Unique identifier
+  name: string; // Display name
+  description: string; // What this template is for
+  roles: RaciRole[]; // Pre-configured roles
+  tasks: RaciTask[]; // Pre-configured tasks
+  matrix: RaciChart["matrix"]; // Pre-filled assignments
 }
 ```
 
@@ -410,6 +411,7 @@ deleteCustomPreset(id) → boolean
 **Decision:** Three separate components (TemplateSelector, QuickPresets, PresetManager)
 
 **Rationale:**
+
 - Clear separation of concerns
 - Each component has single responsibility
 - Easier to test and maintain
@@ -421,6 +423,7 @@ deleteCustomPreset(id) → boolean
 **Decision:** Use localStorage instead of server
 
 **Rationale:**
+
 - No server required (static site compatible)
 - Instant save/load
 - No network latency
@@ -433,11 +436,13 @@ deleteCustomPreset(id) → boolean
 **Decision:** loadTemplate replaces all roles/tasks/matrix
 
 **Alternatives Considered:**
+
 - Merge with existing (would duplicate roles)
 - Ask user which to keep (poor UX)
 - Only load matrix (loses template context)
 
 **Chosen:** Full replacement because:
+
 - Templates are self-contained
 - User typically wants clean slate
 - Can merge manually if needed
@@ -447,6 +452,7 @@ deleteCustomPreset(id) → boolean
 **Decision:** loadPreset keeps roles/tasks, only updates matrix
 
 **Rationale:**
+
 - User already has roles/tasks
 - Just wants different assignment pattern
 - Preserves user customizations
@@ -457,6 +463,7 @@ deleteCustomPreset(id) → boolean
 **Decision:** QUICK_PRESETS uses generator functions, not static templates
 
 **Rationale:**
+
 - Adapts to any number of roles/tasks
 - No hardcoded assumptions
 - Flexible and composable
@@ -629,12 +636,12 @@ validateTemplate(template) → {
 
 ## Browser Support
 
-| Feature | Chrome | Firefox | Safari | Edge | IE 11 |
-|---------|--------|---------|--------|------|-------|
-| Templates | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Quick Presets | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Custom Presets | ✅ | ✅ | ✅ | ✅ | ⚠️ |
-| localStorage | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature        | Chrome | Firefox | Safari | Edge | IE 11 |
+| -------------- | ------ | ------- | ------ | ---- | ----- |
+| Templates      | ✅     | ✅      | ✅     | ✅   | ❌    |
+| Quick Presets  | ✅     | ✅      | ✅     | ✅   | ❌    |
+| Custom Presets | ✅     | ✅      | ✅     | ✅   | ⚠️    |
+| localStorage   | ✅     | ✅      | ✅     | ✅   | ✅    |
 
 **Note:** IE 11 not supported due to modern JavaScript features (const, arrow functions, template literals)
 

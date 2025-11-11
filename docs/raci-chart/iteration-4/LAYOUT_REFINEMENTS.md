@@ -17,6 +17,7 @@ After initial Iteration 4 implementation, the RACI Generator UI underwent severa
 ### 1. Settings Section - Stacked Vertical Layout
 
 **Before:**
+
 ```
 Settings (Overline)
 ┌─────────────────────────────────────┐
@@ -26,6 +27,7 @@ Settings (Overline)
 ```
 
 **After:**
+
 ```
 Settings (Overline)
 ┌─────────────────────────────────────┐
@@ -41,6 +43,7 @@ Settings (Overline)
 **Change:** Changed from `grid grid-cols-2 gap-3` to `space-y-3`
 
 **Benefits:**
+
 - Better visibility of each section
 - Improved mobile responsiveness
 - Clearer visual separation
@@ -53,6 +56,7 @@ Settings (Overline)
 ### 2. Steps 1-4 - Full-Width Stacked Layout
 
 **Before:**
+
 ```
 ┌─────────────────┬─────────────────┐
 │ Step 1: Chart   │ Step 2: Desc    │
@@ -64,6 +68,7 @@ Settings (Overline)
 ```
 
 **After:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Step 1: Chart Details               │
@@ -81,6 +86,7 @@ Settings (Overline)
 **Change:** Removed the 4-column grid wrapper, each step now in its own `space-y-8` container
 
 **Benefits:**
+
 - Linear workflow (1 → 2 → 3 → 4 → 5)
 - Better focus on current step
 - Easier to scroll through steps
@@ -130,11 +136,13 @@ Settings (Overline)
 ### Left Sidebar Sections
 
 **1. Quick Setup**
+
 - Template selector
 - Quick presets
 - Custom preset manager
 
 **2. Settings** (Stacked Vertically)
+
 - Theme selector
 - Export buttons
 - Danger zone (reset controls)
@@ -142,27 +150,33 @@ Settings (Overline)
 ### Right Content Sections
 
 **1. Step 1: Chart Details** (Full width)
+
 - Project title
 - Logo upload
 - Validation indicators
 
 **2. Step 2: Description** (Full width)
+
 - Chart description textarea
 - Character counter (0/500)
 
 **3. Step 3: Roles** (Full width)
+
 - Role editor with add/edit/delete
 - Dynamic role input
 
 **4. Step 4: Tasks** (Full width)
+
 - Task editor with add/edit/delete
 - Dynamic task input
 
 **5. Step 5: RACI Matrix** (Full width)
+
 - Interactive matrix with keyboard navigation
 - Keyboard help bar (red/slate theme)
 
 **6. Tips Card** (Full width)
+
 - Keyboard navigation shortcuts
 - Usage tips
 
@@ -171,6 +185,7 @@ Settings (Overline)
 ## Tailwind CSS Classes Used
 
 ### Settings Section
+
 ```tailwind
 space-y-3          # Vertical stacking with consistent spacing
 space-y-4          # Outer container spacing
@@ -180,6 +195,7 @@ border-slate-200   # Light gray border
 ```
 
 ### Steps Container
+
 ```tailwind
 lg:col-span-9      # Right sidebar 9/12 columns
 space-y-8          # Vertical spacing between steps
@@ -190,6 +206,7 @@ gap-8              # Gap between grid items
 ```
 
 ### Individual Step Cards
+
 ```tailwind
 border-slate-200   # Consistent border color
 shadow-sm          # Subtle shadow
@@ -202,6 +219,7 @@ transition-shadow  # Smooth shadow transition
 ## Responsive Behavior
 
 ### Mobile (< 1024px)
+
 ```
 Full width stacking:
 - Left sidebar: Full width
@@ -212,6 +230,7 @@ Full width stacking:
 ```
 
 ### Desktop (≥ 1024px)
+
 ```
 3/9 column layout:
 - Left sidebar: 3 columns (sticky)
@@ -225,22 +244,26 @@ Full width stacking:
 ## Color Theme Applied
 
 ### Settings Cards
+
 - **Border:** `border-slate-200` (light gray)
 - **Shadow:** `shadow-sm` (subtle)
 - **Hover:** `shadow-md` (elevated)
 
 ### Danger Zone Card
+
 - **Background:** `bg-red-50` (very light red)
 - **Border:** `border-red-200` (light red)
 - **Title:** `text-red-600` (red)
 
 ### Step Cards
+
 - **Border:** `border-slate-200` (light gray)
 - **Shadow:** `shadow-sm` (subtle)
 - **Step circles:** `bg-red-600` (brand red) for all 5 steps
 - **Hover:** `shadow-md` (elevated)
 
 ### Keyboard Navigation Bar
+
 - **Background:** `bg-red-50` (light red)
 - **Border:** `border-red-200` (light red)
 - **Label:** `text-red-900` (dark red)
@@ -251,21 +274,25 @@ Full width stacking:
 ## User Experience Improvements
 
 ### 1. Linear Workflow
+
 ✅ Steps now flow vertically (1 → 2 → 3 → 4 → 5)  
 ✅ User can focus on one step at a time  
 ✅ Clear visual progression through the workflow
 
 ### 2. Better Information Hierarchy
+
 ✅ Settings section now clearly separated  
 ✅ Each step is distinct and full-width  
 ✅ No cramped two-column layouts
 
 ### 3. Improved Mobile Experience
+
 ✅ All elements are already responsive  
 ✅ Stacked layout naturally adapts to mobile  
 ✅ No horizontal scrolling needed
 
 ### 4. Consistent Spacing
+
 ✅ `space-y-3` for Settings (3 items)  
 ✅ `space-y-8` for Steps (5 major sections)  
 ✅ Clear visual grouping
@@ -275,15 +302,18 @@ Full width stacking:
 ## Implementation Summary
 
 ### Files Modified
+
 - `src/components/raci/RaciGeneratorPage.tsx` (Primary layout changes)
 
 ### Changes Made
+
 1. ✅ Settings section: `grid grid-cols-2` → `space-y-3`
 2. ✅ Steps 1-4: 4-column horizontal grid → Full-width stacked
 3. ✅ Preserved Step 5 (Matrix) and Tips Card layouts
 4. ✅ Maintained responsive behavior across all breakpoints
 
 ### Quality Metrics
+
 - ✅ 0 TypeScript errors
 - ✅ 0 lint warnings
 - ✅ 100% type safety maintained
@@ -296,6 +326,7 @@ Full width stacking:
 ## Browser Compatibility
 
 All changes use standard Tailwind CSS utilities supported in:
+
 - ✅ Chrome/Edge 88+
 - ✅ Firefox 87+
 - ✅ Safari 14+

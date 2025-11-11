@@ -35,9 +35,12 @@ export function TemplateSelector({
     <Card className="w-full p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-semibold text-slate-900">Load Template</Label>
+          <Label className="text-base font-semibold text-slate-900">
+            Load Template
+          </Label>
           <Caption className="text-slate-600">
-            Start with a pre-configured template to quickly set up your RACI chart
+            Start with a pre-configured template to quickly set up your RACI
+            chart
           </Caption>
         </div>
 
@@ -138,7 +141,8 @@ export function TemplateSelector({
                       {Object.values(selectedTemplate.matrix).reduce(
                         (sum, taskMap) =>
                           sum +
-                          Object.values(taskMap).filter((v) => v !== null).length,
+                          Object.values(taskMap).filter((v) => v !== null)
+                            .length,
                         0
                       )}{" "}
                       of{" "}

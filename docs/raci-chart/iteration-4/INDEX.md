@@ -55,6 +55,7 @@ spearyx/
 **Purpose:** Template loading, preset management, pattern generation
 
 **Exports:**
+
 ```typescript
 // Types
 export interface RaciTemplate { ... }
@@ -89,25 +90,26 @@ export function getQuickPresetInfo(key): { name, description }
 **Dependencies:** types/raci.ts, config/templates.json
 
 **Example Usage:**
+
 ```typescript
 // Load demo template
-const template = getTemplateById("mobile-app")
-const chart = loadTemplate(template)
+const template = getTemplateById("mobile-app");
+const chart = loadTemplate(template);
 
 // Apply quick preset
-const matrix = QUICK_PRESETS.oneAccountablePerTask(roleIds, taskIds)
-const updated = loadPresetMatrix(chart, matrix)
+const matrix = QUICK_PRESETS.oneAccountablePerTask(roleIds, taskIds);
+const updated = loadPresetMatrix(chart, matrix);
 
 // Save custom preset
 const saved = saveCustomPreset({
   name: "My Pattern",
   description: "Description",
-  matrix: chart.matrix
-})
+  matrix: chart.matrix,
+});
 
 // Load custom preset
-const presets = getCustomPresets()
-const loaded = presets.find(p => p.id === id)
+const presets = getCustomPresets();
+const loaded = presets.find((p) => p.id === id);
 ```
 
 ---
@@ -117,14 +119,16 @@ const loaded = presets.find(p => p.id === id)
 **Purpose:** UI for loading demo templates
 
 **Props:**
+
 ```typescript
 interface TemplateSelectorProps {
-  onLoadTemplate: (template: RaciTemplate) => void
-  isLoading?: boolean
+  onLoadTemplate: (template: RaciTemplate) => void;
+  isLoading?: boolean;
 }
 ```
 
 **Features:**
+
 - Grid display of 3 templates
 - Preview panel
 - Load button
@@ -140,16 +144,18 @@ interface TemplateSelectorProps {
 **Purpose:** UI for applying quick preset patterns
 
 **Props:**
+
 ```typescript
 interface QuickPresetsProps {
-  roles: RaciChart["roles"]
-  tasks: RaciChart["tasks"]
-  onApplyPreset: (matrix: RaciChart["matrix"]) => void
-  isLoading?: boolean
+  roles: RaciChart["roles"];
+  tasks: RaciChart["tasks"];
+  onApplyPreset: (matrix: RaciChart["matrix"]) => void;
+  isLoading?: boolean;
 }
 ```
 
 **Features:**
+
 - 6 preset pattern cards
 - Selection UI
 - Apply button
@@ -165,15 +171,17 @@ interface QuickPresetsProps {
 **Purpose:** UI for saving and managing custom presets
 
 **Props:**
+
 ```typescript
 interface PresetManagerProps {
-  currentMatrix: RaciChart["matrix"]
-  onLoadPreset: (matrix: RaciChart["matrix"]) => void
-  isLoading?: boolean
+  currentMatrix: RaciChart["matrix"];
+  onLoadPreset: (matrix: RaciChart["matrix"]) => void;
+  isLoading?: boolean;
 }
 ```
 
 **Features:**
+
 - Save preset form
 - Preset list
 - Load button
@@ -188,10 +196,12 @@ interface PresetManagerProps {
 ### lib/raci/state.ts (ENHANCED)
 
 **Changes:**
+
 - Added `loadTemplate` action handler
 - Added `loadPreset` action handler
 
 **New Code:**
+
 ```typescript
 case "loadTemplate": {
   return {
@@ -222,21 +232,20 @@ case "loadPreset": {
 ### lib/raci/hooks.ts (ENHANCED)
 
 **Changes:**
+
 - Added `loadTemplate` callback
 - Added `loadPreset` callback
 - Updated return object exports
 
 **New Code:**
+
 ```typescript
-const loadTemplate = useCallback(
-  (roles, tasks, matrix, title?, desc?) => {
-    dispatch({
-      type: "loadTemplate",
-      payload: { roles, tasks, matrix, title, desc }
-    });
-  },
-  []
-);
+const loadTemplate = useCallback((roles, tasks, matrix, title?, desc?) => {
+  dispatch({
+    type: "loadTemplate",
+    payload: { roles, tasks, matrix, title, desc },
+  });
+}, []);
 
 const loadPreset = useCallback((matrix) => {
   dispatch({ type: "loadPreset", payload: { matrix } });
@@ -251,10 +260,12 @@ const loadPreset = useCallback((matrix) => {
 ### types/raci.ts (ENHANCED)
 
 **Changes:**
+
 - Added `loadTemplate` action to RaciAction union
 - Added `loadPreset` action to RaciAction union
 
 **New Types:**
+
 ```typescript
 | {
     type: "loadTemplate";
@@ -280,25 +291,29 @@ const loadPreset = useCallback((matrix) => {
 ### components/raci/RaciGeneratorPage.tsx (ENHANCED)
 
 **Changes:**
+
 - Added 3 component imports
 - Added state for template loading
 - Added 3 handler functions
 - Integrated 3 components into sidebar
 
 **New Imports:**
+
 ```typescript
-import { loadTemplate as loadTemplateUtil } from "@/lib/raci/templates"
-import { TemplateSelector, QuickPresets, PresetManager } from "."
-import { RaciChart } from "@/types/raci"
+import { loadTemplate as loadTemplateUtil } from "@/lib/raci/templates";
+import { TemplateSelector, QuickPresets, PresetManager } from ".";
+import { RaciChart } from "@/types/raci";
 ```
 
 **New State:**
+
 ```typescript
-const [isLoadingTemplate, setIsLoadingTemplate] = useState(false)
-const { loadTemplate, loadPreset } = useRaciState()
+const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+const { loadTemplate, loadPreset } = useRaciState();
 ```
 
 **New Handlers:**
+
 ```typescript
 const handleLoadTemplate = useCallback((template) => {
   setIsLoadingTemplate(true)
@@ -317,6 +332,7 @@ const handleLoadPreset = useCallback((matrix) => {
 ```
 
 **New JSX:**
+
 ```typescript
 <TemplateSelector
   onLoadTemplate={handleLoadTemplate}
@@ -343,13 +359,15 @@ const handleLoadPreset = useCallback((matrix) => {
 ### components/raci/index.ts (ENHANCED)
 
 **Changes:**
+
 - Added exports for 3 new components
 
 **New Exports:**
+
 ```typescript
-export { TemplateSelector } from "./TemplateSelector"
-export { QuickPresets } from "./QuickPresets"
-export { PresetManager } from "./PresetManager"
+export { TemplateSelector } from "./TemplateSelector";
+export { QuickPresets } from "./QuickPresets";
+export { PresetManager } from "./PresetManager";
 ```
 
 **Lines Added:** 3
@@ -409,11 +427,13 @@ export { PresetManager } from "./PresetManager"
 ### With Existing State (useRaciState)
 
 **Before (Iteration 3):**
+
 ```typescript
 const { state, dispatch, updateMatrix, reset, ... } = useRaciState()
 ```
 
 **After (Iteration 4):**
+
 ```typescript
 const {
   state,
@@ -429,22 +449,25 @@ const {
 ### With Existing Persistence
 
 **Auto-save (unchanged):**
+
 ```typescript
-const { isSaving, lastSaved } = useAutoSave(chart)
+const { isSaving, lastSaved } = useAutoSave(chart);
 // Still saves chart state every 5 seconds
 ```
 
 **Custom presets (new):**
+
 ```typescript
-localStorage["raci_custom_presets"] = JSON.stringify(presets)
+localStorage["raci_custom_presets"] = JSON.stringify(presets);
 // Separate from chart auto-save
 ```
 
 ### With Existing Validation
 
 **Still validates:**
+
 ```typescript
-const validation = useValidation(chart)
+const validation = useValidation(chart);
 // Validates roles, tasks, matrix after load
 ```
 
@@ -455,48 +478,50 @@ const validation = useValidation(chart)
 ### Unit Tests
 
 **Test templates.ts:**
+
 ```typescript
 describe("templates.ts", () => {
-  test("getTemplates returns 3 templates")
-  test("getTemplateById finds template by ID")
-  test("validateTemplate catches errors")
-  test("loadTemplate creates valid chart")
-  test("QUICK_PRESETS generators work")
-  test("Custom preset save/load work")
-})
+  test("getTemplates returns 3 templates");
+  test("getTemplateById finds template by ID");
+  test("validateTemplate catches errors");
+  test("loadTemplate creates valid chart");
+  test("QUICK_PRESETS generators work");
+  test("Custom preset save/load work");
+});
 ```
 
 **Test reducer:**
+
 ```typescript
 describe("loadTemplate action", () => {
-  test("Replaces roles/tasks/matrix")
-  test("Updates title if provided")
-})
+  test("Replaces roles/tasks/matrix");
+  test("Updates title if provided");
+});
 
 describe("loadPreset action", () => {
-  test("Updates only matrix")
-  test("Keeps roles/tasks unchanged")
-})
+  test("Updates only matrix");
+  test("Keeps roles/tasks unchanged");
+});
 ```
 
 ### Integration Tests
 
 ```typescript
 describe("TemplateSelector", () => {
-  test("Load template button calls handler")
-  test("Chart updates with new data")
-})
+  test("Load template button calls handler");
+  test("Chart updates with new data");
+});
 
 describe("QuickPresets", () => {
-  test("Apply preset updates matrix")
-  test("Disabled without roles/tasks")
-})
+  test("Apply preset updates matrix");
+  test("Disabled without roles/tasks");
+});
 
 describe("PresetManager", () => {
-  test("Save preset stores to localStorage")
-  test("Load preset applies matrix")
-  test("Delete preset removes from list")
-})
+  test("Save preset stores to localStorage");
+  test("Load preset applies matrix");
+  test("Delete preset removes from list");
+});
 ```
 
 ---
@@ -561,14 +586,14 @@ case "loadPreset": {
 const preset = saveCustomPreset({
   name: "My Pattern",
   description: "Description",
-  matrix: currentMatrix
-})
+  matrix: currentMatrix,
+});
 // Returns: { id, name, description, matrix, createdAt, updatedAt }
 // Stored in: localStorage["raci_custom_presets"]
 
 // In PresetManager - Load
-const preset = getCustomPresets().find(p => p.id === id)
-loadPreset(preset.matrix)
+const preset = getCustomPresets().find((p) => p.id === id);
+loadPreset(preset.matrix);
 ```
 
 ---
@@ -592,11 +617,11 @@ try {
 
 ```typescript
 try {
-  saveCustomPreset(preset)
+  saveCustomPreset(preset);
   // Update UI
 } catch (error) {
-  console.error("Failed to save preset:", error)
-  alert("Failed to save preset")
+  console.error("Failed to save preset:", error);
+  alert("Failed to save preset");
   // Preset not added to state
 }
 ```
@@ -605,11 +630,11 @@ try {
 
 ```typescript
 try {
-  localStorage.setItem("raci_custom_presets", JSON.stringify(presets))
+  localStorage.setItem("raci_custom_presets", JSON.stringify(presets));
 } catch (error) {
   // localStorage full or unavailable
-  console.error("localStorage error:", error)
-  alert("Storage full, please delete old presets")
+  console.error("localStorage error:", error);
+  alert("Storage full, please delete old presets");
 }
 ```
 
@@ -618,21 +643,25 @@ try {
 ## Performance Considerations
 
 ### Template Loading
+
 - Pre-filtered in templates.json (no network request)
 - Creates new chart object (~1 KB)
 - Dispatch + reducer execution <5ms
 
 ### Quick Presets
+
 - Generated on-demand (not stored)
 - Matrix generation <5ms
 - No persistent storage overhead
 
 ### Custom Presets
+
 - Loaded once on mount
 - localStorage read ~1ms
 - JSON parse ~5ms for typical (100 presets)
 
 ### Caching
+
 - Template list cached in component state
 - Preset list cached in component state
 - No unnecessary re-computations
@@ -670,6 +699,7 @@ All modern browsers support:
 ```
 
 **Result:**
+
 - 0 TypeScript errors
 - 100% type coverage
 - IDE autocomplete works
@@ -687,13 +717,13 @@ import { useRaciState } from "@/lib/raci/hooks"
 
 function MyComponent() {
   const { loadTemplate: applyTemplate } = useRaciState()
-  
+
   const handleLoadTemplate = () => {
     const template = getTemplateById("mobile-app")!
     const chart = loadTemplate(template)
     applyTemplate(chart.roles, chart.tasks, chart.matrix)
   }
-  
+
   return <button onClick={handleLoadTemplate}>Load Mobile App</button>
 }
 ```
@@ -707,7 +737,7 @@ import { useRaciState } from "@/lib/raci/hooks"
 function MyComponent() {
   const { state, loadPreset } = useRaciState()
   const { roles, tasks } = state
-  
+
   const handleApplyPattern = () => {
     const matrix = QUICK_PRESETS.oneAccountablePerTask(
       roles.map(r => r.id),
@@ -715,7 +745,7 @@ function MyComponent() {
     )
     loadPreset(matrix)
   }
-  
+
   return <button onClick={handleApplyPattern}>Apply Pattern</button>
 }
 ```
@@ -727,7 +757,7 @@ import { getCustomPresets, saveCustomPreset } from "@/lib/raci/templates"
 
 function MyComponent() {
   const presets = getCustomPresets()
-  
+
   const handleSave = () => {
     saveCustomPreset({
       name: "My Pattern",
@@ -735,7 +765,7 @@ function MyComponent() {
       matrix: { /* matrix data */ }
     })
   }
-  
+
   return (
     <>
       <button onClick={handleSave}>Save</button>
@@ -752,13 +782,15 @@ function MyComponent() {
 ## Debugging Tips
 
 ### Check Templates Loaded
+
 ```typescript
 // In browser console
-console.log(localStorage.getItem("raci_custom_presets"))
+console.log(localStorage.getItem("raci_custom_presets"));
 // Shows saved presets as JSON
 ```
 
 ### Check State Updated
+
 ```typescript
 // In component
 console.log("Before:", chart)
@@ -767,6 +799,7 @@ console.log("After:", chart) // New roles/tasks
 ```
 
 ### Check Actions Dispatched
+
 ```typescript
 // In reducer
 case "loadTemplate":
@@ -775,9 +808,10 @@ case "loadTemplate":
 ```
 
 ### Check localStorage Quota
+
 ```typescript
 // In browser console
-const test = new Blob(["x".repeat(1024 * 1024 * 5)])
+const test = new Blob(["x".repeat(1024 * 1024 * 5)]);
 // If error, quota exceeded
 ```
 
@@ -794,6 +828,7 @@ const test = new Blob(["x".repeat(1024 * 1024 * 5)])
 ---
 
 **See Also:**
+
 - [START_HERE.md](./START_HERE.md) – Quick start
 - [ARCHITECTURE.md](./ARCHITECTURE.md) – Design decisions
 - [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) – Complete API

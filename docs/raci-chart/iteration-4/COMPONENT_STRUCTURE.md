@@ -81,24 +81,28 @@ RaciGeneratorPage (Main orchestrator, state management)
 **Location:** `src/components/raci/TemplateSelector.tsx`
 
 **Props:**
+
 ```typescript
 interface TemplateSelectorProps {
-  onLoadTemplate: (template: RaciTemplate) => void
-  isLoading?: boolean
+  onLoadTemplate: (template: RaciTemplate) => void;
+  isLoading?: boolean;
 }
 ```
 
 **State:**
+
 ```typescript
-const [selectedId, setSelectedId] = useState<string | null>()
-const [showPreview, setShowPreview] = useState(false)
+const [selectedId, setSelectedId] = useState<string | null>();
+const [showPreview, setShowPreview] = useState(false);
 ```
 
 **Key Methods:**
+
 - `handleLoad()` – Calls onLoadTemplate and closes
 - `getTemplates()` – Loads all templates from config
 
 **Rendered Elements:**
+
 - Card wrapper
 - Label + Caption
 - Template grid (1-3 columns responsive)
@@ -113,6 +117,7 @@ const [showPreview, setShowPreview] = useState(false)
 - Info message
 
 **Styles:**
+
 - Card: `border border-slate-200 dark:border-slate-700 p-6`
 - Grid: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3`
 - Selected: `border-blue-500 bg-blue-50 dark:bg-blue-900/20`
@@ -124,6 +129,7 @@ const [showPreview, setShowPreview] = useState(false)
 **Responsive:** ✅ Mobile-first design
 
 **Accessibility:**
+
 - ARIA labels on buttons
 - Keyboard navigation: Tab, Enter, Escape
 - Semantic HTML (button, div)
@@ -135,25 +141,29 @@ const [showPreview, setShowPreview] = useState(false)
 **Location:** `src/components/raci/QuickPresets.tsx`
 
 **Props:**
+
 ```typescript
 interface QuickPresetsProps {
-  roles: RaciChart["roles"]
-  tasks: RaciChart["tasks"]
-  onApplyPreset: (matrix: RaciChart["matrix"]) => void
-  isLoading?: boolean
+  roles: RaciChart["roles"];
+  tasks: RaciChart["tasks"];
+  onApplyPreset: (matrix: RaciChart["matrix"]) => void;
+  isLoading?: boolean;
 }
 ```
 
 **State:**
+
 ```typescript
-const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
+const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 ```
 
 **Key Methods:**
+
 - `handleApply(presetKey)` – Gets preset function, generates matrix, calls onApplyPreset
 - `getQuickPresetInfo(key)` – Gets display name and description
 
 **Rendered Elements:**
+
 - Card wrapper (or disabled state card)
 - Label + Caption
 - Preset grid (1-2 columns responsive)
@@ -166,6 +176,7 @@ const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
 - Help text
 
 **Styles:**
+
 - Disabled: `bg-slate-50 dark:bg-slate-800`
 - Selected: `border-green-500 bg-green-50 dark:bg-green-900/20`
 - Preset card: `p-4 rounded-lg border-2 transition-all`
@@ -176,6 +187,7 @@ const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
 **Responsive:** ✅ 1-2 columns
 
 **Accessibility:**
+
 - Disabled state when no roles/tasks
 - Keyboard navigation
 - ARIA labels
@@ -187,33 +199,38 @@ const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
 **Location:** `src/components/raci/PresetManager.tsx`
 
 **Props:**
+
 ```typescript
 interface PresetManagerProps {
-  currentMatrix: RaciChart["matrix"]
-  onLoadPreset: (matrix: RaciChart["matrix"]) => void
-  isLoading?: boolean
+  currentMatrix: RaciChart["matrix"];
+  onLoadPreset: (matrix: RaciChart["matrix"]) => void;
+  isLoading?: boolean;
 }
 ```
 
 **State:**
+
 ```typescript
-const [presets, setPresets] = useState<RaciPreset[]>([])
-const [showSave, setShowSave] = useState(false)
-const [presetName, setPresetName] = useState("")
-const [presetDescription, setPresetDescription] = useState("")
-const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
-const [isSaving, setIsSaving] = useState(false)
+const [presets, setPresets] = useState<RaciPreset[]>([]);
+const [showSave, setShowSave] = useState(false);
+const [presetName, setPresetName] = useState("");
+const [presetDescription, setPresetDescription] = useState("");
+const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
+const [isSaving, setIsSaving] = useState(false);
 ```
 
 **Effects:**
+
 - Load presets on mount: `useEffect(() => { const saved = getCustomPresets() }, [])`
 
 **Key Methods:**
+
 - `handleSavePreset()` – Validates name, saves to localStorage, updates state
 - `handleLoadPreset(preset)` – Calls onLoadPreset with preset matrix
 - `handleDeletePreset(id)` – Confirms delete, removes from localStorage
 
 **Rendered Elements:**
+
 - Card wrapper
 - Label + Caption
 - Save form (conditional)
@@ -232,6 +249,7 @@ const [isSaving, setIsSaving] = useState(false)
 - Empty state message
 
 **Styles:**
+
 - Card: `border border-slate-200 dark:border-slate-700 p-6`
 - Input: `px-3 py-2 rounded border focus:ring-2 focus:ring-blue-500`
 - Preset item: `p-3 rounded-lg border-2 transition-all`
@@ -245,6 +263,7 @@ const [isSaving, setIsSaving] = useState(false)
 **Responsive:** ✅ Full width, scrollable list
 
 **Accessibility:**
+
 - Form validation
 - Confirmation dialog on delete
 - Clear error messages
@@ -254,11 +273,11 @@ const [isSaving, setIsSaving] = useState(false)
 
 ## Component Properties Summary
 
-| Component | Type | Lines | Props | State | Effects |
-|-----------|------|-------|-------|-------|---------|
-| TemplateSelector | FC | 200+ | 2 | 2 | 0 |
-| QuickPresets | FC | 150+ | 4 | 1 | 0 |
-| PresetManager | FC | 250+ | 3 | 7 | 1 |
+| Component        | Type | Lines | Props | State | Effects |
+| ---------------- | ---- | ----- | ----- | ----- | ------- |
+| TemplateSelector | FC   | 200+  | 2     | 2     | 0       |
+| QuickPresets     | FC   | 150+  | 4     | 1     | 0       |
+| PresetManager    | FC   | 250+  | 3     | 7     | 1       |
 
 ---
 
@@ -301,6 +320,7 @@ RaciGeneratorPage
 ## Styled Components
 
 All components use:
+
 - **Tailwind CSS** classes
 - **Dark mode** support via `dark:` variants
 - **Responsive** design with `sm:`, `md:`, `lg:` prefixes
@@ -309,6 +329,7 @@ All components use:
 ### Common Classes Used
 
 **Cards:**
+
 ```
 bg-white dark:bg-slate-900
 border border-slate-200 dark:border-slate-700
@@ -317,6 +338,7 @@ p-4 sm:p-6
 ```
 
 **Buttons:**
+
 ```
 px-3 py-2
 rounded-lg
@@ -326,6 +348,7 @@ focus:outline-none focus:ring-2 focus:ring-blue-500
 ```
 
 **Text:**
+
 ```
 text-slate-900 dark:text-slate-100
 text-slate-600 dark:text-slate-400
@@ -333,6 +356,7 @@ text-slate-500 dark:text-slate-500
 ```
 
 **States:**
+
 ```
 Hover: hover:border-blue-300 dark:hover:border-blue-600
 Active: border-blue-500 bg-blue-50 dark:bg-blue-900/20
@@ -344,40 +368,43 @@ Disabled: opacity-50 cursor-not-allowed
 ## Imports and Dependencies
 
 ### TemplateSelector Imports
+
 ```typescript
-"use client"
-import { useState } from "react"
-import { RaciTemplate, getTemplates } from "@/lib/raci/templates"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Label, Caption } from "@/components/Typography"
+"use client";
+import { useState } from "react";
+import { RaciTemplate, getTemplates } from "@/lib/raci/templates";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label, Caption } from "@/components/Typography";
 ```
 
 ### QuickPresets Imports
+
 ```typescript
-"use client"
-import { useState } from "react"
-import { QUICK_PRESETS, getQuickPresetInfo } from "@/lib/raci/templates"
-import { RaciChart } from "@/types/raci"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Label, Caption } from "@/components/Typography"
+"use client";
+import { useState } from "react";
+import { QUICK_PRESETS, getQuickPresetInfo } from "@/lib/raci/templates";
+import { RaciChart } from "@/types/raci";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label, Caption } from "@/components/Typography";
 ```
 
 ### PresetManager Imports
+
 ```typescript
-"use client"
-import { useState, useEffect } from "react"
+"use client";
+import { useState, useEffect } from "react";
 import {
   getCustomPresets,
   saveCustomPreset,
   deleteCustomPreset,
   RaciPreset,
-} from "@/lib/raci/templates"
-import { RaciChart } from "@/types/raci"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Label, Caption } from "@/components/Typography"
+} from "@/lib/raci/templates";
+import { RaciChart } from "@/types/raci";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label, Caption } from "@/components/Typography";
 ```
 
 ---
@@ -385,15 +412,18 @@ import { Label, Caption } from "@/components/Typography"
 ## Re-render Triggers
 
 ### TemplateSelector
+
 - Selection changes → `selectedId` updates
 - Preview toggle → `showPreview` updates
 - Template load → calls `onLoadTemplate` (parent re-renders)
 
 ### QuickPresets
+
 - Preset selection → `selectedPreset` updates
 - Apply preset → calls `onApplyPreset` (parent re-renders)
 
 ### PresetManager
+
 - Presets load → `presets` updates (mount)
 - Show/hide form → `showSave` updates
 - Save preset → `presets` updates, shows in list
@@ -404,14 +434,17 @@ import { Label, Caption } from "@/components/Typography"
 ## Error States
 
 ### TemplateSelector
+
 - No templates available → Empty grid
 - Preview fails → Still show template card
 
 ### QuickPresets
+
 - No roles/tasks → Show disabled state with message
 - Pattern generation fails → Console log, disable apply
 
 ### PresetManager
+
 - localStorage fails → Show alert
 - Preset corruption → Show error message
 - Save fails → Show alert, don't add to list

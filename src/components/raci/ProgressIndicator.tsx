@@ -1,10 +1,10 @@
-import React from 'react';
-import { Body, Caption } from '@/components/Typography';
+import React from "react";
+import { Body, Caption } from "@/components/Typography";
 
 interface ProgressIndicatorProps {
   current: number;
   total: number;
-  status: 'idle' | 'processing' | 'complete' | 'error';
+  status: "idle" | "processing" | "complete" | "error";
   message?: string;
   format?: string;
 }
@@ -20,27 +20,27 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
   const getStatusColor = (): string => {
     switch (status) {
-      case 'processing':
-        return '#059669'; // emerald-600
-      case 'complete':
-        return '#059669'; // emerald-600
-      case 'error':
-        return '#dc2626'; // red-600
+      case "processing":
+        return "#059669"; // emerald-600
+      case "complete":
+        return "#059669"; // emerald-600
+      case "error":
+        return "#dc2626"; // red-600
       default:
-        return '#e2e8f0'; // slate-200
+        return "#e2e8f0"; // slate-200
     }
   };
 
   const getStatusIcon = (): string => {
     switch (status) {
-      case 'processing':
-        return '⏳';
-      case 'complete':
-        return '✓';
-      case 'error':
-        return '✕';
+      case "processing":
+        return "⏳";
+      case "complete":
+        return "✓";
+      case "error":
+        return "✕";
       default:
-        return '';
+        return "";
     }
   };
 
@@ -78,17 +78,19 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       </div>
 
       {/* Status text */}
-      {status === 'processing' && (
+      {status === "processing" && (
         <Caption className="text-slate-600 italic">
           Processing {current} of {total}...
         </Caption>
       )}
 
-      {status === 'complete' && (
-        <Caption className="text-emerald-600 font-medium">✓ Export complete</Caption>
+      {status === "complete" && (
+        <Caption className="text-emerald-600 font-medium">
+          ✓ Export complete
+        </Caption>
       )}
 
-      {status === 'error' && (
+      {status === "error" && (
         <Caption className="text-red-600 font-medium">
           ✕ Export failed. Please try again.
         </Caption>

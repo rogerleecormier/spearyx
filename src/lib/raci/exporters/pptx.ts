@@ -1,6 +1,6 @@
-import PptxGenJS from 'pptxgenjs';
-import { RaciChart } from '@/types/raci';
-import { validateChart, getActiveTheme } from '@/lib/raci/export-utils';
+import PptxGenJS from "pptxgenjs";
+import { RaciChart } from "@/types/raci";
+import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
 
 export interface PptxExportOptions {
   themeId?: string;
@@ -25,20 +25,24 @@ interface PptxTheme {
 }
 
 function getPptxTheme(themeId?: string): PptxTheme {
-  const baseTheme = getActiveTheme(themeId || 'default');
+  const baseTheme = getActiveTheme(themeId || "default");
   return {
     colors: {
       primary: baseTheme.colors.primary,
       accent: baseTheme.colors.accent,
       background: baseTheme.colors.background,
       text: baseTheme.colors.text,
-      border: '#e2e8f0',
+      border: "#e2e8f0",
       raci: baseTheme.colors.raci,
     },
   };
 }
 
-function addTitleSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void {
+function addTitleSlide(
+  prs: PptxGenJS,
+  chart: RaciChart,
+  theme: PptxTheme
+): void {
   const slide = prs.addSlide();
 
   // Background
@@ -52,8 +56,8 @@ function addTitleSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void
     h: 1.5,
     fontSize: 54,
     bold: true,
-    color: 'ffffff',
-    align: 'left',
+    color: "ffffff",
+    align: "left",
   });
 
   // Description
@@ -64,8 +68,8 @@ function addTitleSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void
       w: 9,
       h: 1,
       fontSize: 24,
-      color: 'f0f0f0',
-      align: 'left',
+      color: "f0f0f0",
+      align: "left",
     });
   }
 
@@ -77,16 +81,20 @@ function addTitleSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void
     w: 9,
     h: 0.5,
     fontSize: 16,
-    color: 'e0e0e0',
-    align: 'left',
+    color: "e0e0e0",
+    align: "left",
   });
 }
 
-function addMatrixSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void {
+function addMatrixSlide(
+  prs: PptxGenJS,
+  chart: RaciChart,
+  theme: PptxTheme
+): void {
   const slide = prs.addSlide();
 
   // Title
-  slide.addText('RACI Matrix', {
+  slide.addText("RACI Matrix", {
     x: 0.5,
     y: 0.5,
     w: 9,
@@ -101,13 +109,13 @@ function addMatrixSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): voi
 
   // Header row
   const headerRow: Array<{ text: string; options?: any }> = [
-    { text: 'Task', options: { bold: true, color: 'ffffff' } },
+    { text: "Task", options: { bold: true, color: "ffffff" } },
   ];
 
   for (const role of chart.roles) {
     headerRow.push({
       text: role.name,
-      options: { bold: true, color: 'ffffff' },
+      options: { bold: true, color: "ffffff" },
     });
   }
 
@@ -115,23 +123,21 @@ function addMatrixSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): voi
 
   // Data rows
   for (const task of chart.tasks) {
-    const row: Array<{ text: string; options?: any }> = [
-      { text: task.name },
-    ];
+    const row: Array<{ text: string; options?: any }> = [{ text: task.name }];
 
     for (const role of chart.roles) {
       const value = chart.matrix[role.id]?.[task.id];
       const label = value
-        ? value === 'R'
-          ? 'Responsible'
-          : value === 'A'
-            ? 'Accountable'
-            : value === 'C'
-              ? 'Consulted'
-              : 'Informed'
-        : '';
+        ? value === "R"
+          ? "Responsible"
+          : value === "A"
+            ? "Accountable"
+            : value === "C"
+              ? "Consulted"
+              : "Informed"
+        : "";
 
-      const cellOptions: any = { align: 'center' };
+      const cellOptions: any = { align: "center" };
 
       if (value) {
         const colorMap: Record<string, string> = {
@@ -141,7 +147,7 @@ function addMatrixSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): voi
           I: theme.colors.raci.i,
         };
         cellOptions.fill = { color: colorMap[value] };
-        cellOptions.color = 'ffffff';
+        cellOptions.color = "ffffff";
         cellOptions.bold = true;
       }
 
@@ -174,7 +180,7 @@ function addLegendSlide(prs: PptxGenJS, theme: PptxTheme): void {
   const slide = prs.addSlide();
 
   // Title
-  slide.addText('RACI Legend', {
+  slide.addText("RACI Legend", {
     x: 0.5,
     y: 0.5,
     w: 9,
@@ -185,10 +191,10 @@ function addLegendSlide(prs: PptxGenJS, theme: PptxTheme): void {
   });
 
   const legendItems = [
-    { label: 'R - Responsible', color: theme.colors.raci.r },
-    { label: 'A - Accountable', color: theme.colors.raci.a },
-    { label: 'C - Consulted', color: theme.colors.raci.c },
-    { label: 'I - Informed', color: theme.colors.raci.i },
+    { label: "R - Responsible", color: theme.colors.raci.r },
+    { label: "A - Accountable", color: theme.colors.raci.a },
+    { label: "C - Consulted", color: theme.colors.raci.c },
+    { label: "I - Informed", color: theme.colors.raci.i },
   ];
 
   let yPosition = 1.5;
@@ -211,19 +217,23 @@ function addLegendSlide(prs: PptxGenJS, theme: PptxTheme): void {
       h: 0.4,
       fontSize: 18,
       color: theme.colors.text,
-      align: 'left',
-      valign: 'middle',
+      align: "left",
+      valign: "middle",
     });
 
     yPosition += 0.8;
   }
 }
 
-function addBreakdownSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): void {
+function addBreakdownSlide(
+  prs: PptxGenJS,
+  chart: RaciChart,
+  theme: PptxTheme
+): void {
   const slide = prs.addSlide();
 
   // Title
-  slide.addText('Role Assignments', {
+  slide.addText("Role Assignments", {
     x: 0.5,
     y: 0.5,
     w: 9,
@@ -258,16 +268,16 @@ function addBreakdownSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): 
     for (const taskId in chart.matrix[role.id] || {}) {
       const value = chart.matrix[role.id][taskId];
       switch (value) {
-        case 'R':
+        case "R":
           responsible++;
           break;
-        case 'A':
+        case "A":
           accountable++;
           break;
-        case 'C':
+        case "C":
           consulted++;
           break;
-        case 'I':
+        case "I":
           informed++;
           break;
       }
@@ -280,7 +290,7 @@ function addBreakdownSlide(prs: PptxGenJS, chart: RaciChart, theme: PptxTheme): 
       w: 8,
       h: 0.3,
       fontSize: 12,
-      color: '#666666',
+      color: "#666666",
     });
 
     yPosition += 0.6;
@@ -293,14 +303,14 @@ export async function exportToPptx(
 ): Promise<Blob> {
   const validation = validateChart(chart);
   if (!validation.valid) {
-    throw new Error(`Invalid RACI chart: ${validation.errors.join(', ')}`);
+    throw new Error(`Invalid RACI chart: ${validation.errors.join(", ")}`);
   }
 
   const theme = getPptxTheme(options.themeId);
 
   const prs = new PptxGenJS();
-  prs.defineLayout({ name: 'LAYOUT1', width: 10, height: 7.5 });
-  prs.layout = 'LAYOUT1';
+  prs.defineLayout({ name: "LAYOUT1", width: 10, height: 7.5 });
+  prs.layout = "LAYOUT1";
 
   // Add slides
   addTitleSlide(prs, chart, theme);
@@ -313,7 +323,7 @@ export async function exportToPptx(
   addLegendSlide(prs, theme);
 
   // Generate blob
-  const pptxBlob = await prs.write({ outputType: 'blob' });
+  const pptxBlob = await prs.write({ outputType: "blob" });
   return pptxBlob;
 }
 

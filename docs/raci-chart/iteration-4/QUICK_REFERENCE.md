@@ -29,10 +29,10 @@
  * Get all available demo templates
  * @returns Array of 3 template objects (mobile-app, web-redesign, crm-migration)
  */
-function getTemplates(): RaciTemplate[]
+function getTemplates(): RaciTemplate[];
 
 // Example
-const templates = getTemplates()
+const templates = getTemplates();
 // Returns: [
 //   { id: "mobile-app", name: "Mobile App Development", ... },
 //   { id: "web-redesign", name: "Web Redesign Project", ... },
@@ -46,12 +46,12 @@ const templates = getTemplates()
  * @param id Template ID (e.g., "mobile-app")
  * @returns Template object or null if not found
  */
-function getTemplateById(id: string): RaciTemplate | null
+function getTemplateById(id: string): RaciTemplate | null;
 
 // Example
-const template = getTemplateById("mobile-app")
+const template = getTemplateById("mobile-app");
 if (template) {
-  console.log(template.name) // "Mobile App Development"
+  console.log(template.name); // "Mobile App Development"
 }
 ```
 
@@ -64,16 +64,16 @@ if (template) {
  * @returns { isValid: boolean, errors: string[] }
  */
 function validateTemplate(template: RaciTemplate): {
-  isValid: boolean
-  errors: string[]
-}
+  isValid: boolean;
+  errors: string[];
+};
 
 // Example
-const result = validateTemplate(template)
+const result = validateTemplate(template);
 if (result.isValid) {
-  console.log("Template is valid!")
+  console.log("Template is valid!");
 } else {
-  console.log("Errors:", result.errors)
+  console.log("Errors:", result.errors);
   // ["Template must have roles", "Task 'xyz' not found"]
 }
 ```
@@ -90,16 +90,16 @@ if (result.isValid) {
 function loadTemplate(
   template: RaciTemplate,
   partial?: Partial<RaciChart>
-): RaciChart
+): RaciChart;
 
 // Example
-const template = getTemplateById("mobile-app")!
+const template = getTemplateById("mobile-app")!;
 const chart = loadTemplate(template, {
-  title: "My Mobile App Project"
-})
-console.log(chart.roles.length) // 5
-console.log(chart.tasks.length) // 5
-console.log(chart.matrix["pm"]) // { req: "A", arch: "C", ... }
+  title: "My Mobile App Project",
+});
+console.log(chart.roles.length); // 5
+console.log(chart.tasks.length); // 5
+console.log(chart.matrix["pm"]); // { req: "A", arch: "C", ... }
 ```
 
 #### Preset Matrix Loading
@@ -114,11 +114,11 @@ console.log(chart.matrix["pm"]) // { req: "A", arch: "C", ... }
 function loadPresetMatrix(
   chart: RaciChart,
   preset: Partial<RaciChart["matrix"]>
-): RaciChart
+): RaciChart;
 
 // Example
-const preset = QUICK_PRESETS.allResponsible(roleIds, taskIds)
-const updated = loadPresetMatrix(chart, preset)
+const preset = QUICK_PRESETS.allResponsible(roleIds, taskIds);
+const updated = loadPresetMatrix(chart, preset);
 ```
 
 ---
@@ -132,12 +132,12 @@ const updated = loadPresetMatrix(chart, preset)
  * Get all custom presets from localStorage
  * @returns Array of saved presets
  */
-function getCustomPresets(): RaciPreset[]
+function getCustomPresets(): RaciPreset[];
 
 // Example
-const presets = getCustomPresets()
-console.log(presets.length) // 2
-console.log(presets[0].name) // "Mobile App Standard"
+const presets = getCustomPresets();
+console.log(presets.length); // 2
+console.log(presets[0].name); // "Mobile App Standard"
 ```
 
 #### Save Preset
@@ -151,16 +151,16 @@ console.log(presets[0].name) // "Mobile App Standard"
  */
 function saveCustomPreset(
   preset: Omit<RaciPreset, "id" | "createdAt" | "updatedAt">
-): RaciPreset
+): RaciPreset;
 
 // Example
 const saved = saveCustomPreset({
   name: "Mobile App Standard",
   description: "Our standard pattern for mobile projects",
-  matrix: chart.matrix
-})
-console.log(saved.id) // "preset-1234567890-abc123"
-console.log(saved.createdAt) // "2024-01-15T10:30:00Z"
+  matrix: chart.matrix,
+});
+console.log(saved.id); // "preset-1234567890-abc123"
+console.log(saved.createdAt); // "2024-01-15T10:30:00Z"
 ```
 
 #### Update Preset
@@ -175,15 +175,15 @@ console.log(saved.createdAt) // "2024-01-15T10:30:00Z"
 function updateCustomPreset(
   id: string,
   updates: Partial<RaciPreset>
-): RaciPreset | null
+): RaciPreset | null;
 
 // Example
 const updated = updateCustomPreset(presetId, {
   name: "Updated Name",
-  description: "New description"
-})
+  description: "New description",
+});
 if (updated) {
-  console.log("Preset updated!")
+  console.log("Preset updated!");
 }
 ```
 
@@ -195,14 +195,14 @@ if (updated) {
  * @param id Preset ID
  * @returns true if deleted, false if not found
  */
-function deleteCustomPreset(id: string): boolean
+function deleteCustomPreset(id: string): boolean;
 
 // Example
-const success = deleteCustomPreset(presetId)
+const success = deleteCustomPreset(presetId);
 if (success) {
-  console.log("Preset deleted!")
+  console.log("Preset deleted!");
 } else {
-  console.log("Preset not found")
+  console.log("Preset not found");
 }
 ```
 
@@ -218,19 +218,19 @@ if (success) {
 QUICK_PRESETS = {
   // All roles responsible for all tasks
   allResponsible: (roleIds, taskIds) => ({...})
-  
+
   // All roles accountable for all tasks
   allAccountable: (roleIds, taskIds) => ({...})
-  
+
   // Each task has exactly one accountable role (rotated)
   oneAccountablePerTask: (roleIds, taskIds) => ({...})
-  
+
   // First role (CEO/Lead) accountable, others R or C
   leaderAccountable: (roleIds, taskIds) => ({...})
-  
+
   // Accountability distributed across roles
   distributed: (roleIds, taskIds) => ({...})
-  
+
   // Strict model: Role 0 = R, Role 1 = A, others = C/I
   executionModel: (roleIds, taskIds) => ({...})
 }
@@ -257,12 +257,12 @@ const matrix = QUICK_PRESETS.oneAccountablePerTask(
  * @returns { name, description }
  */
 function getQuickPresetInfo(presetKey: string): {
-  name: string
-  description: string
-}
+  name: string;
+  description: string;
+};
 
 // Example
-const info = getQuickPresetInfo("oneAccountablePerTask")
+const info = getQuickPresetInfo("oneAccountablePerTask");
 // { name: "One Accountable per Task", description: "Each task has exactly one accountable role" }
 ```
 
@@ -280,10 +280,12 @@ const info = getQuickPresetInfo("oneAccountablePerTask")
 ```
 
 **Props:**
+
 - `onLoadTemplate` – Called when user clicks "Load Template" button
 - `isLoading` – Show loading state during template application
 
 **Features:**
+
 - Displays all 3 demo templates
 - Grid layout with template cards
 - Hover effects and active state
@@ -292,13 +294,15 @@ const info = getQuickPresetInfo("oneAccountablePerTask")
 - Responsive design
 
 **Events:**
+
 ```typescript
 // When user clicks "Load Template"
-onLoadTemplate(template)
+onLoadTemplate(template);
 // { id, name, description, roles[], tasks[], matrix }
 ```
 
 **Styling:**
+
 - Uses Tailwind CSS
 - Dark mode support with `dark:` variants
 - Responsive grid (1 col mobile, 2 cols tablet, 3 cols desktop)
@@ -318,12 +322,14 @@ onLoadTemplate(template)
 ```
 
 **Props:**
+
 - `roles` – Current chart roles (disables if empty)
 - `tasks` – Current chart tasks (disables if empty)
 - `onApplyPreset` – Called with matrix when pattern selected
 - `isLoading` – Show loading state
 
 **Features:**
+
 - 6 preset pattern options
 - Grid layout
 - Selection highlighting
@@ -332,13 +338,15 @@ onLoadTemplate(template)
 - Clear/cancel button
 
 **Events:**
+
 ```typescript
 // When user clicks "Apply Preset"
-onApplyPreset(matrix)
+onApplyPreset(matrix);
 // Record<roleId, Record<taskId, RaciValue>>
 ```
 
 **Disabled Conditions:**
+
 - No roles defined
 - No tasks defined
 - Both must be present to enable
@@ -356,11 +364,13 @@ onApplyPreset(matrix)
 ```
 
 **Props:**
+
 - `currentMatrix` – Current matrix (sent to save)
 - `onLoadPreset` – Called when user clicks "Load" button
 - `isLoading` – Show loading state
 
 **Features:**
+
 - Save current matrix as preset
 - List all saved presets
 - Load preset with click
@@ -370,9 +380,10 @@ onApplyPreset(matrix)
 - Inline edit (future)
 
 **Events:**
+
 ```typescript
 // When user clicks "Load"
-onLoadPreset(preset.matrix)
+onLoadPreset(preset.matrix);
 
 // When user clicks "Save"
 // Automatically saves to localStorage
@@ -380,12 +391,14 @@ onLoadPreset(preset.matrix)
 ```
 
 **Save Form:**
+
 - Text input for preset name (required)
 - Textarea for description (optional)
 - Save button (disabled if name empty)
 - Cancel button
 
 **Preset List:**
+
 - Shows preset name (bold)
 - Shows description (gray, smaller)
 - Shows creation date (smallest)
@@ -415,6 +428,7 @@ dispatch({
 ```
 
 **Effect:**
+
 - Sets `chart.roles = payload.roles`
 - Sets `chart.tasks = payload.tasks`
 - Sets `chart.matrix = payload.matrix`
@@ -423,6 +437,7 @@ dispatch({
 - Updates `chart.updatedAt` to now
 
 **Used by:**
+
 - `RaciGeneratorPage.handleLoadTemplate()`
 
 ---
@@ -433,17 +448,19 @@ dispatch({
 dispatch({
   type: "loadPreset",
   payload: {
-    matrix: Record<string, Record<string, RaciValue>>
-  }
-})
+    matrix: Record<string, Record<string, RaciValue>>,
+  },
+});
 ```
 
 **Effect:**
+
 - Merges `chart.matrix` with payload matrix
 - Keeps existing roles, tasks, title, description unchanged
 - Updates `chart.updatedAt` to now
 
 **Used by:**
+
 - `RaciGeneratorPage.handleApplyPreset()`
 - `RaciGeneratorPage.handleLoadPreset()`
 
@@ -456,7 +473,7 @@ const {
   // NEW
   loadTemplate: (roles, tasks, matrix, title?, desc?) => void
   loadPreset: (matrix) => void
-  
+
   // Existing (unchanged)
   addRole, editRole, deleteRole, reorderRoles,
   addTask, editTask, deleteTask, reorderTasks,
@@ -466,14 +483,16 @@ const {
 ```
 
 **loadTemplate:**
+
 ```typescript
-loadTemplate(roles, tasks, matrix, "New Title", "New Description")
+loadTemplate(roles, tasks, matrix, "New Title", "New Description");
 // Dispatches: { type: "loadTemplate", payload: {...} }
 ```
 
 **loadPreset:**
+
 ```typescript
-loadPreset(quickPresetMatrix)
+loadPreset(quickPresetMatrix);
 // Dispatches: { type: "loadPreset", payload: { matrix } }
 ```
 
@@ -485,12 +504,12 @@ loadPreset(quickPresetMatrix)
 
 ```typescript
 interface RaciTemplate {
-  id: string                      // "mobile-app", "web-redesign", etc.
-  name: string                    // "Mobile App Development"
-  description: string             // "E-commerce mobile project"
-  roles: RaciRole[]               // [{ id, name, order }, ...]
-  tasks: RaciTask[]               // [{ id, name, description, order }, ...]
-  matrix: RaciChart["matrix"]     // { roleId: { taskId: "R"|"A"|"C"|"I"|null } }
+  id: string; // "mobile-app", "web-redesign", etc.
+  name: string; // "Mobile App Development"
+  description: string; // "E-commerce mobile project"
+  roles: RaciRole[]; // [{ id, name, order }, ...]
+  tasks: RaciTask[]; // [{ id, name, description, order }, ...]
+  matrix: RaciChart["matrix"]; // { roleId: { taskId: "R"|"A"|"C"|"I"|null } }
 }
 ```
 
@@ -498,12 +517,12 @@ interface RaciTemplate {
 
 ```typescript
 interface RaciPreset {
-  id: string                      // "preset-1234567890-abc123"
-  name: string                    // "Mobile App Standard"
-  description: string             // "Our standard mobile project template"
-  matrix: RaciChart["matrix"]     // { roleId: { taskId: "R"|"A"|"C"|"I" } }
-  createdAt: string               // "2024-01-15T10:30:00Z"
-  updatedAt: string               // "2024-01-15T10:30:00Z"
+  id: string; // "preset-1234567890-abc123"
+  name: string; // "Mobile App Standard"
+  description: string; // "Our standard mobile project template"
+  matrix: RaciChart["matrix"]; // { roleId: { taskId: "R"|"A"|"C"|"I" } }
+  createdAt: string; // "2024-01-15T10:30:00Z"
+  updatedAt: string; // "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -514,30 +533,36 @@ interface RaciPreset {
 ### Pattern Examples
 
 #### All Responsible
+
 ```
      Task1  Task2  Task3
 Role1  R      R      R
 Role2  R      R      R
 Role3  R      R      R
 ```
+
 **Use:** Highly collaborative tasks
 
 #### One Accountable per Task
+
 ```
      Task1  Task2  Task3
 Role1  A      R      C
 Role2  R      A      C
 Role3  C      C      A
 ```
+
 **Use:** Clear single owner per task
 
 #### Leader Accountable
+
 ```
      Task1  Task2  Task3
 CEO    A      A      A
 Mgr    R      R      R
 Dev    C      C      C
 ```
+
 **Use:** Hierarchical organizations
 
 ---
@@ -552,11 +577,14 @@ Dev    C      C      C
     "id": "template-id",
     "name": "Display Name",
     "description": "What this template is for",
-    "roles": [
-      { "id": "role-1", "name": "Role Name", "order": 0 }
-    ],
+    "roles": [{ "id": "role-1", "name": "Role Name", "order": 0 }],
     "tasks": [
-      { "id": "task-1", "name": "Task Name", "description": "Details", "order": 0 }
+      {
+        "id": "task-1",
+        "name": "Task Name",
+        "description": "Details",
+        "order": 0
+      }
     ],
     "matrix": {
       "role-1": {
@@ -573,6 +601,7 @@ Dev    C      C      C
 **Key:** `raci_custom_presets`
 
 **Value:**
+
 ```json
 [
   {
@@ -593,9 +622,9 @@ Dev    C      C      C
 ### Load a Template
 
 ```typescript
-const template = getTemplateById("mobile-app")
+const template = getTemplateById("mobile-app");
 if (template) {
-  const newChart = loadTemplate(template)
+  const newChart = loadTemplate(template);
   // Use newChart...
 }
 ```
@@ -616,10 +645,10 @@ Or via component:
 
 ```typescript
 const matrix = QUICK_PRESETS.oneAccountablePerTask(
-  chart.roles.map(r => r.id),
-  chart.tasks.map(t => t.id)
-)
-loadPreset(matrix)
+  chart.roles.map((r) => r.id),
+  chart.tasks.map((t) => t.id)
+);
+loadPreset(matrix);
 ```
 
 Or via component:
@@ -642,10 +671,10 @@ Or via component:
 const preset = saveCustomPreset({
   name: "My Pattern",
   description: "What it's for",
-  matrix: chart.matrix
-})
+  matrix: chart.matrix,
+});
 
-console.log(preset.id) // Use this to load later
+console.log(preset.id); // Use this to load later
 ```
 
 Or via component:
@@ -664,11 +693,11 @@ Or via component:
 ### Load Custom Preset
 
 ```typescript
-const presets = getCustomPresets()
-const preset = presets.find(p => p.id === presetId)
+const presets = getCustomPresets();
+const preset = presets.find((p) => p.id === presetId);
 
 if (preset) {
-  loadPreset(preset.matrix)
+  loadPreset(preset.matrix);
 }
 ```
 
@@ -677,13 +706,13 @@ if (preset) {
 ### List All Presets
 
 ```typescript
-const presets = getCustomPresets()
+const presets = getCustomPresets();
 
-presets.forEach(preset => {
-  console.log(preset.name)
-  console.log(preset.description)
-  console.log(preset.createdAt)
-})
+presets.forEach((preset) => {
+  console.log(preset.name);
+  console.log(preset.description);
+  console.log(preset.createdAt);
+});
 ```
 
 ---
@@ -691,13 +720,13 @@ presets.forEach(preset => {
 ### Validate Template
 
 ```typescript
-const template = getTemplateById("mobile-app")!
-const validation = validateTemplate(template)
+const template = getTemplateById("mobile-app")!;
+const validation = validateTemplate(template);
 
 if (!validation.isValid) {
-  console.error("Invalid template:", validation.errors)
+  console.error("Invalid template:", validation.errors);
 } else {
-  console.log("Template is valid!")
+  console.log("Template is valid!");
 }
 ```
 
@@ -708,12 +737,12 @@ if (!validation.isValid) {
 ### "Template not found"
 
 ```typescript
-const template = getTemplateById("invalid-id")
+const template = getTemplateById("invalid-id");
 if (!template) {
-  console.error("Template not found")
+  console.error("Template not found");
   // Use getTemplates() to see valid IDs
-  const available = getTemplates()
-  console.log(available.map(t => t.id))
+  const available = getTemplates();
+  console.log(available.map((t) => t.id));
 }
 ```
 
@@ -738,11 +767,12 @@ Check browser dev tools:
 
 ```javascript
 // In browser console
-localStorage.getItem("raci_custom_presets")
+localStorage.getItem("raci_custom_presets");
 // Should return JSON string of presets
 ```
 
 If empty or missing:
+
 1. Check browser storage enabled
 2. Check domain is same (localhost:3000 ≠ localhost:3001)
 3. Try private/incognito mode
@@ -753,15 +783,12 @@ If empty or missing:
 ```typescript
 // Check roles and tasks exist
 if (chart.roles.length === 0 || chart.tasks.length === 0) {
-  console.log("Add roles and tasks first")
+  console.log("Add roles and tasks first");
 }
 
 // Check preset function returns matrix
-const matrix = QUICK_PRESETS.allResponsible(
-  ["r1", "r2"],
-  ["t1", "t2"]
-)
-console.log(Object.keys(matrix)) // ["r1", "r2"]
+const matrix = QUICK_PRESETS.allResponsible(["r1", "r2"], ["t1", "t2"]);
+console.log(Object.keys(matrix)); // ["r1", "r2"]
 ```
 
 ### "Matrix not updating after load"
@@ -770,11 +797,11 @@ console.log(Object.keys(matrix)) // ["r1", "r2"]
 // Verify action was dispatched
 dispatch({
   type: "loadPreset",
-  payload: { matrix: newMatrix }
-})
+  payload: { matrix: newMatrix },
+});
 
 // Check matrix structure
-console.log(Object.entries(newMatrix))
+console.log(Object.entries(newMatrix));
 // Should have entries like ["roleId", { taskId: "R", ... }]
 
 // Check RaciMatrixEditor re-rendered

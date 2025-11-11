@@ -106,6 +106,7 @@ lib/raci/exporters/
 **Purpose:** Professional documents, email sharing, printing
 
 **Data Flow:**
+
 ```
 Chart State
     ↓
@@ -128,16 +129,17 @@ Download: "Chart Title - RACI Matrix.pdf"
 ```
 
 **Theme Integration:**
+
 ```javascript
 const themeColors = {
-  primary: '#DC2626',      // Red for headers
+  primary: "#DC2626", // Red for headers
   raci: {
-    r: '#22c55e',          // Green
-    a: '#fb923c',          // Amber
-    c: '#3b82f6',          // Blue
-    i: '#9ca3af'           // Gray
-  }
-}
+    r: "#22c55e", // Green
+    a: "#fb923c", // Amber
+    c: "#3b82f6", // Blue
+    i: "#9ca3af", // Gray
+  },
+};
 ```
 
 **Size Limit:** 10MB (enforced)
@@ -149,6 +151,7 @@ const themeColors = {
 **Purpose:** Data analysis, spreadsheet users, import/export
 
 **Data Flow:**
+
 ```
 Chart State
     ↓
@@ -180,12 +183,13 @@ Download: "Chart Title - RACI Matrix.xlsx"
 ```
 
 **Sheet Structure:**
+
 ```
 [Matrix Sheet]
 Role          Task            R   A   C   I
-Manager       Planning       ✓              
-Manager       Execution          ✓         
-Dev           Implementation ✓              
+Manager       Planning       ✓
+Manager       Execution          ✓
+Dev           Implementation ✓
 
 [Metadata Sheet]
 Title:        Project Launch
@@ -209,6 +213,7 @@ Coverage %:   100%
 **Purpose:** Raw data, universal import, data exchange
 
 **Data Flow:**
+
 ```
 Chart State
     ↓
@@ -229,6 +234,7 @@ Download: "Chart Title - RACI Matrix.csv"
 ```
 
 **Format Details:**
+
 - Delimiter: Comma (,)
 - Encoding: UTF-8
 - Quoting: RFC 4180 compliant
@@ -244,6 +250,7 @@ Download: "Chart Title - RACI Matrix.csv"
 **Purpose:** Presentations, social media, web display
 
 **Data Flow:**
+
 ```
 Chart State
     ↓
@@ -263,6 +270,7 @@ Download: "Chart Title - RACI Matrix.png"
 ```
 
 **Resolution Options:**
+
 - Screen (72dpi): ~500KB
 - Web (150dpi): ~1.5MB
 - Print (300dpi): ~3MB
@@ -278,6 +286,7 @@ Download: "Chart Title - RACI Matrix.png"
 **Purpose:** Presentations, team sharing, visual communication
 
 **Data Flow:**
+
 ```
 Chart State
     ↓
@@ -318,6 +327,7 @@ Download: "Chart Title - RACI Matrix.pptx"
 **Slide Details:**
 
 **Slide 1 - Title**
+
 ```
 ╔════════════════════════════╗
 ║  🏢 Chart Title            ║
@@ -332,6 +342,7 @@ Download: "Chart Title - RACI Matrix.pptx"
 ```
 
 **Slide 2 - Matrix**
+
 ```
 ╔════════════════════════════╗
 ║  RACI Matrix               ║
@@ -360,39 +371,44 @@ interface Theme {
   id: string;
   name: string;
   colors: {
-    primary: '#DC2626';      // Red
-    accent: '#059669';       // Emerald
-    background: '#ffffff';   // White
-    text: '#0f172a';         // Slate
+    primary: "#DC2626"; // Red
+    accent: "#059669"; // Emerald
+    background: "#ffffff"; // White
+    text: "#0f172a"; // Slate
     raci: {
-      r: '#22c55e';          // Green
-      a: '#fb923c';          // Amber
-      c: '#3b82f6';          // Blue
-      i: '#9ca3af';          // Gray
-    }
-  }
+      r: "#22c55e"; // Green
+      a: "#fb923c"; // Amber
+      c: "#3b82f6"; // Blue
+      i: "#9ca3af"; // Gray
+    };
+  };
 }
 ```
 
 ### Export Color Mapping
 
 **PDF:**
+
 - Headers: Use primary color
 - RACI cells: Use r/a/c/i colors
 - Text: Use text color
 
 **XLSX:**
+
 - Header row background: Primary
 - RACI columns: Respective colors
 - Cell borders: Border color
 
 **CSV:**
+
 - No colors (data only)
 
 **PNG:**
+
 - Direct rendering of HTML (all colors applied)
 
 **PPTX:**
+
 - All colors applied to text, tables, backgrounds
 
 ---
@@ -455,23 +471,23 @@ Export libraries loaded only when needed:
 ```typescript
 // In ExportButtons.tsx
 const handleExport = async (format: string) => {
-  if (format === 'pdf') {
-    const { exportToPdf } = await import('@/lib/raci/exporters/pdf');
+  if (format === "pdf") {
+    const { exportToPdf } = await import("@/lib/raci/exporters/pdf");
     await exportToPdf(chart, theme);
   }
   // etc.
-}
+};
 ```
 
 ### Benchmarks
 
-| Format | Time | Size |
-|--------|------|------|
-| PDF | <2s | 500KB |
-| XLSX | <1s | 200KB |
-| CSV | <100ms | 50KB |
-| PNG | <3s | 3MB |
-| PPTX | <2s | 400KB |
+| Format | Time   | Size  |
+| ------ | ------ | ----- |
+| PDF    | <2s    | 500KB |
+| XLSX   | <1s    | 200KB |
+| CSV    | <100ms | 50KB  |
+| PNG    | <3s    | 3MB   |
+| PPTX   | <2s    | 400KB |
 
 ### Memory Management
 
@@ -492,15 +508,15 @@ const blob = new Blob([data], { type: mimeType });
 
 // File download (all formats)
 const url = URL.createObjectURL(blob);
-const link = document.createElement('a');
+const link = document.createElement("a");
 link.href = url;
 link.download = filename;
 link.click();
 URL.revokeObjectURL(url);
 
 // Canvas rendering (PNG)
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 
 // Worker threads (PPTX, PNG)
 // If available for performance
@@ -508,12 +524,12 @@ const ctx = canvas.getContext('2d');
 
 ### Browser Compatibility
 
-| API | Chrome | Firefox | Safari | Edge |
-|-----|--------|---------|--------|------|
-| Blob | ✅ | ✅ | ✅ | ✅ |
-| Download | ✅ | ✅ | ✅ | ✅ |
-| Canvas | ✅ | ✅ | ✅ | ✅ |
-| Workers | ✅ | ✅ | ✅ | ✅ |
+| API      | Chrome | Firefox | Safari | Edge |
+| -------- | ------ | ------- | ------ | ---- |
+| Blob     | ✅     | ✅      | ✅     | ✅   |
+| Download | ✅     | ✅      | ✅     | ✅   |
+| Canvas   | ✅     | ✅      | ✅     | ✅   |
+| Workers  | ✅     | ✅      | ✅     | ✅   |
 
 ---
 
@@ -571,33 +587,36 @@ triggerDownload(blob, 'Mobile App Dev - RACI Matrix.pdf');
 ```typescript
 // src/lib/raci/exporters/docx.ts
 export async function exportToDocx(chart: RaciChart, theme: Theme) {
-  const { Document, Packer } = await import('docx');
-  
+  const { Document, Packer } = await import("docx");
+
   const doc = new Document({
-    sections: [{
-      children: [
-        // Title
-        new Heading({ text: chart.title }),
-        // Description
-        new Paragraph({ text: chart.description }),
-        // Matrix table
-        new Table({
-          rows: buildTableRows(chart, theme)
-        })
-      ]
-    }]
+    sections: [
+      {
+        children: [
+          // Title
+          new Heading({ text: chart.title }),
+          // Description
+          new Paragraph({ text: chart.description }),
+          // Matrix table
+          new Table({
+            rows: buildTableRows(chart, theme),
+          }),
+        ],
+      },
+    ],
   });
-  
+
   const blob = await Packer.toBlob(doc);
   return blob;
 }
 ```
 
 Then add to selector:
+
 ```typescript
 const FORMATS = [
   // ...existing...
-  { id: 'docx', name: 'Word Document (DOCX)' }
+  { id: "docx", name: "Word Document (DOCX)" },
 ];
 ```
 

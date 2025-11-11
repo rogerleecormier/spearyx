@@ -83,7 +83,13 @@ export function useRaciState(initialChart?: RaciChart) {
   }, []);
 
   const loadTemplate = useCallback(
-    (roles: RaciRole[], tasks: RaciTask[], matrix: RaciChart["matrix"], title?: string, description?: string) => {
+    (
+      roles: RaciRole[],
+      tasks: RaciTask[],
+      matrix: RaciChart["matrix"],
+      title?: string,
+      description?: string
+    ) => {
       dispatch({
         type: "loadTemplate",
         payload: { roles, tasks, matrix, title, description },

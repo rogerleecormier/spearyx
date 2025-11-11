@@ -22,7 +22,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 ## Documentation Structure
 
 ### For Quick Start (5-10 minutes)
+
 👉 **[START_HERE.md](./START_HERE.md)**
+
 - Getting started in 5 minutes
 - Each export format explained
 - Common tasks and troubleshooting
@@ -30,7 +32,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Browser support
 
 ### For Understanding Architecture (20-30 minutes)
+
 👉 **[ARCHITECTURE.md](./ARCHITECTURE.md)**
+
 - System design and export pipeline
 - Data flow diagrams
 - Component hierarchy
@@ -39,7 +43,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Performance considerations
 
 ### For API Reference (Complete)
+
 👉 **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)**
+
 - All export functions with examples
 - Component APIs and props
 - Data structures and types
@@ -48,7 +54,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Troubleshooting guide
 
 ### For Component Details
+
 👉 **[COMPONENT_STRUCTURE.md](./COMPONENT_STRUCTURE.md)**
+
 - Component hierarchy tree
 - ExportButtons component API
 - Format selector component
@@ -57,7 +65,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Performance optimizations
 
 ### For Implementation Details
+
 👉 **[ITERATION_5_SUMMARY.md](./ITERATION_5_SUMMARY.md)**
+
 - Deliverables checklist
 - Quality metrics
 - Files manifest
@@ -66,7 +76,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Completion verification
 
 ### For Verification
+
 👉 **[COMPLETION_CHECKLIST.md](./COMPLETION_CHECKLIST.md)**
+
 - Feature verification checklist
 - Functional tests
 - Edge cases tested
@@ -75,7 +87,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Performance benchmarks
 
 ### For Implementation Overview
+
 👉 **[INDEX.md](./INDEX.md)**
+
 - Code structure and organization
 - File manifest with line counts
 - Integration points
@@ -83,7 +97,9 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - Export pipeline flow
 
 ### For Component-Specific Layout
+
 👉 **[LAYOUT_DETAILS.md](./LAYOUT_DETAILS.md)**
+
 - Export button placement
 - Format menu styling
 - Progress indicator design
@@ -127,6 +143,7 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 ## Key Features
 
 ### ✅ Multi-Format Support
+
 - **PDF**: Professional documents with metadata
 - **XLSX**: Styled spreadsheets with formulas
 - **CSV**: Raw data export
@@ -134,13 +151,16 @@ In Iteration 5, we've implemented **professional multi-format export capabilitie
 - **PPTX**: Multi-slide presentations
 
 ### ✅ Theme Integration
+
 All exports inherit the active theme:
+
 - Primary colors applied
 - Accent colors used for emphasis
 - Typography maintained
 - Dark mode considerations
 
 ### ✅ Smart Features
+
 - Auto-generated filenames from chart title
 - Logo embedding in all formats
 - Progress feedback
@@ -149,6 +169,7 @@ All exports inherit the active theme:
 - Automatic retry on failure
 
 ### ✅ Accessibility
+
 - Keyboard shortcuts
 - ARIA labels on all buttons
 - Screen reader support
@@ -156,6 +177,7 @@ All exports inherit the active theme:
 - Focus indicators
 
 ### ✅ Performance
+
 - Lazy-loaded export libraries
 - Streaming for large files
 - Progress callbacks
@@ -203,7 +225,9 @@ docs/raci-chart/iteration-5/
 ## Getting Started
 
 ### 1. View Exports in UI
+
 The **Export** card appears in the left sidebar under **Settings**:
+
 ```
 Settings
 ├─ Theme
@@ -212,12 +236,15 @@ Settings
 ```
 
 ### 2. Choose Format
+
 Click the export dropdown to select your format
 
 ### 3. Download
+
 File downloads automatically with auto-generated name
 
 ### 4. Use Your File
+
 - Share via email (PDF)
 - Analyze in Excel (XLSX)
 - Import to other tools (CSV)
@@ -229,12 +256,14 @@ File downloads automatically with auto-generated name
 ## Quality Metrics
 
 ### ✅ Code Quality
+
 - **TypeScript:** 100% type-safe
 - **Linting:** 0 errors, 0 warnings
 - **Testing:** All export paths tested
 - **Coverage:** >95% code paths covered
 
 ### ✅ Performance
+
 - **PDF Export:** <2s for typical chart
 - **XLSX Export:** <1s
 - **CSV Export:** <100ms
@@ -242,12 +271,14 @@ File downloads automatically with auto-generated name
 - **PPTX Export:** <2s
 
 ### ✅ Accessibility
+
 - **WCAG 2.1:** Level AA compliant
 - **Keyboard Navigation:** Full support
 - **Screen Readers:** Fully accessible
 - **High Contrast:** Supported
 
 ### ✅ Browser Support
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
@@ -300,6 +331,7 @@ File downloads automatically with auto-generated name
 ## Support & Issues
 
 For issues or questions:
+
 1. Check [COMPLETION_CHECKLIST.md](./COMPLETION_CHECKLIST.md) for known issues
 2. Review [START_HERE.md#troubleshooting](./START_HERE.md) for common problems
 3. Report bugs to: [GitHub Issues](https://github.com/your-repo/issues)

@@ -13,6 +13,7 @@ Iteration 5 adds **professional export capabilities** to the RACI Chart Generato
 ### ✅ What's New
 
 **5 Export Formats:**
+
 - 📄 **PDF** – Professional documents with theme colors, logo, and metadata
 - 📊 **XLSX** – Styled spreadsheets with formulas and embedded logo
 - 🎯 **CSV** – Raw data export for import into other tools
@@ -20,6 +21,7 @@ Iteration 5 adds **professional export capabilities** to the RACI Chart Generato
 - 🎨 **PPTX** – Multi-slide PowerPoint presentations with theme styling
 
 **Smart Features:**
+
 - ✅ Theme-aware exports (inherits active theme colors)
 - ✅ Logo embedding in all formats
 - ✅ Chart metadata (title, description, created date)
@@ -33,6 +35,7 @@ Iteration 5 adds **professional export capabilities** to the RACI Chart Generato
 ## 5-Minute Quick Start
 
 ### 1. **View Export Options**
+
 After creating/editing your RACI chart, scroll to the **Settings** section in the left sidebar and locate the **Export** card.
 
 ```
@@ -48,6 +51,7 @@ Left Sidebar:
 ```
 
 ### 2. **Choose Your Format**
+
 Click the **Export** dropdown to see available formats:
 
 ```
@@ -63,6 +67,7 @@ Click the **Export** dropdown to see available formats:
 ```
 
 ### 3. **Download Your File**
+
 Click the format you want, and the file downloads automatically with a smart name:
 
 ```
@@ -75,6 +80,7 @@ Examples:
 ```
 
 ### 4. **Share & Distribute**
+
 Use the exported file in emails, presentations, documentation, or import into other tools!
 
 ---
@@ -82,9 +88,11 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ## Each Export Format Explained
 
 ### 📄 PDF Export
+
 **Best for:** Printing, email sharing, professional documentation
 
 **What's Included:**
+
 - Chart title and description
 - Project metadata (created date, theme)
 - Logo (if uploaded)
@@ -97,9 +105,11 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ---
 
 ### 📊 Excel (XLSX) Export
+
 **Best for:** Data analysis, sharing with spreadsheet users
 
 **What's Included:**
+
 - Matrix sheet with styled cells
 - Metadata sheet (title, description, created date)
 - Logo embedded on metadata sheet
@@ -112,9 +122,11 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ---
 
 ### 🎯 CSV Export
+
 **Best for:** Data import into other tools, raw data exchange
 
 **What's Included:**
+
 - Raw matrix data (no styling)
 - Headers: Role, Task, Assignment (R/A/C/I)
 - UTF-8 encoding for international characters
@@ -125,9 +137,11 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ---
 
 ### 🖼️ PNG Image Export
+
 **Best for:** Presentations, slides, documents that don't support editing
 
 **What's Included:**
+
 - Full matrix rendered as image
 - Theme colors applied
 - High resolution (300dpi for print quality)
@@ -139,9 +153,11 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ---
 
 ### 🎨 PowerPoint (PPTX) Export
+
 **Best for:** Presentations, team sharing, visual presentations
 
 **What's Included:**
+
 - **Slide 1:** Title slide with chart info
 - **Slide 2:** Full RACI matrix
 - **Slide 3:** Role assignments
@@ -157,14 +173,18 @@ Use the exported file in emails, presentations, documentation, or import into ot
 ## Common Tasks
 
 ### How do I change the exported file name?
+
 The system auto-generates a name from your chart title + format:
+
 - Chart title: "Mobile App Dev"
 - Exported as: "Mobile App Dev - RACI Matrix.pdf"
 
 You can rename the file after download (Windows/Mac standard rename).
 
 ### Can I customize the exported content?
+
 Yes! Before exporting:
+
 - ✅ Edit the chart title (Step 1: Chart Details)
 - ✅ Edit the description (Step 2: Description)
 - ✅ Upload a logo (Step 1: Chart Details)
@@ -173,16 +193,18 @@ Yes! Before exporting:
 Then export — all changes are reflected in the output.
 
 ### What about high-resolution exports?
+
 PNG and PPTX exports use 300dpi resolution, perfect for printing or professional presentations. PDF also uses high-resolution rendering.
 
 ### Which format should I use?
-| Need | Format | Reason |
-|------|--------|--------|
-| Email to non-technical | PDF | Professional, self-contained |
-| Data analysis/pivot | XLSX | Spreadsheet formulas & styling |
-| Import to other tools | CSV | Universal format, no vendor lock-in |
-| Presentation deck | PPTX | Editable, theme-branded slides |
-| Social media/web | PNG | Image format, universal compatibility |
+
+| Need                   | Format | Reason                                |
+| ---------------------- | ------ | ------------------------------------- |
+| Email to non-technical | PDF    | Professional, self-contained          |
+| Data analysis/pivot    | XLSX   | Spreadsheet formulas & styling        |
+| Import to other tools  | CSV    | Universal format, no vendor lock-in   |
+| Presentation deck      | PPTX   | Editable, theme-branded slides        |
+| Social media/web       | PNG    | Image format, universal compatibility |
 
 ---
 
@@ -198,18 +220,22 @@ PNG and PPTX exports use 300dpi resolution, perfect for printing or professional
 ## Troubleshooting
 
 ### Export button is disabled?
+
 **Reason:** Your chart is invalid (see error messages)  
 **Solution:** Fix validation errors in Steps 1-4, then retry
 
 ### File is too large?
+
 **Reason:** Matrix too complex or logo too big  
 **Solution:** Reduce roles/tasks or compress logo image
 
 ### Colors don't match in exported file?
+
 **Reason:** Theme colors in export don't match selected theme  
 **Solution:** This shouldn't happen! [Report a bug](https://github.com/your-repo/issues)
 
 ### Can't open the exported file?
+
 **Reason:** Your application doesn't support the format  
 **Solution:** Try a different format or update your software
 
@@ -228,6 +254,7 @@ PNG and PPTX exports use 300dpi resolution, perfect for printing or professional
 ## What's Next?
 
 After exporting, you can:
+
 1. Share the file with team members
 2. Import data back into RACI generator (future feature)
 3. Print the PDF for physical distribution

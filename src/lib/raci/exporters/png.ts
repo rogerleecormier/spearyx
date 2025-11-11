@@ -1,6 +1,6 @@
-import html2canvas from 'html2canvas';
-import { RaciChart } from '@/types/raci';
-import { validateChart, getActiveTheme } from '@/lib/raci/export-utils';
+import html2canvas from "html2canvas";
+import { RaciChart } from "@/types/raci";
+import { validateChart, getActiveTheme } from "@/lib/raci/export-utils";
 
 export interface PngExportOptions {
   themeId?: string;
@@ -25,21 +25,21 @@ interface PngTheme {
 }
 
 function getPngTheme(themeId?: string): PngTheme {
-  const baseTheme = getActiveTheme(themeId || 'default');
+  const baseTheme = getActiveTheme(themeId || "default");
   return {
     colors: {
       primary: baseTheme.colors.primary,
       accent: baseTheme.colors.accent,
       background: baseTheme.colors.background,
       text: baseTheme.colors.text,
-      border: '#e2e8f0',
+      border: "#e2e8f0",
       raci: baseTheme.colors.raci,
     },
   };
 }
 
 function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   container.style.cssText = `
     padding: 40px;
     background-color: ${theme.colors.background};
@@ -48,7 +48,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   `;
 
   // Title
-  const title = document.createElement('h1');
+  const title = document.createElement("h1");
   title.textContent = chart.title;
   title.style.cssText = `
     color: ${theme.colors.primary};
@@ -60,7 +60,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
 
   // Description
   if (chart.description) {
-    const desc = document.createElement('p');
+    const desc = document.createElement("p");
     desc.textContent = chart.description;
     desc.style.cssText = `
       color: #666;
@@ -71,7 +71,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   }
 
   // Matrix table
-  const table = document.createElement('table');
+  const table = document.createElement("table");
   table.style.cssText = `
     width: 100%;
     border-collapse: collapse;
@@ -84,7 +84,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   headerRow.style.backgroundColor = theme.colors.primary;
 
   const headerCell = headerRow.insertCell();
-  headerCell.textContent = 'Task';
+  headerCell.textContent = "Task";
   headerCell.style.cssText = `
     padding: 12px;
     color: white;
@@ -109,7 +109,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   for (const task of chart.tasks) {
     const row = table.insertRow();
     row.style.backgroundColor =
-      table.rows.length % 2 === 0 ? '#f9fafb' : theme.colors.background;
+      table.rows.length % 2 === 0 ? "#f9fafb" : theme.colors.background;
 
     const taskCell = row.insertCell();
     taskCell.textContent = task.name;
@@ -123,14 +123,14 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
     for (const role of chart.roles) {
       const value = chart.matrix[role.id]?.[task.id];
       const label = value
-        ? value === 'R'
-          ? 'R'
-          : value === 'A'
-            ? 'A'
-            : value === 'C'
-              ? 'C'
-              : 'I'
-        : '';
+        ? value === "R"
+          ? "R"
+          : value === "A"
+            ? "A"
+            : value === "C"
+              ? "C"
+              : "I"
+        : "";
 
       const cell = row.insertCell();
       cell.textContent = label;
@@ -160,7 +160,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   container.appendChild(table);
 
   // Legend
-  const legend = document.createElement('div');
+  const legend = document.createElement("div");
   legend.style.cssText = `
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -169,21 +169,21 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   `;
 
   const legendItems = [
-    { label: 'R - Responsible', color: theme.colors.raci.r },
-    { label: 'A - Accountable', color: theme.colors.raci.a },
-    { label: 'C - Consulted', color: theme.colors.raci.c },
-    { label: 'I - Informed', color: theme.colors.raci.i },
+    { label: "R - Responsible", color: theme.colors.raci.r },
+    { label: "A - Accountable", color: theme.colors.raci.a },
+    { label: "C - Consulted", color: theme.colors.raci.c },
+    { label: "I - Informed", color: theme.colors.raci.i },
   ];
 
   for (const item of legendItems) {
-    const legendItem = document.createElement('div');
+    const legendItem = document.createElement("div");
     legendItem.style.cssText = `
       display: flex;
       align-items: center;
       gap: 10px;
     `;
 
-    const colorBox = document.createElement('div');
+    const colorBox = document.createElement("div");
     colorBox.style.cssText = `
       width: 24px;
       height: 24px;
@@ -191,7 +191,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
       border-radius: 4px;
     `;
 
-    const label = document.createElement('span');
+    const label = document.createElement("span");
     label.textContent = item.label;
     label.style.cssText = `
       font-size: 13px;
@@ -222,7 +222,7 @@ export async function exportToPng(
 ): Promise<Blob> {
   const validation = validateChart(chart);
   if (!validation.valid) {
-    throw new Error(`Invalid RACI chart: ${validation.errors.join(', ')}`);
+    throw new Error(`Invalid RACI chart: ${validation.errors.join(", ")}`);
   }
 
   const theme = getPngTheme(options.themeId);
@@ -231,7 +231,7 @@ export async function exportToPng(
 
   // Create temporary container
   const htmlElement = createMatrixHtml(chart, theme);
-  const tempContainer = document.createElement('div');
+  const tempContainer = document.createElement("div");
   tempContainer.style.cssText = `
     position: fixed;
     top: -9999px;
@@ -251,9 +251,13 @@ export async function exportToPng(
     });
 
     const pngBlob = await new Promise<Blob>((resolve) => {
-      canvas.toBlob((blob: Blob | null) => {
-        resolve(blob || new Blob());
-      }, 'image/png', 1.0);
+      canvas.toBlob(
+        (blob: Blob | null) => {
+          resolve(blob || new Blob());
+        },
+        "image/png",
+        1.0
+      );
     });
 
     return pngBlob;

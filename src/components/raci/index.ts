@@ -20,4 +20,3 @@ export { default as ProgressIndicator } from "./ProgressIndicator";
 export { TemplateSelector } from "./TemplateSelector";
 export { QuickPresets } from "./QuickPresets";
 export { PresetManager } from "./PresetManager";
-

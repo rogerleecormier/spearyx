@@ -50,8 +50,7 @@ export function getTemplates(): RaciTemplate[] {
  * Get template by ID
  */
 export function getTemplateById(id: string): RaciTemplate | null {
-  const data =
-    templatesData[id as keyof typeof templatesData];
+  const data = templatesData[id as keyof typeof templatesData];
 
   if (!data) {
     return null;
@@ -180,7 +179,9 @@ export function getCustomPresets(): RaciPreset[] {
 /**
  * Save custom preset to localStorage
  */
-export function saveCustomPreset(preset: Omit<RaciPreset, "id" | "createdAt" | "updatedAt">): RaciPreset {
+export function saveCustomPreset(
+  preset: Omit<RaciPreset, "id" | "createdAt" | "updatedAt">
+): RaciPreset {
   const newPreset: RaciPreset = {
     ...preset,
     id: `preset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -219,7 +220,10 @@ export function deleteCustomPreset(id: string): boolean {
 /**
  * Update custom preset
  */
-export function updateCustomPreset(id: string, updates: Partial<RaciPreset>): RaciPreset | null {
+export function updateCustomPreset(
+  id: string,
+  updates: Partial<RaciPreset>
+): RaciPreset | null {
   try {
     const presets = getCustomPresets();
     const index = presets.findIndex((p) => p.id === id);
@@ -251,7 +255,10 @@ export const QUICK_PRESETS = {
    * All Responsible: All roles are Responsible
    * Common for broad collaborative tasks
    */
-  allResponsible: (roleIds: string[], taskIds: string[]): RaciChart["matrix"] => {
+  allResponsible: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
     const matrix: RaciChart["matrix"] = {};
     for (const roleId of roleIds) {
       matrix[roleId] = {};
@@ -266,7 +273,10 @@ export const QUICK_PRESETS = {
    * All Accountable: All roles are Accountable
    * Common for accountability tracking
    */
-  allAccountable: (roleIds: string[], taskIds: string[]): RaciChart["matrix"] => {
+  allAccountable: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
     const matrix: RaciChart["matrix"] = {};
     for (const roleId of roleIds) {
       matrix[roleId] = {};
@@ -314,7 +324,10 @@ export const QUICK_PRESETS = {
    * CEO/Lead Accountable: First role (CEO/Lead) accountable, others responsible/consulted
    * Classic hierarchical pattern
    */
-  leaderAccountable: (roleIds: string[], taskIds: string[]): RaciChart["matrix"] => {
+  leaderAccountable: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
     const matrix: RaciChart["matrix"] = {};
 
     for (const roleId of roleIds) {
@@ -352,7 +365,7 @@ export const QUICK_PRESETS = {
       const taskId = taskIds[i];
       for (let j = 0; j < roleIds.length; j++) {
         const roleId = roleIds[j];
-        const isAccountable = j === (i % roleIds.length);
+        const isAccountable = j === i % roleIds.length;
 
         if (isAccountable) {
           matrix[roleId][taskId] = "A";
@@ -371,7 +384,10 @@ export const QUICK_PRESETS = {
    * Execution Model: One R, one A, all others C or I
    * Follows strict RACI principles
    */
-  executionModel: (roleIds: string[], taskIds: string[]): RaciChart["matrix"] => {
+  executionModel: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
     const matrix: RaciChart["matrix"] = {};
 
     for (const roleId of roleIds) {
@@ -431,7 +447,5 @@ export function getQuickPresetInfo(presetKey: string): {
     },
   };
 
-  return (
-    info[presetKey] || { name: "Unknown", description: "Unknown preset" }
-  );
+  return info[presetKey] || { name: "Unknown", description: "Unknown preset" };
 }

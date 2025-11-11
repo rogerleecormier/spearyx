@@ -1,7 +1,7 @@
-import React from 'react';
-import { Body, Caption, Overline } from '@/components/Typography';
+import React from "react";
+import { Body, Caption, Overline } from "@/components/Typography";
 
-export type FormatOption = 'pdf' | 'xlsx' | 'csv' | 'png' | 'pptx';
+export type FormatOption = "pdf" | "xlsx" | "csv" | "png" | "pptx";
 
 interface Format {
   id: FormatOption;
@@ -20,39 +20,39 @@ interface FormatSelectorProps {
 
 const FORMATS: Format[] = [
   {
-    id: 'pdf',
-    label: 'PDF Document',
-    description: 'Professional report with table and legend',
-    icon: '📄',
-    ext: '.pdf',
+    id: "pdf",
+    label: "PDF Document",
+    description: "Professional report with table and legend",
+    icon: "📄",
+    ext: ".pdf",
   },
   {
-    id: 'xlsx',
-    label: 'Excel Spreadsheet',
-    description: 'Editable spreadsheet with multiple sheets',
-    icon: '📊',
-    ext: '.xlsx',
+    id: "xlsx",
+    label: "Excel Spreadsheet",
+    description: "Editable spreadsheet with multiple sheets",
+    icon: "📊",
+    ext: ".xlsx",
   },
   {
-    id: 'csv',
-    label: 'CSV File',
-    description: 'Comma-separated values for data processing',
-    icon: '📋',
-    ext: '.csv',
+    id: "csv",
+    label: "CSV File",
+    description: "Comma-separated values for data processing",
+    icon: "📋",
+    ext: ".csv",
   },
   {
-    id: 'png',
-    label: 'PNG Image',
-    description: 'High-resolution image at 96, 150, or 300 DPI',
-    icon: '🖼️',
-    ext: '.png',
+    id: "png",
+    label: "PNG Image",
+    description: "High-resolution image at 96, 150, or 300 DPI",
+    icon: "🖼️",
+    ext: ".png",
   },
   {
-    id: 'pptx',
-    label: 'PowerPoint',
-    description: 'Presentation with title, matrix, and breakdown',
-    icon: '📽️',
-    ext: '.pptx',
+    id: "pptx",
+    label: "PowerPoint",
+    description: "Presentation with title, matrix, and breakdown",
+    icon: "📽️",
+    ext: ".pptx",
   },
 ];
 
@@ -71,7 +71,9 @@ export const FormatSelector: React.FC<FormatSelectorProps> = ({
         </Caption>
       </div>
 
-      <div className={`grid grid-cols-1 gap-2 ${showDescriptions ? 'sm:grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-5'}`}>
+      <div
+        className={`grid grid-cols-1 gap-2 ${showDescriptions ? "sm:grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-5"}`}
+      >
         {FORMATS.map((format) => (
           <button
             key={format.id}
@@ -81,8 +83,8 @@ export const FormatSelector: React.FC<FormatSelectorProps> = ({
               flex gap-3 rounded-lg border-2 p-3 text-left transition-all
               ${
                 selected === format.id
-                  ? 'border-emerald-500 bg-emerald-50'
-                  : 'border-slate-200 hover:border-emerald-300'
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-slate-200 hover:border-emerald-300"
               }
               disabled:cursor-not-allowed disabled:opacity-50
             `}

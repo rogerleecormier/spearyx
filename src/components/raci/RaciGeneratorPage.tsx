@@ -21,7 +21,14 @@ import RaciMatrixEditor from "./RaciMatrixEditor";
 import ErrorModal from "./ErrorModal";
 import { TemplateSelector, QuickPresets, PresetManager } from ".";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hero, Headline, Body, Label, Overline, Caption } from "@/components/Typography";
+import {
+  Hero,
+  Headline,
+  Body,
+  Label,
+  Overline,
+  Caption,
+} from "@/components/Typography";
 import { RaciChart } from "@/types/raci";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
@@ -199,7 +206,9 @@ export default function RaciGeneratorPage() {
               <div className="space-y-4">
                 <div>
                   <Overline className="text-red-600 mb-2">Quick Setup</Overline>
-                  <Headline as="h3" className="text-black text-lg">Configuration</Headline>
+                  <Headline as="h3" className="text-black text-lg">
+                    Configuration
+                  </Headline>
                 </div>
 
                 {/* Template Loader */}
@@ -239,7 +248,10 @@ export default function RaciGeneratorPage() {
                       </Label>
                     </CardHeader>
                     <CardContent>
-                      <ThemeSelector theme={chart.theme} onChange={updateTheme} />
+                      <ThemeSelector
+                        theme={chart.theme}
+                        onChange={updateTheme}
+                      />
                     </CardContent>
                   </Card>
 
@@ -252,7 +264,9 @@ export default function RaciGeneratorPage() {
                           <Label className="text-emerald-700 font-semibold text-sm block">
                             Export & Download
                           </Label>
-                          <p className="text-xs text-emerald-600">Save your RACI chart in any format</p>
+                          <p className="text-xs text-emerald-600">
+                            Save your RACI chart in any format
+                          </p>
                         </div>
                       </div>
                     </CardHeader>
@@ -402,7 +416,9 @@ export default function RaciGeneratorPage() {
                         5
                       </div>
                       <div>
-                        <CardTitle className="text-black">RACI Matrix</CardTitle>
+                        <CardTitle className="text-black">
+                          RACI Matrix
+                        </CardTitle>
                         <Caption className="text-slate-600 mt-1">
                           Assign responsibilities
                         </Caption>

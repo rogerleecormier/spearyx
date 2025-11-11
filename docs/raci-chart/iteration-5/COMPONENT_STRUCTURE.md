@@ -41,7 +41,7 @@ interface ExportButtonsProps {
 ### State
 
 ```typescript
-const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf');
+const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pdf");
 const [isExporting, setIsExporting] = useState(false);
 const [exportProgress, setExportProgress] = useState(0);
 const [exportError, setExportError] = useState<string | null>(null);
@@ -116,12 +116,12 @@ const [exportError, setExportError] = useState<string | null>(null);
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `E` | Focus export button |
-| `Tab` | Navigate format options |
-| `Enter` | Confirm export |
-| `Esc` | Close error modal |
+| Shortcut | Action                  |
+| -------- | ----------------------- |
+| `E`      | Focus export button     |
+| `Tab`    | Navigate format options |
+| `Enter`  | Confirm export          |
+| `Esc`    | Close error modal       |
 
 ### Accessibility
 
@@ -152,40 +152,40 @@ interface FormatSelectorProps {
 ```typescript
 const FORMATS: FormatOption[] = [
   {
-    id: 'pdf',
-    name: 'PDF Document',
-    description: 'Professional documents for printing and email',
+    id: "pdf",
+    name: "PDF Document",
+    description: "Professional documents for printing and email",
     icon: FileText,
-    estimatedSize: '450 KB'
+    estimatedSize: "450 KB",
   },
   {
-    id: 'xlsx',
-    name: 'Excel Spreadsheet',
-    description: 'Styled spreadsheets for data analysis',
+    id: "xlsx",
+    name: "Excel Spreadsheet",
+    description: "Styled spreadsheets for data analysis",
     icon: Sheet,
-    estimatedSize: '180 KB'
+    estimatedSize: "180 KB",
   },
   {
-    id: 'csv',
-    name: 'CSV Data',
-    description: 'Raw data for universal import',
+    id: "csv",
+    name: "CSV Data",
+    description: "Raw data for universal import",
     icon: Table,
-    estimatedSize: '35 KB'
+    estimatedSize: "35 KB",
   },
   {
-    id: 'png',
-    name: 'PNG Image',
-    description: 'High-resolution images (300dpi)',
+    id: "png",
+    name: "PNG Image",
+    description: "High-resolution images (300dpi)",
     icon: Image,
-    estimatedSize: '2.8 MB'
+    estimatedSize: "2.8 MB",
   },
   {
-    id: 'pptx',
-    name: 'PowerPoint',
-    description: 'Multi-slide presentations',
+    id: "pptx",
+    name: "PowerPoint",
+    description: "Multi-slide presentations",
     icon: Presentation,
-    estimatedSize: '350 KB'
-  }
+    estimatedSize: "350 KB",
+  },
 ];
 ```
 
@@ -218,7 +218,7 @@ const FORMATS: FormatOption[] = [
 interface ProgressIndicatorProps {
   visible: boolean;
   progress: number; // 0-100
-  status: 'preparing' | 'rendering' | 'finalizing' | 'complete';
+  status: "preparing" | "rendering" | "finalizing" | "complete";
   onCancel?: () => void;
 }
 ```
@@ -227,48 +227,50 @@ interface ProgressIndicatorProps {
 
 ```typescript
 const STATUS_MESSAGES = {
-  preparing: 'Preparing chart data...',
-  rendering: 'Rendering matrix...',
-  finalizing: 'Finalizing export...',
-  complete: 'Export complete!'
+  preparing: "Preparing chart data...",
+  rendering: "Rendering matrix...",
+  finalizing: "Finalizing export...",
+  complete: "Export complete!",
 };
 ```
 
 ### Render Structure
 
 ```jsx
-{visible && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-      <Label className="block text-sm font-semibold mb-2">
-        {STATUS_MESSAGES[status]}
-      </Label>
+{
+  visible && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+        <Label className="block text-sm font-semibold mb-2">
+          {STATUS_MESSAGES[status]}
+        </Label>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-slate-200 rounded-full h-2 mb-4">
-        <div
-          className="bg-red-600 h-2 rounded-full transition-all"
-          style={{ width: `${progress}%` }}
-        />
+        {/* Progress Bar */}
+        <div className="w-full bg-slate-200 rounded-full h-2 mb-4">
+          <div
+            className="bg-red-600 h-2 rounded-full transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Percentage */}
+        <div className="text-right mb-4">
+          <Caption>{progress}%</Caption>
+        </div>
+
+        {/* Cancel Button */}
+        {status !== "complete" && (
+          <button
+            onClick={onCancel}
+            className="w-full px-4 py-2 border border-slate-300 rounded hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+        )}
       </div>
-
-      {/* Percentage */}
-      <div className="text-right mb-4">
-        <Caption>{progress}%</Caption>
-      </div>
-
-      {/* Cancel Button */}
-      {status !== 'complete' && (
-        <button
-          onClick={onCancel}
-          className="w-full px-4 py-2 border border-slate-300 rounded hover:bg-slate-50"
-        >
-          Cancel
-        </button>
-      )}
     </div>
-  </div>
-)}
+  );
+}
 ```
 
 ---
@@ -289,12 +291,12 @@ interface ErrorModalProps {
 
 ### Common Errors
 
-| Error | Message | Action |
-|-------|---------|--------|
-| Validation Failed | "Chart is incomplete" | Fix errors and retry |
-| Size Exceeded | "File exceeds 10MB limit" | Try different format |
-| Browser Unsupported | "Export not supported" | Use different browser |
-| Network Error | "Export failed" | Check connection, retry |
+| Error               | Message                   | Action                  |
+| ------------------- | ------------------------- | ----------------------- |
+| Validation Failed   | "Chart is incomplete"     | Fix errors and retry    |
+| Size Exceeded       | "File exceeds 10MB limit" | Try different format    |
+| Browser Unsupported | "Export not supported"    | Use different browser   |
+| Network Error       | "Export failed"           | Check connection, retry |
 
 ### Render
 
@@ -315,6 +317,7 @@ interface ErrorModalProps {
 ### ExportButtons
 
 Triggers re-render when:
+
 - ✅ `chart` prop changes
 - ✅ `theme` prop changes
 - ✅ `selectedFormat` state changes
@@ -345,8 +348,8 @@ const handleExport = useCallback(async () => {
 ```typescript
 // Load export libraries only when needed
 const handleExport = async (format: ExportFormat) => {
-  if (format === 'pdf') {
-    const { exportToPdf } = await import('@/lib/raci/exporters/pdf');
+  if (format === "pdf") {
+    const { exportToPdf } = await import("@/lib/raci/exporters/pdf");
     // Use exportToPdf
   }
 };
@@ -378,6 +381,7 @@ const handleCancel = () => {
 ## Testing Checklist
 
 ### Unit Tests
+
 - ✅ Format selection changes value
 - ✅ Export button disabled when chart empty
 - ✅ Error message displays on failure
@@ -385,6 +389,7 @@ const handleCancel = () => {
 - ✅ File size calculation correct
 
 ### Integration Tests
+
 - ✅ PDF export end-to-end
 - ✅ XLSX export end-to-end
 - ✅ CSV export end-to-end
@@ -392,6 +397,7 @@ const handleCancel = () => {
 - ✅ PPTX export end-to-end
 
 ### Accessibility Tests
+
 - ✅ Keyboard navigation works
 - ✅ Screen reader announces status
 - ✅ Focus indicators visible
@@ -399,6 +405,7 @@ const handleCancel = () => {
 - ✅ Progress updates announced
 
 ### Browser Tests
+
 - ✅ Chrome 90+
 - ✅ Firefox 88+
 - ✅ Safari 14+
@@ -412,7 +419,7 @@ const handleCancel = () => {
 ### Import
 
 ```typescript
-import ExportButtons from '@/components/raci/ExportButtons';
+import ExportButtons from "@/components/raci/ExportButtons";
 ```
 
 ### Usage
@@ -420,9 +427,7 @@ import ExportButtons from '@/components/raci/ExportButtons';
 ```tsx
 <Card className="border-slate-200 shadow-sm">
   <CardHeader className="pb-3">
-    <Label className="text-slate-700 font-semibold text-xs">
-      Export
-    </Label>
+    <Label className="text-slate-700 font-semibold text-xs">Export</Label>
   </CardHeader>
   <CardContent>
     <ExportButtons
@@ -462,6 +467,7 @@ src/lib/raci/exporters/
 ## Dependencies
 
 ### Internal
+
 - `@/components/ui/card` - Card component
 - `@/components/Typography` - Typography components
 - `@/types/raci` - Type definitions
@@ -469,6 +475,7 @@ src/lib/raci/exporters/
 - `@/lib/raci/exporters/*` - Format-specific exporters
 
 ### External
+
 - `react` - UI framework
 - `react-pdf` - PDF generation
 - `exceljs` - XLSX generation

@@ -28,8 +28,7 @@ export function QuickPresets({
   const presetEntries = Object.entries(QUICK_PRESETS);
 
   const handleApply = (presetKey: string) => {
-    const presetFn =
-      QUICK_PRESETS[presetKey as keyof typeof QUICK_PRESETS];
+    const presetFn = QUICK_PRESETS[presetKey as keyof typeof QUICK_PRESETS];
     if (presetFn && roleIds.length > 0 && taskIds.length > 0) {
       const matrix = presetFn(roleIds, taskIds);
       onApplyPreset(matrix);
@@ -41,7 +40,9 @@ export function QuickPresets({
     return (
       <Card className="w-full p-6 bg-slate-50 border border-slate-200">
         <div className="text-center space-y-2">
-          <Label className="text-base font-semibold text-slate-900">Quick Presets</Label>
+          <Label className="text-base font-semibold text-slate-900">
+            Quick Presets
+          </Label>
           <Caption className="text-slate-600">
             Add roles and tasks to your chart to use quick presets
           </Caption>
@@ -54,7 +55,9 @@ export function QuickPresets({
     <Card className="w-full p-6 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-semibold text-slate-900">Quick Presets</Label>
+          <Label className="text-base font-semibold text-slate-900">
+            Quick Presets
+          </Label>
           <Caption className="text-slate-600">
             Apply common RACI assignment patterns to your chart
           </Caption>

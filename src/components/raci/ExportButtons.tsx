@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { RaciChart } from '@/types/raci';
-import { Body, Caption, Overline } from '@/components/Typography';
-import { FileText, Sheet, File, Image as ImageIcon, Presentation } from 'lucide-react';
+import React, { useState } from "react";
+import { RaciChart } from "@/types/raci";
+import { Body, Caption, Overline } from "@/components/Typography";
+import {
+  FileText,
+  Sheet,
+  File,
+  Image as ImageIcon,
+  Presentation,
+} from "lucide-react";
 import {
   exportToPdf,
   exportToXlsx,
   exportToCsv,
   exportToPng,
   exportToPptx,
-} from '@/lib/raci/exporters';
-import { triggerDownload, generateFilename } from '@/lib/raci/export-utils';
+} from "@/lib/raci/exporters";
+import { triggerDownload, generateFilename } from "@/lib/raci/export-utils";
 
 interface ExportButtonsProps {
   chart: RaciChart;
@@ -19,7 +25,7 @@ interface ExportButtonsProps {
   onExportError?: (error: Error) => void;
 }
 
-type ExportFormat = 'pdf' | 'xlsx' | 'csv' | 'png' | 'pptx';
+type ExportFormat = "pdf" | "xlsx" | "csv" | "png" | "pptx";
 
 interface ExportState {
   loading: boolean;
@@ -34,48 +40,48 @@ interface ExportState {
 // Row 3: PowerPoint (presentation)
 const EXPORT_FORMATS = [
   {
-    id: 'pdf',
-    label: 'PDF Document',
-    description: 'Professional multi-page report with styling',
-    shortLabel: 'PDF',
+    id: "pdf",
+    label: "PDF Document",
+    description: "Professional multi-page report with styling",
+    shortLabel: "PDF",
     icon: FileText,
-    color: 'hover:border-red-400 hover:bg-red-50',
+    color: "hover:border-red-400 hover:bg-red-50",
     row: 1,
   },
   {
-    id: 'xlsx',
-    label: 'Excel Spreadsheet',
-    description: 'Editable spreadsheet with multiple sheets',
-    shortLabel: 'Excel',
+    id: "xlsx",
+    label: "Excel Spreadsheet",
+    description: "Editable spreadsheet with multiple sheets",
+    shortLabel: "Excel",
     icon: Sheet,
-    color: 'hover:border-emerald-400 hover:bg-emerald-50',
+    color: "hover:border-emerald-400 hover:bg-emerald-50",
     row: 1,
   },
   {
-    id: 'csv',
-    label: 'CSV Export',
-    description: 'Comma-separated values for data processing',
-    shortLabel: 'CSV',
+    id: "csv",
+    label: "CSV Export",
+    description: "Comma-separated values for data processing",
+    shortLabel: "CSV",
     icon: File,
-    color: 'hover:border-blue-400 hover:bg-blue-50',
+    color: "hover:border-blue-400 hover:bg-blue-50",
     row: 2,
   },
   {
-    id: 'png',
-    label: 'PNG Image',
-    description: 'High-resolution image export (300 DPI)',
-    shortLabel: 'Image',
+    id: "png",
+    label: "PNG Image",
+    description: "High-resolution image export (300 DPI)",
+    shortLabel: "Image",
     icon: ImageIcon,
-    color: 'hover:border-purple-400 hover:bg-purple-50',
+    color: "hover:border-purple-400 hover:bg-purple-50",
     row: 2,
   },
   {
-    id: 'pptx',
-    label: 'PowerPoint Presentation',
-    description: 'Multi-slide presentation with breakdown',
-    shortLabel: 'Slides',
+    id: "pptx",
+    label: "PowerPoint Presentation",
+    description: "Multi-slide presentation with breakdown",
+    shortLabel: "Slides",
     icon: Presentation,
-    color: 'hover:border-orange-400 hover:bg-orange-50',
+    color: "hover:border-orange-400 hover:bg-orange-50",
     row: 3,
   },
 ] as const;
@@ -102,19 +108,19 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
       let blob: Blob;
 
       switch (format) {
-        case 'pdf':
+        case "pdf":
           blob = await exportToPdf(chart, { themeId });
           break;
-        case 'xlsx':
+        case "xlsx":
           blob = await exportToXlsx(chart, { themeId });
           break;
-        case 'csv':
+        case "csv":
           blob = await exportToCsv(chart);
           break;
-        case 'png':
+        case "png":
           blob = await exportToPng(chart, { themeId });
           break;
-        case 'pptx':
+        case "pptx":
           blob = await exportToPptx(chart, { themeId });
           break;
         default:
@@ -124,11 +130,21 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
       const filename = generateFilename(chart.title, format);
       triggerDownload(blob, filename);
 
-      setState((prev) => ({ ...prev, loading: false, format: null, error: null }));
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        format: null,
+        error: null,
+      }));
       onExportComplete?.(format);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      setState((prev) => ({ ...prev, loading: false, format: null, error: err.message }));
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        format: null,
+        error: err.message,
+      }));
       onExportError?.(err);
     }
   };
@@ -144,7 +160,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
     <div className="space-y-3">
       {/* Header */}
       <div className="pb-2 border-b border-slate-200">
-        <Body className="font-semibold text-slate-900">Download Your Chart</Body>
+        <Body className="font-semibold text-slate-900">
+          Download Your Chart
+        </Body>
         <Caption className="text-slate-600 mt-1">
           Choose your preferred export format
         </Caption>
@@ -165,7 +183,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
                   {isHovered && !state.loading && (
                     <div className="absolute bottom-full left-0 right-0 mb-2 p-2 bg-slate-900 text-white rounded-lg text-xs whitespace-normal z-50 animate-in fade-in duration-200">
                       <p className="font-semibold">{fmt.label}</p>
-                      <p className="text-slate-300 text-xs mt-1">{fmt.description}</p>
+                      <p className="text-slate-300 text-xs mt-1">
+                        {fmt.description}
+                      </p>
                       <div className="absolute top-full left-2 w-2 h-2 bg-slate-900 transform rotate-45" />
                     </div>
                   )}
@@ -173,8 +193,12 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
                   {/* Button */}
                   <button
                     onClick={() => handleExport(fmt.id as ExportFormat)}
-                    onMouseEnter={() => setState((prev) => ({ ...prev, hoveredTooltip: fmt.id }))}
-                    onMouseLeave={() => setState((prev) => ({ ...prev, hoveredTooltip: null }))}
+                    onMouseEnter={() =>
+                      setState((prev) => ({ ...prev, hoveredTooltip: fmt.id }))
+                    }
+                    onMouseLeave={() =>
+                      setState((prev) => ({ ...prev, hoveredTooltip: null }))
+                    }
                     disabled={state.loading && state.format !== fmt.id}
                     className={`
                       w-full flex items-center gap-3 p-3 rounded-lg
@@ -184,8 +208,8 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
                       relative
                       ${
                         isLoading
-                          ? 'border-emerald-500 ring-2 ring-emerald-200'
-                          : ''
+                          ? "border-emerald-500 ring-2 ring-emerald-200"
+                          : ""
                       }
                     `}
                   >
@@ -199,14 +223,14 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
                     {/* Icon - Left Side */}
                     <IconComponent
                       className={`w-6 h-6 flex-shrink-0 text-slate-600 ${
-                        isLoading ? 'opacity-0' : ''
+                        isLoading ? "opacity-0" : ""
                       }`}
                     />
 
                     {/* Text Content - Right Side */}
                     <div
                       className={`flex-1 text-left min-w-0 ${
-                        isLoading ? 'opacity-0' : ''
+                        isLoading ? "opacity-0" : ""
                       }`}
                     >
                       <div className="font-semibold text-sm text-slate-900 leading-tight">
@@ -231,7 +255,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
         <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 animate-in fade-in">
           <span className="text-lg flex-shrink-0">⚠️</span>
           <div className="flex-1 min-w-0">
-            <Body className="text-xs font-semibold text-red-900">Export failed</Body>
+            <Body className="text-xs font-semibold text-red-900">
+              Export failed
+            </Body>
             <Caption className="text-red-700 text-xs">{state.error}</Caption>
           </div>
         </div>

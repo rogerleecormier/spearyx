@@ -162,13 +162,13 @@ updateCustomPreset(id, updates): RaciPreset | null
 
 ```typescript
 QUICK_PRESETS = {
-  allResponsible,          // All R
-  allAccountable,          // All A
-  oneAccountablePerTask,   // Rotate A per task
-  leaderAccountable,       // CEO A, others R/C
-  distributed,             // Spread A across roles
-  executionModel           // Strict R+A+C+I
-}
+  allResponsible, // All R
+  allAccountable, // All A
+  oneAccountablePerTask, // Rotate A per task
+  leaderAccountable, // CEO A, others R/C
+  distributed, // Spread A across roles
+  executionModel, // Strict R+A+C+I
+};
 ```
 
 ---
@@ -185,6 +185,7 @@ QUICK_PRESETS = {
 ```
 
 **Features:**
+
 - Grid display of all templates
 - Preview panel showing roles, tasks, coverage
 - Select/deselect templates
@@ -202,6 +203,7 @@ QUICK_PRESETS = {
 ```
 
 **Features:**
+
 - 6 preset pattern options
 - Disabled when no roles/tasks
 - Preview of selected pattern
@@ -218,6 +220,7 @@ QUICK_PRESETS = {
 ```
 
 **Features:**
+
 - Save current matrix as preset
 - List all saved presets
 - Load preset with one click
@@ -232,6 +235,7 @@ QUICK_PRESETS = {
 ### New Reducer Actions
 
 **loadTemplate:**
+
 ```typescript
 dispatch({
   type: "loadTemplate",
@@ -246,23 +250,24 @@ dispatch({
 ```
 
 **loadPreset:**
+
 ```typescript
 dispatch({
   type: "loadPreset",
   payload: {
-    matrix: Record<string, Record<string, RaciValue>>
-  }
-})
+    matrix: Record<string, Record<string, RaciValue>>,
+  },
+});
 ```
 
 ### New Hook Callbacks (useRaciState)
 
 ```typescript
 const {
-  loadTemplate,  // (roles, tasks, matrix, title?, desc?) => void
-  loadPreset,    // (matrix) => void
+  loadTemplate, // (roles, tasks, matrix, title?, desc?) => void
+  loadPreset, // (matrix) => void
   // ... existing callbacks
-} = useRaciState()
+} = useRaciState();
 ```
 
 ---
@@ -274,6 +279,7 @@ const {
 **Presets stored at:** `localStorage.raci_custom_presets`
 
 **Format:**
+
 ```typescript
 [
   {
@@ -289,6 +295,7 @@ const {
 ```
 
 **Auto-synced on:**
+
 - Save new preset
 - Update preset
 - Delete preset
@@ -300,12 +307,14 @@ const {
 ## Common Use Cases
 
 ### Use Case 1: Quick Team Setup
+
 1. Load "Mobile App Development" template
 2. Adjust roles/tasks if needed
 3. Click "Save as Preset"
 4. Reuse for next sprint!
 
 ### Use Case 2: Multiple Project Types
+
 1. Create matrix for "Project Type A"
 2. Save as "Type A Standard"
 3. Create matrix for "Project Type B"
@@ -313,6 +322,7 @@ const {
 5. Switch between projects instantly
 
 ### Use Case 3: Template Experimentation
+
 1. Load "One Accountable per Task" preset
 2. Compare with "Distributed Accountability"
 3. Save the best one as custom preset
@@ -322,12 +332,12 @@ const {
 
 ## Browser Compatibility
 
-| Feature | Chrome | Firefox | Safari | Edge |
-|---------|--------|---------|--------|------|
-| Templates | ✅ | ✅ | ✅ | ✅ |
-| Quick Presets | ✅ | ✅ | ✅ | ✅ |
-| Custom Presets | ✅ | ✅ | ✅ | ✅ |
-| localStorage | ✅ | ✅ | ✅ | ✅ |
+| Feature        | Chrome | Firefox | Safari | Edge |
+| -------------- | ------ | ------- | ------ | ---- |
+| Templates      | ✅     | ✅      | ✅     | ✅   |
+| Quick Presets  | ✅     | ✅      | ✅     | ✅   |
+| Custom Presets | ✅     | ✅      | ✅     | ✅   |
+| localStorage   | ✅     | ✅      | ✅     | ✅   |
 
 **Note:** Custom presets use `localStorage`, which persists per domain/port.
 
@@ -335,35 +345,39 @@ const {
 
 ## Keyboard Shortcuts
 
-| Action | Shortcut |
-|--------|----------|
-| Select template | Click template card |
-| Show preview | Click "Show Preview" |
-| Load template | Click "Load Template" or press Enter |
-| Apply preset | Click "Apply Preset" or press Enter |
-| Save preset | Click "Save Preset" or press Enter |
-| Cancel | Press Escape or click "Cancel" |
+| Action          | Shortcut                             |
+| --------------- | ------------------------------------ |
+| Select template | Click template card                  |
+| Show preview    | Click "Show Preview"                 |
+| Load template   | Click "Load Template" or press Enter |
+| Apply preset    | Click "Apply Preset" or press Enter  |
+| Save preset     | Click "Save Preset" or press Enter   |
+| Cancel          | Press Escape or click "Cancel"       |
 
 ---
 
 ## Troubleshooting
 
 ### Templates not loading?
+
 - Check `src/config/templates.json` exists
 - Verify template IDs are unique
 - Check browser console for errors
 
 ### Presets not saving?
+
 - Check browser localStorage quota not exceeded
 - Clear old presets if needed
 - Try different browser if issue persists
 
 ### Matrix not updating?
+
 - Verify roles/tasks exist
 - Check console for reducer errors
 - Try clearing and reloading
 
 ### Can't find custom preset?
+
 - Check `localStorage.raci_custom_presets` in browser dev tools
 - Presets are per domain (e.g., localhost:3000 ≠ localhost:3001)
 - Delete and re-save preset if corrupted

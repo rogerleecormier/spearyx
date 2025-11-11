@@ -104,6 +104,7 @@ Use this checklist to verify Iteration 4 is working correctly.
 ### Template Loading
 
 **Test: Load Mobile App Template**
+
 - [ ] Click TemplateSelector
 - [ ] Select "Mobile App Development"
 - [ ] Click "Show Preview"
@@ -114,17 +115,20 @@ Use this checklist to verify Iteration 4 is working correctly.
 - [ ] Title shows "Mobile App Development"
 
 **Test: Load Web Redesign Template**
+
 - [ ] Select "Web Redesign Project"
 - [ ] Verify different roles than mobile app
 - [ ] Load successfully
 - [ ] Assignments different from mobile app
 
 **Test: Load CRM Migration Template**
+
 - [ ] Select "CRM Migration"
 - [ ] Verify 6 roles (different from others)
 - [ ] Load successfully
 
 **Test: Template Preview**
+
 - [ ] Coverage stats show correct numbers
 - [ ] Roles display as badges
 - [ ] Tasks list shows first 5
@@ -133,23 +137,27 @@ Use this checklist to verify Iteration 4 is working correctly.
 ### Quick Presets
 
 **Test: Apply All Responsible**
+
 - [ ] Add at least 2 roles and 2 tasks first
 - [ ] Select "All Responsible" preset
 - [ ] Click "Apply Preset"
 - [ ] All matrix cells show "R"
 
 **Test: Apply One Accountable per Task**
+
 - [ ] Select pattern
 - [ ] Apply
 - [ ] Each task column has exactly one "A"
 
 **Test: Apply Leader Accountable**
+
 - [ ] Apply
 - [ ] First role has all "A"
 - [ ] Second role has all "R"
 - [ ] Others have "C" or "I"
 
 **Test: Preset Disabled**
+
 - [ ] Remove all tasks
 - [ ] Quick Presets should be disabled/grayed
 - [ ] Add task back
@@ -158,6 +166,7 @@ Use this checklist to verify Iteration 4 is working correctly.
 ### Custom Presets
 
 **Test: Save Preset**
+
 - [ ] Build a custom matrix
 - [ ] Click "Save Current Matrix as Preset"
 - [ ] Enter name: "Test Preset"
@@ -168,18 +177,21 @@ Use this checklist to verify Iteration 4 is working correctly.
 - [ ] Shows today's date
 
 **Test: Load Custom Preset**
+
 - [ ] Modify matrix to something different
 - [ ] Click "Load" on saved preset
 - [ ] Matrix updates to preset values
 - [ ] Roles and tasks unchanged
 
 **Test: Delete Preset**
+
 - [ ] Click "Delete" on preset
 - [ ] Confirmation dialog appears
 - [ ] Click "Confirm" (or "Cancel")
 - [ ] Preset removed from list (if confirmed)
 
 **Test: Persistence**
+
 - [ ] Save a preset
 - [ ] Refresh the page
 - [ ] Preset still appears in list
@@ -255,17 +267,20 @@ Use this checklist to verify Iteration 4 is working correctly.
 ### Responsive Design
 
 **Mobile (375px)**
+
 - [ ] Single column layout
 - [ ] Touch-friendly buttons
 - [ ] Lists scroll properly
 - [ ] No overflow
 
 **Tablet (768px)**
+
 - [ ] Two-column layout (cards)
 - [ ] Proper spacing
 - [ ] Grid is 2 columns
 
 **Desktop (1200px)**
+
 - [ ] Three-column template grid
 - [ ] Sidebar width appropriate
 - [ ] Content readable
@@ -528,11 +543,12 @@ Use this checklist to verify Iteration 4 is working correctly.
 
 ## Sign-Off
 
-**Checklist completed by:** _________________  
-**Date:** _________________  
+**Checklist completed by:** ********\_********  
+**Date:** ********\_********  
 **Status:** ☐ PASS ☐ FAIL
 
 **Notes:**
+
 ```
 _________________________________________________________________
 
@@ -546,6 +562,7 @@ _________________________________________________________________
 ## Next Steps If Failed
 
 If any item fails:
+
 1. Document the issue
 2. Check relevant documentation
 3. Review code changes
@@ -564,6 +581,7 @@ If any item fails:
 ---
 
 See also:
+
 - [START_HERE.md](./START_HERE.md) – Quick start
 - [ARCHITECTURE.md](./ARCHITECTURE.md) – Design
 - [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) – API
