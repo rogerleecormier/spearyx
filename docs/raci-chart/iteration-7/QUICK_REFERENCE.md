@@ -19,6 +19,7 @@
 ## Encoding Module API
 
 ### File Location
+
 ```
 src/lib/raci/encoding.ts
 ```
@@ -30,15 +31,19 @@ src/lib/raci/encoding.ts
 Converts a RaciChart into a URL-safe base64 string.
 
 **Parameters:**
+
 - `chart: RaciChart` - The chart to encode
 
 **Returns:**
+
 - `string` - URL-safe base64 encoded payload
 
 **Throws:**
+
 - `EncodingError` - If chart is invalid or encoding fails
 
 **Example:**
+
 ```typescript
 import { encodeChart } from "@/lib/raci/encoding";
 
@@ -50,19 +55,19 @@ const chart = {
   timestamp: new Date().toISOString(),
   roles: [
     { id: "r1", name: "Product Manager", order: 0 },
-    { id: "r2", name: "Backend Dev", order: 1 }
+    { id: "r2", name: "Backend Dev", order: 1 },
   ],
   tasks: [
     { id: "t1", name: "Requirements", order: 0 },
-    { id: "t2", name: "Architecture", order: 1 }
+    { id: "t2", name: "Architecture", order: 1 },
   ],
   matrix: {
-    "r1": { "t1": "A", "t2": "C" },
-    "r2": { "t1": "C", "t2": "R" }
+    r1: { t1: "A", t2: "C" },
+    r2: { t1: "C", t2: "R" },
   },
   theme: "default",
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  updatedAt: new Date().toISOString(),
 };
 
 const encoded = encodeChart(chart);
@@ -76,15 +81,19 @@ const encoded = encodeChart(chart);
 Decodes a URL-safe base64 string back into a RaciChart.
 
 **Parameters:**
+
 - `encoded: string` - The encoded payload from a public link
 
 **Returns:**
+
 - `RaciChart` - The decoded and validated chart
 
 **Throws:**
+
 - `EncodingError` - If payload is invalid or corrupted
 
 **Example:**
+
 ```typescript
 import { decodeChart, EncodingError } from "@/lib/raci/encoding";
 
@@ -107,25 +116,27 @@ try {
 Generates a complete public URL for a chart.
 
 **Parameters:**
+
 - `chart: RaciChart` - The chart to share
 - `baseUrl?: string` - Optional base URL (defaults to window.location.origin)
 
 **Returns:**
+
 - `string` - Complete URL: `https://example.com/tools/raci-generator/import?data=...`
 
 **Example:**
+
 ```typescript
 import { generatePublicLink } from "@/lib/raci/encoding";
 
-const chart = { /* ... */ };
+const chart = {
+  /* ... */
+};
 const link = generatePublicLink(chart);
 // Result: "https://myapp.com/tools/raci-generator/import?data=eyJ..."
 
 // Custom base URL
-const customLink = generatePublicLink(
-  chart,
-  "https://staging.myapp.com"
-);
+const customLink = generatePublicLink(chart, "https://staging.myapp.com");
 // Result: "https://staging.myapp.com/tools/raci-generator/import?data=..."
 ```
 
@@ -136,15 +147,19 @@ const customLink = generatePublicLink(
 Extracts and decodes a chart from URL search parameters.
 
 **Parameters:**
+
 - `searchParams` - Either URLSearchParams object or plain object with query params
 
 **Returns:**
+
 - `RaciChart | null` - Decoded chart, or null if not found
 
 **Throws:**
+
 - `EncodingError` - If decoding fails
 
 **Example:**
+
 ```typescript
 import { decodeChartFromUrl } from "@/lib/raci/encoding";
 
@@ -167,18 +182,22 @@ if (chart) {
 Extracts metadata from an encoded payload without fully decoding.
 
 **Parameters:**
+
 - `encoded: string` - The encoded payload
 
 **Returns:**
+
 - Object with:
   - `version: "1.0.0"` - Chart version
   - `timestamp: string` - ISO 8601 timestamp
   - `compressed: boolean` - Whether data is compressed
 
 **Throws:**
+
 - `EncodingError` - If metadata extraction fails
 
 **Example:**
+
 ```typescript
 import { getPayloadMetadata } from "@/lib/raci/encoding";
 
@@ -197,17 +216,19 @@ console.log("Compressed:", meta.compressed);
 
 ```typescript
 class EncodingError extends Error {
-  code: "INVALID_CHART" 
-       | "ENCODE_FAILED" 
-       | "DECODE_FAILED" 
-       | "INVALID_PAYLOAD" 
-       | "CORRUPT_DATA" 
-       | "UNSUPPORTED_VERSION";
+  code:
+    | "INVALID_CHART"
+    | "ENCODE_FAILED"
+    | "DECODE_FAILED"
+    | "INVALID_PAYLOAD"
+    | "CORRUPT_DATA"
+    | "UNSUPPORTED_VERSION";
   message: string;
 }
 ```
 
 **Usage:**
+
 ```typescript
 try {
   const chart = decodeChart(encoded);
@@ -238,10 +259,10 @@ try {
 
 ```typescript
 interface EncodedPayload {
-  version: "1.0.0";      // Semantic version
-  timestamp: string;      // ISO 8601 UTC
-  compressed: boolean;    // Whether data is gzip compressed
-  data: string;          // Base64 encoded chart or gzip data
+  version: "1.0.0"; // Semantic version
+  timestamp: string; // ISO 8601 UTC
+  compressed: boolean; // Whether data is gzip compressed
+  data: string; // Base64 encoded chart or gzip data
 }
 ```
 
@@ -256,16 +277,17 @@ interface EncodedPayload {
 **URL:** `/tools/raci-generator/import?data=<encoded>`
 
 **Search Parameters:**
+
 - `data` (required) - URL-safe base64 encoded chart payload
 
 **Route Behavior:**
 
-| Scenario | Response | Navigation |
-| --- | --- | --- |
-| Valid chart | Stores in localStorage, shows notification | Redirects to `/tools/raci-generator` |
-| Invalid payload | Shows error modal with recovery options | Stays on page |
-| Corrupted data | Shows error, offers recovery from localStorage | Stays on page |
-| Missing `?data` | Shows error with help text | Stays on page |
+| Scenario        | Response                                       | Navigation                           |
+| --------------- | ---------------------------------------------- | ------------------------------------ |
+| Valid chart     | Stores in localStorage, shows notification     | Redirects to `/tools/raci-generator` |
+| Invalid payload | Shows error modal with recovery options        | Stays on page                        |
+| Corrupted data  | Shows error, offers recovery from localStorage | Stays on page                        |
+| Missing `?data` | Shows error with help text                     | Stays on page                        |
 
 **Error States:**
 
@@ -326,6 +348,7 @@ interface ExportButtonsProps {
 ```
 
 **Usage:**
+
 ```tsx
 <ExportButtons
   chart={currentChart}
@@ -360,6 +383,7 @@ const [importNotification, setImportNotification] = useState<{
 ```
 
 **Displayed Banner:**
+
 ```
 ℹ️ Imported: Mobile App RACI
    Loaded from public link • 11/11/2025 2:30 PM   [Dismiss]
@@ -372,6 +396,7 @@ const [importNotification, setImportNotification] = useState<{
 ### Error Codes & Messages
 
 #### INVALID_CHART
+
 ```
 Cause: Chart missing required fields
 User Message: "The chart data is invalid or incomplete."
@@ -379,6 +404,7 @@ Fix: Try generating the link again
 ```
 
 #### ENCODE_FAILED
+
 ```
 Cause: Serialization failed
 User Message: "Failed to process the chart data during preparation."
@@ -386,6 +412,7 @@ Fix: Check browser console, try again
 ```
 
 #### DECODE_FAILED
+
 ```
 Cause: Deserialization failed
 User Message: "Failed to decode the chart. The link may be corrupted or outdated."
@@ -393,6 +420,7 @@ Fix: Ask sender to regenerate the link
 ```
 
 #### INVALID_PAYLOAD
+
 ```
 Cause: Malformed base64/metadata
 User Message: "The link format is invalid. Please check the URL."
@@ -400,6 +428,7 @@ Fix: Copy link again from source
 ```
 
 #### CORRUPT_DATA
+
 ```
 Cause: Decompression or parsing failed
 User Message: "The chart data appears to be corrupted. The link may be incomplete."
@@ -407,6 +436,7 @@ Fix: Restore from last known state
 ```
 
 #### UNSUPPORTED_VERSION
+
 ```
 Cause: Version mismatch
 User Message: "This chart was created with an incompatible version."
@@ -477,16 +507,16 @@ import { generatePublicLink, encodeChart } from "@/lib/raci/encoding";
 // Generate link for external API
 async function shareChartViaAPI(chart: RaciChart) {
   const encoded = encodeChart(chart);
-  
+
   const response = await fetch("/api/share", {
     method: "POST",
     body: JSON.stringify({
       chartId: chart.id,
       encoded: encoded,
-      baseUrl: window.location.origin
-    })
+      baseUrl: window.location.origin,
+    }),
   });
-  
+
   const { shortUrl } = await response.json();
   return shortUrl;
 }
@@ -496,7 +526,9 @@ async function shareChartViaAPI(chart: RaciChart) {
 
 ```typescript
 // Generate link
-const chart = { /* ... */ };
+const chart = {
+  /* ... */
+};
 const link = generatePublicLink(chart, "https://example.com");
 
 // Extract encoded data
@@ -542,6 +574,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** URL is incomplete or corrupted
 
 **Solution:**
+
 1. Request sender regenerate link
 2. Copy full URL including query string
 3. Clear browser cache
@@ -554,6 +587,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** Data is corrupted or compressed incorrectly
 
 **Solution:**
+
 1. Check browser console for error details
 2. Restore from last known state
 3. Ask sender to export as file instead
@@ -566,6 +600,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** Chart is very large (>200 KB)
 
 **Solution:**
+
 1. Compression is automatic for large charts
 2. Try reducing number of tasks/roles
 3. Remove logo from chart
@@ -578,6 +613,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** Chart was created with different version
 
 **Solution:**
+
 1. Ensure app is updated
 2. Contact support with chart details
 3. Try exporting/re-importing from current version
@@ -589,6 +625,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** Notification was dismissed or localStorage cleared
 
 **Solution:**
+
 1. Check localStorage for "raci:importNotification"
 2. Manually create notification state
 3. Check browser dev tools for errors
@@ -600,6 +637,7 @@ console.assert(decoded.id === chart.id);
 **Cause:** Clipboard API not supported or denied
 
 **Solution:**
+
 1. Grant clipboard permission in browser
 2. Use incognito mode if in restricted mode
 3. Manual copy from browser address bar

@@ -162,7 +162,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
     try {
       setState((prev) => ({ ...prev, linkError: null }));
       const link = generatePublicLink(chart);
-      
+
       // Copy to clipboard
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(link);
@@ -175,9 +175,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
         document.execCommand("copy");
         document.body.removeChild(textarea);
       }
-      
+
       setState((prev) => ({ ...prev, linkCopied: true }));
-      
+
       // Reset copied state after 2 seconds
       setTimeout(() => {
         setState((prev) => ({ ...prev, linkCopied: false }));
@@ -185,14 +185,15 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
 
       onExportComplete?.("public-link");
     } catch (error) {
-      const errorMessage = error instanceof EncodingError
-        ? error.message
-        : error instanceof Error 
-        ? error.message
-        : "Failed to generate public link";
-      
+      const errorMessage =
+        error instanceof EncodingError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Failed to generate public link";
+
       setState((prev) => ({ ...prev, linkError: errorMessage }));
-      
+
       const err = error instanceof Error ? error : new Error(errorMessage);
       onExportError?.(err);
     }
@@ -353,7 +354,9 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
               <Body className="text-xs font-semibold text-red-900">
                 Link generation failed
               </Body>
-              <Caption className="text-red-700 text-xs">{state.linkError}</Caption>
+              <Caption className="text-red-700 text-xs">
+                {state.linkError}
+              </Caption>
             </div>
           </div>
         )}

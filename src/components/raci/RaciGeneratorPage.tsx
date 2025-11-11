@@ -100,7 +100,9 @@ export default function RaciGeneratorPage() {
             sessionStorage.removeItem("raci:importedChart");
 
             // Check for notification
-            const importNotifJson = sessionStorage.getItem("raci:importNotification");
+            const importNotifJson = sessionStorage.getItem(
+              "raci:importNotification"
+            );
             if (importNotifJson) {
               try {
                 const notif = JSON.parse(importNotifJson);
@@ -112,7 +114,10 @@ export default function RaciGeneratorPage() {
             }
             return;
           } catch (err) {
-            console.warn("Failed to parse imported chart from sessionStorage:", err);
+            console.warn(
+              "Failed to parse imported chart from sessionStorage:",
+              err
+            );
           }
         }
 
@@ -210,10 +215,14 @@ export default function RaciGeneratorPage() {
             <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-blue-900">
-                Imported: <span className="font-semibold">{importNotification.chartTitle}</span>
+                Imported:{" "}
+                <span className="font-semibold">
+                  {importNotification.chartTitle}
+                </span>
               </p>
               <p className="text-xs text-blue-700 mt-1">
-                Loaded from public link • {new Date(importNotification.timestamp).toLocaleString()}
+                Loaded from public link •{" "}
+                {new Date(importNotification.timestamp).toLocaleString()}
               </p>
             </div>
             <button

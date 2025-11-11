@@ -3,7 +3,7 @@
  * Handles importing charts from public links
  *
  * URL format: /tools/raci-generator/import?data=<encoded-payload>
- * 
+ *
  * This route:
  * 1. Decodes the chart data from the URL
  * 2. Temporarily stores it in sessionStorage (browser tab specific)
@@ -11,7 +11,11 @@
  * 4. Works across any browser/machine/device
  */
 
-import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useSearch,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { decodeChart, EncodingError } from "@/lib/raci/encoding";
 import { RaciChart } from "@/types/raci";
@@ -53,12 +57,10 @@ function RaciImportRoute() {
       if (error instanceof EncodingError) {
         const errorMessages: Record<string, string> = {
           INVALID_CHART: "The chart data is invalid or incomplete.",
-          ENCODE_FAILED:
-            "Failed to process the chart data during preparation.",
+          ENCODE_FAILED: "Failed to process the chart data during preparation.",
           DECODE_FAILED:
             "Failed to decode the chart. The link may be corrupted or outdated.",
-          INVALID_PAYLOAD:
-            "The link format is invalid. Please check the URL.",
+          INVALID_PAYLOAD: "The link format is invalid. Please check the URL.",
           CORRUPT_DATA:
             "The chart data appears to be corrupted. The link may be incomplete.",
           UNSUPPORTED_VERSION:
@@ -79,7 +81,10 @@ function RaciImportRoute() {
   useEffect(() => {
     if (importedChart) {
       // Use sessionStorage for tab-specific temporary storage
-      sessionStorage.setItem("raci:importedChart", JSON.stringify(importedChart));
+      sessionStorage.setItem(
+        "raci:importedChart",
+        JSON.stringify(importedChart)
+      );
       sessionStorage.setItem(
         "raci:importNotification",
         JSON.stringify({
@@ -134,9 +139,8 @@ function RaciImportRoute() {
 
               <button
                 onClick={() => {
-                  const lastGoodState = localStorage.getItem(
-                    "raci:lastGoodState"
-                  );
+                  const lastGoodState =
+                    localStorage.getItem("raci:lastGoodState");
                   if (lastGoodState) {
                     localStorage.setItem("raci:chart", lastGoodState);
                     navigate({ to: "/tools/raci-generator" });
@@ -204,4 +208,3 @@ function RaciImportRoute() {
     </div>
   );
 }
-

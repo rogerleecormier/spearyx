@@ -55,26 +55,23 @@ src/
 
 ```typescript
 // Main encoding function
-export function encodeChart(chart: RaciChart): string
+export function encodeChart(chart: RaciChart): string;
 
 // Main decoding function
-export function decodeChart(encoded: string): RaciChart
+export function decodeChart(encoded: string): RaciChart;
 
 // Generate shareable URL
-export function generatePublicLink(
-  chart: RaciChart, 
-  baseUrl?: string
-): string
+export function generatePublicLink(chart: RaciChart, baseUrl?: string): string;
 
 // Extract from URL search params
 export function decodeChartFromUrl(
   searchParams: URLSearchParams | Record<string, string>
-): RaciChart | null
+): RaciChart | null;
 
 // Get metadata without full decode
 export function getPayloadMetadata(
   encoded: string
-): Omit<EncodedPayload, "data">
+): Omit<EncodedPayload, "data">;
 ```
 
 #### Classes
@@ -82,8 +79,13 @@ export function getPayloadMetadata(
 ```typescript
 // Custom error class
 export class EncodingError extends Error {
-  code: "INVALID_CHART" | "ENCODE_FAILED" | "DECODE_FAILED" 
-        | "INVALID_PAYLOAD" | "CORRUPT_DATA" | "UNSUPPORTED_VERSION";
+  code:
+    | "INVALID_CHART"
+    | "ENCODE_FAILED"
+    | "DECODE_FAILED"
+    | "INVALID_PAYLOAD"
+    | "CORRUPT_DATA"
+    | "UNSUPPORTED_VERSION";
 }
 ```
 
@@ -102,18 +104,18 @@ export interface EncodedPayload {
 ### Internal Functions (Not Exported)
 
 ```typescript
-function validateChart(chart: unknown): asserts chart is RaciChart
+function validateChart(chart: unknown): asserts chart is RaciChart;
 
-function chartToJson(chart: RaciChart): string
+function chartToJson(chart: RaciChart): string;
 
-function jsonToChart(json: string): RaciChart
+function jsonToChart(json: string): RaciChart;
 ```
 
 ### Constants
 
 ```typescript
-const MAX_URL_LENGTH = 2000        // Browser safe URL limit
-const COMPRESSION_THRESHOLD = 50 * 1024  // 50KB - compress above this
+const MAX_URL_LENGTH = 2000; // Browser safe URL limit
+const COMPRESSION_THRESHOLD = 50 * 1024; // 50KB - compress above this
 ```
 
 ### Dependencies
@@ -132,11 +134,11 @@ import { Buffer } from "buffer";
 ### Usage Example
 
 ```typescript
-import { 
-  encodeChart, 
-  decodeChart, 
+import {
+  encodeChart,
+  decodeChart,
   generatePublicLink,
-  EncodingError 
+  EncodingError,
 } from "@/lib/raci/encoding";
 
 // Encode
@@ -165,8 +167,8 @@ try {
 export const Route = createFileRoute("/tools/raci-generator/import")({
   component: RaciImportRoute,
   staticData: {
-    title: "Import RACI Chart"
-  }
+    title: "Import RACI Chart",
+  },
 });
 ```
 
@@ -180,7 +182,7 @@ export const Route = createFileRoute("/tools/raci-generator/import")({
 
 ```typescript
 interface ImportSearch {
-  data?: string;  // URL-safe base64 encoded chart
+  data?: string; // URL-safe base64 encoded chart
 }
 ```
 
@@ -206,7 +208,11 @@ interface ImportSearch {
 ### Imports
 
 ```typescript
-import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useSearch,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { decodeChart, EncodingError } from "@/lib/raci/encoding";
 import { RaciChart } from "@/types/raci";
@@ -219,8 +225,8 @@ localStorage.setItem("raci:chart", JSON.stringify(chart));
 localStorage.setItem("raci:lastGoodState", JSON.stringify(chart));
 localStorage.setItem("raci:importNotification", JSON.stringify(notification));
 
-localStorage.getItem("raci:lastGoodState");  // For recovery
-localStorage.getItem("raci:chart");          // For loading
+localStorage.getItem("raci:lastGoodState"); // For recovery
+localStorage.getItem("raci:chart"); // For loading
 ```
 
 ### Navigation Flow
@@ -243,14 +249,11 @@ window.location.href = "/tools/raci-generator";
 #### Imports Added
 
 ```typescript
-import { 
-  Link2,     // Link icon
-  Check      // Check icon for success
+import {
+  Link2, // Link icon
+  Check, // Check icon for success
 } from "lucide-react";
-import { 
-  generatePublicLink, 
-  EncodingError 
-} from "@/lib/raci/encoding";
+import { generatePublicLink, EncodingError } from "@/lib/raci/encoding";
 ```
 
 #### State Extensions
@@ -258,8 +261,8 @@ import {
 ```typescript
 interface ExportState {
   // ... existing fields ...
-  linkCopied: boolean;    // NEW
-  linkError: string | null;  // NEW
+  linkCopied: boolean; // NEW
+  linkError: string | null; // NEW
 }
 ```
 
@@ -271,22 +274,22 @@ const handleCopyPublicLink = async () => {
   // Copy to clipboard (with fallback)
   // Show success state (2s timeout)
   // Handle errors
-}
+};
 ```
 
 #### New UI Section
 
 ```tsx
-{/* Public Link Section */}
+{
+  /* Public Link Section */
+}
 <div className="pt-3 border-t border-slate-200 mt-3">
   <button onClick={handleCopyPublicLink}>
     {state.linkCopied ? <Check /> : <Link2 />}
     {state.linkCopied ? "Link Copied!" : "Get Public Link"}
   </button>
-  {state.linkError && (
-    <div className="error-message">{state.linkError}</div>
-  )}
-</div>
+  {state.linkError && <div className="error-message">{state.linkError}</div>}
+</div>;
 ```
 
 ### RaciGeneratorPage: `src/components/raci/RaciGeneratorPage.tsx`
@@ -315,16 +318,16 @@ if (importNotifJson) {
 #### UI Added
 
 ```tsx
-{importNotification && (
-  <div className="bg-blue-50 border-b border-blue-200">
-    <Info className="..." />
-    <p>Imported: {importNotification.chartTitle}</p>
-    <p>Loaded from public link • {timestamp}</p>
-    <button onClick={() => setImportNotification(null)}>
-      Dismiss
-    </button>
-  </div>
-)}
+{
+  importNotification && (
+    <div className="bg-blue-50 border-b border-blue-200">
+      <Info className="..." />
+      <p>Imported: {importNotification.chartTitle}</p>
+      <p>Loaded from public link • {timestamp}</p>
+      <button onClick={() => setImportNotification(null)}>Dismiss</button>
+    </div>
+  );
+}
 ```
 
 ---
@@ -335,7 +338,7 @@ if (importNotifJson) {
 
 ```json
 {
-  "pako": "^2.0.0"                    // Gzip compression
+  "pako": "^2.0.0" // Gzip compression
 }
 ```
 
@@ -348,7 +351,11 @@ Note: `pako` is already in `package.json`, no new dependencies needed.
 import { RaciChart } from "@/types/raci";
 
 // From TanStack Router
-import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useSearch,
+  useNavigate,
+} from "@tanstack/react-router";
 
 // From React
 import React, { useEffect, useState } from "react";
@@ -574,7 +581,9 @@ console.log(localStorage.getItem("raci:importNotification"));
 ```javascript
 import { encodeChart, decodeChart } from "@/lib/raci/encoding";
 
-const chart = { /* ... */ };
+const chart = {
+  /* ... */
+};
 const encoded = encodeChart(chart);
 console.log("Encoded length:", encoded.length);
 console.log("Encoded (first 50):", encoded.substring(0, 50));
@@ -619,18 +628,21 @@ Total              ~13.5 KB (gzipped)
 ## 🚀 Performance Notes
 
 ### Encoding Performance
+
 - Small charts (<10 KB): ~2ms
 - Medium charts (50-100 KB): ~5-8ms
 - Large charts (>100 KB): ~10-15ms
 - Memory: O(n) where n = chart size
 
 ### Decoding Performance
+
 - Small charts: ~2ms
 - Medium charts: ~3-5ms
 - Large charts: ~5-10ms
 - Memory: O(n + decompressed)
 
 ### Compression Benefit
+
 - Charts >50 KB: ~40-60% size reduction
 - Most typical charts: 200-500 bytes encoded
 - Browser URL limit: ~2000-8000 chars (safe)

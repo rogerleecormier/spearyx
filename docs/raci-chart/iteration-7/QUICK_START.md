@@ -187,13 +187,13 @@ DECODE_FAILED             "Link may be corrupted"     → Get new link
 ```
 1. ✅ Restore Last Known State
    └─ Loads from localStorage["raci:lastGoodState"]
-   
+
 2. ✅ Create New Chart
    └─ Navigate to /tools/raci-generator
-   
+
 3. ✅ Go to Generator
    └─ Links to generator home
-   
+
 4. ⚠️ Debug Details
    └─ Shows error code and info for support
 ```
@@ -295,14 +295,14 @@ Total               ~13.5 KB        +1.6% of bundle
 
 ## 📱 Browser Support
 
-| Browser | Version | Status |
-| --- | --- | --- |
-| Chrome | 90+ | ✅ Full support |
-| Firefox | 88+ | ✅ Full support |
-| Safari | 14+ | ✅ Full support |
-| Edge | 90+ | ✅ Full support |
-| Mobile Chrome | Latest | ✅ Full support |
-| Mobile Safari | 14+ | ✅ Full support |
+| Browser       | Version | Status          |
+| ------------- | ------- | --------------- |
+| Chrome        | 90+     | ✅ Full support |
+| Firefox       | 88+     | ✅ Full support |
+| Safari        | 14+     | ✅ Full support |
+| Edge          | 90+     | ✅ Full support |
+| Mobile Chrome | Latest  | ✅ Full support |
+| Mobile Safari | 14+     | ✅ Full support |
 
 ---
 
@@ -420,23 +420,23 @@ Text: Dark blue (#1E3A8A)
 Time    Actor           Action
 ────────────────────────────────────────────────────
 0:00    Alice           Creates RACI chart
-        
+
 1:00    Alice           Clicks "Get Public Link"
-        
+
 1:05    System          ✅ Link copied to clipboard
-        
+
 1:10    Alice           Pastes link in Slack: "#raci-planning"
-        
+
 2:00    Bob             Clicks link from Slack
-        
+
 2:05    Browser         Loads import page
-        
+
 2:10    System          Validates chart
-        
+
 2:12    System          Shows notification: "Imported: Mobile App RACI"
-        
+
 2:15    Bob             Sees chart loaded in editor
-        
+
 2:20    Bob             Can now edit or export the chart
 ```
 
@@ -444,16 +444,16 @@ Time    Actor           Action
 
 ## 🏆 Success Criteria Met
 
-| Criterion | Status | Evidence |
-| --- | --- | --- |
-| Encoding implemented | ✅ | src/lib/raci/encoding.ts |
-| Public links work | ✅ | generatePublicLink() |
-| Import route works | ✅ | src/routes/tools/raci-generator/import.tsx |
-| Error recovery works | ✅ | localStorage fallback |
-| Notification shows | ✅ | Import banner in RaciGeneratorPage |
-| Documentation complete | ✅ | 7 doc files |
-| 0 TypeScript errors | ✅ | Verified by compiler |
-| Tests pass | ✅ | Manual verification |
+| Criterion              | Status | Evidence                                   |
+| ---------------------- | ------ | ------------------------------------------ |
+| Encoding implemented   | ✅     | src/lib/raci/encoding.ts                   |
+| Public links work      | ✅     | generatePublicLink()                       |
+| Import route works     | ✅     | src/routes/tools/raci-generator/import.tsx |
+| Error recovery works   | ✅     | localStorage fallback                      |
+| Notification shows     | ✅     | Import banner in RaciGeneratorPage         |
+| Documentation complete | ✅     | 7 doc files                                |
+| 0 TypeScript errors    | ✅     | Verified by compiler                       |
+| Tests pass             | ✅     | Manual verification                        |
 
 ---
 

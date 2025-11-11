@@ -78,10 +78,7 @@ const COMPRESSION_THRESHOLD = 50 * 1024;
  */
 function validateChart(chart: unknown): asserts chart is RaciChart {
   if (!chart || typeof chart !== "object") {
-    throw new EncodingError(
-      "INVALID_CHART",
-      "Chart must be a valid object"
-    );
+    throw new EncodingError("INVALID_CHART", "Chart must be a valid object");
   }
 
   const c = chart as Record<string, unknown>;
@@ -98,10 +95,7 @@ function validateChart(chart: unknown): asserts chart is RaciChart {
   }
 
   if (typeof c.title !== "string") {
-    throw new EncodingError(
-      "INVALID_CHART",
-      "Chart must have a title"
-    );
+    throw new EncodingError("INVALID_CHART", "Chart must have a title");
   }
 
   if (!Array.isArray(c.roles) || !Array.isArray(c.tasks)) {
@@ -112,10 +106,7 @@ function validateChart(chart: unknown): asserts chart is RaciChart {
   }
 
   if (typeof c.matrix !== "object" || c.matrix === null) {
-    throw new EncodingError(
-      "INVALID_CHART",
-      "Chart must have a matrix object"
-    );
+    throw new EncodingError("INVALID_CHART", "Chart must have a matrix object");
   }
 }
 
@@ -181,7 +172,10 @@ export function encodeChart(chart: RaciChart): string {
         compressed = true;
       } catch (error) {
         // If compression fails, fall back to uncompressed
-        console.warn("Compression failed, falling back to uncompressed:", error);
+        console.warn(
+          "Compression failed, falling back to uncompressed:",
+          error
+        );
         dataBuffer = jsonBytes;
         compressed = false;
       }
@@ -243,9 +237,7 @@ export function decodeChart(encoded: string): RaciChart {
     }
 
     // Reverse URL-safe encoding
-    let base64 = encoded
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
+    let base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
 
     // Add padding if needed
     const padding = encoded.length % 4;
@@ -344,7 +336,9 @@ export function generatePublicLink(
  * @returns The decoded chart or null if not found
  * @throws EncodingError if decoding fails
  */
-export function decodeChartFromUrl(searchParams: URLSearchParams | Record<string, string>): RaciChart | null {
+export function decodeChartFromUrl(
+  searchParams: URLSearchParams | Record<string, string>
+): RaciChart | null {
   let encoded: string | null = null;
 
   if (searchParams instanceof URLSearchParams) {
@@ -368,12 +362,12 @@ export function decodeChartFromUrl(searchParams: URLSearchParams | Record<string
  * @returns Payload metadata
  * @throws EncodingError if metadata extraction fails
  */
-export function getPayloadMetadata(encoded: string): Omit<EncodedPayload, "data"> {
+export function getPayloadMetadata(
+  encoded: string
+): Omit<EncodedPayload, "data"> {
   try {
     // Reverse URL-safe encoding
-    let base64 = encoded
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
+    let base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
 
     // Add padding if needed
     const padding = encoded.length % 4;

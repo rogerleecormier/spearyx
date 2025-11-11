@@ -41,11 +41,13 @@ Frontend Components:
 ### URL-Safe Encoding
 
 Standard base64 produces characters that aren't URL-safe:
+
 - `+` → `-` (plus to hyphen)
 - `/` → `_` (slash to underscore)
 - `=` → removed (padding unnecessary)
 
 Example:
+
 ```
 Standard: ABC+/= → URL-safe: ABC-_
 ```
@@ -54,10 +56,10 @@ Standard: ABC+/= → URL-safe: ABC-_
 
 ```typescript
 interface EncodedPayload {
-  version: "1.0.0";           // Semantic versioning
-  timestamp: string;           // ISO 8601 UTC (diagnostic)
-  compressed: boolean;         // Compression flag
-  data: string;               // Base64 encoded chart/gzip
+  version: "1.0.0"; // Semantic versioning
+  timestamp: string; // ISO 8601 UTC (diagnostic)
+  compressed: boolean; // Compression flag
+  data: string; // Base64 encoded chart/gzip
 }
 ```
 
@@ -67,21 +69,23 @@ interface EncodedPayload {
 
 ### When to Compress
 
-| Chart Size | Decision | Reasoning |
-| --- | --- | --- |
-| <50 KB | No compression | Overhead outweighs benefit |
-| 50-200 KB | Compress | ~40-60% reduction |
-| >200 KB | Compress required | Max URL ~2000 chars |
+| Chart Size | Decision          | Reasoning                  |
+| ---------- | ----------------- | -------------------------- |
+| <50 KB     | No compression    | Overhead outweighs benefit |
+| 50-200 KB  | Compress          | ~40-60% reduction          |
+| >200 KB    | Compress required | Max URL ~2000 chars        |
 
 ### Compression Algorithm: gzip via pako
 
 **Why pako?**
+
 - Pure JavaScript (no native binary needed)
 - Already in project dependencies
 - ~30KB gzipped
 - Excellent compression ratios (50-70%)
 
 **Trade-off:**
+
 - Decompression happens client-side
 - User doesn't need server support
 - Fallback to uncompressed if compression fails
@@ -122,6 +126,7 @@ Flow:
 ```
 
 **Error Handling:**
+
 - If compress fails → fallback to uncompressed
 - If serialize fails → EncodingError("ENCODE_FAILED")
 - If chart invalid → EncodingError("INVALID_CHART")
@@ -150,6 +155,7 @@ Flow:
 ```
 
 **Error Hierarchy:**
+
 ```
 EncodingError
 ├── INVALID_PAYLOAD: Format issues
@@ -205,12 +211,12 @@ validateDecodedChart(chart):
 
 ### Recovery Strategies
 
-| Error | User sees | Recovery offered | Storage check |
-| --- | --- | --- | --- |
-| Invalid payload | "Link format is invalid" | Create new | localStorage |
-| Corrupt data | "Chart data is corrupted" | Restore last state | localStorage |
-| Version mismatch | "Incompatible version" | Contact support | N/A |
-| Network error | "Failed to import" | Retry button | localStorage |
+| Error            | User sees                 | Recovery offered   | Storage check |
+| ---------------- | ------------------------- | ------------------ | ------------- |
+| Invalid payload  | "Link format is invalid"  | Create new         | localStorage  |
+| Corrupt data     | "Chart data is corrupted" | Restore last state | localStorage  |
+| Version mismatch | "Incompatible version"    | Contact support    | N/A           |
+| Network error    | "Failed to import"        | Retry button       | localStorage  |
 
 ### Last Known Good State
 
@@ -275,11 +281,11 @@ Route Structure:
 
 ### localStorage Keys
 
-| Key | Purpose | Data |
-| --- | --- | --- |
-| `raci:chart` | Current chart | Stringified RaciChart |
-| `raci:lastGoodState` | Recovery fallback | Stringified RaciChart |
-| `raci:importNotification` | Import feedback | { chartTitle, timestamp } |
+| Key                       | Purpose           | Data                      |
+| ------------------------- | ----------------- | ------------------------- |
+| `raci:chart`              | Current chart     | Stringified RaciChart     |
+| `raci:lastGoodState`      | Recovery fallback | Stringified RaciChart     |
+| `raci:importNotification` | Import feedback   | { chartTitle, timestamp } |
 
 ### Lifecycle
 
@@ -309,6 +315,7 @@ RaciGeneratorPage:
 Location: `ExportButtons.tsx` section "Share Chart"
 
 States:
+
 - **Default**: Link icon, "Get Public Link" text
 - **Loading**: Spinner (async copy)
 - **Success**: Check icon, "Link Copied!" text (2s timeout)
@@ -326,18 +333,21 @@ States:
 Location: Top of `RaciGeneratorPage`
 
 Displays:
+
 - Info icon (blue)
 - "Imported: [Chart Title]"
 - Timestamp: "Loaded from public link • [time]"
 - Dismiss button
 
 ```tsx
-{importNotification && (
-  <div className="bg-blue-50 border-b border-blue-200">
-    <Info /> Imported: {importNotification.chartTitle}
-    [Dismiss]
-  </div>
-)}
+{
+  importNotification && (
+    <div className="bg-blue-50 border-b border-blue-200">
+      <Info /> Imported: {importNotification.chartTitle}
+      [Dismiss]
+    </div>
+  );
+}
 ```
 
 ### Import Error Modal
@@ -345,6 +355,7 @@ Displays:
 Location: `import.tsx` route
 
 Displays:
+
 - ⚠️ Warning icon
 - Error title: "Import Failed"
 - Error message (user-friendly)
@@ -361,26 +372,31 @@ Displays:
 ### What's NOT Secure
 
 ❌ Links are **not password-protected**
+
 - Anyone with link can see chart
 - No authentication required
 - Assume links are public
 
 ❌ Links **don't expire**
+
 - Permanent until regenerated
 - No server-side deletion
 
 ❌ Data **isn't encrypted**
+
 - Base64 is encoding, not encryption
 - URL parameters are visible in browser history
 
 ### What IS Secure
 
 ✅ **No server processing**
+
 - All encoding/decoding client-side
 - No database storage of links
 - No tracking or logging
 
 ✅ **Validated input**
+
 - Charts must be valid structure
 - Version checking
 - Comprehensive error handling
@@ -471,12 +487,12 @@ Button: Get Public Link
 
 ### Required APIs
 
-| API | Support | Fallback |
-| --- | --- | --- |
-| URL/URLSearchParams | All modern | Manual parsing |
-| Clipboard API | Modern | textarea trick |
-| localStorage | All modern | SessionStorage |
-| Uint8Array/Buffer | All modern | Polyfill via vite |
+| API                 | Support    | Fallback          |
+| ------------------- | ---------- | ----------------- |
+| URL/URLSearchParams | All modern | Manual parsing    |
+| Clipboard API       | Modern     | textarea trick    |
+| localStorage        | All modern | SessionStorage    |
+| Uint8Array/Buffer   | All modern | Polyfill via vite |
 
 ### Tested Environments
 
@@ -519,11 +535,12 @@ Button: Get Public Link
 
 ```json
 {
-  "pako": "^2.0.0"  // gzip compression
+  "pako": "^2.0.0" // gzip compression
 }
 ```
 
 Already in project:
+
 - React 18+
 - TypeScript 5+
 - TanStack Router 1+

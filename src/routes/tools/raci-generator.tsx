@@ -1,7 +1,7 @@
 /**
  * RACI Generator Route
  * Server-rendered entry point with client boundary
- * 
+ *
  * Supports import via search params:
  * - /tools/raci-generator?importData=<encoded> - direct import
  */
@@ -28,4 +28,3 @@ export const Route = createFileRoute("/tools/raci-generator")({
 function RaciGeneratorPageRoute() {
   return <RaciGeneratorPage />;
 }
-
