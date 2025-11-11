@@ -321,50 +321,50 @@ export default function RaciMatrixEditor({
       {/* Matrix Container */}
       <div className="border border-border rounded-lg bg-card overflow-x-auto">
         <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-muted border-b border-border">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground min-w-[150px] border-r border-border bg-muted">
-                  Role / Task
-                </th>
-                {chart.tasks.map((task) => {
-                  const isValid = getTaskValidationStatus(task.id);
-                  return (
-                    <th
-                      key={task.id}
-                      className={`px-3 py-2 text-center text-xs font-semibold min-w-[90px] border-r border-border last:border-r-0 ${
-                        !isValid ? "bg-error-50 dark:bg-error-950" : ""
-                      }`}
-                    >
-                      <div className="break-words">
-                        <div className="font-medium text-foreground">
-                          {task.name}
-                        </div>
-                        {task.description && (
-                          <Caption className="text-muted-foreground mt-1">
-                            {task.description.substring(0, 30)}
-                            {task.description.length > 30 ? "..." : ""}
-                          </Caption>
-                        )}
-                        {!isValid && (
-                          <div className="text-xs text-error-600 dark:text-error-400 font-semibold mt-1">
-                            ⚠️ Missing A
-                          </div>
-                        )}
+          <thead>
+            <tr className="bg-muted border-b border-border">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-foreground min-w-[150px] border-r border-border bg-muted">
+                Role / Task
+              </th>
+              {chart.tasks.map((task) => {
+                const isValid = getTaskValidationStatus(task.id);
+                return (
+                  <th
+                    key={task.id}
+                    className={`px-3 py-2 text-center text-xs font-semibold min-w-[90px] border-r border-border last:border-r-0 ${
+                      !isValid ? "bg-error-50 dark:bg-error-950" : ""
+                    }`}
+                  >
+                    <div className="break-words">
+                      <div className="font-medium text-foreground">
+                        {task.name}
                       </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {chart.roles.map((role, roleIndex) => (
-                <tr
-                  key={role.id}
-                  className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-4 py-3 text-sm font-medium text-foreground border-r border-border bg-muted/50">
-                    {role.name}
-                  </td>
+                      {task.description && (
+                        <Caption className="text-muted-foreground mt-1">
+                          {task.description.substring(0, 30)}
+                          {task.description.length > 30 ? "..." : ""}
+                        </Caption>
+                      )}
+                      {!isValid && (
+                        <div className="text-xs text-error-600 dark:text-error-400 font-semibold mt-1">
+                          ⚠️ Missing A
+                        </div>
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {chart.roles.map((role, roleIndex) => (
+              <tr
+                key={role.id}
+                className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
+              >
+                <td className="px-4 py-3 text-sm font-medium text-foreground border-r border-border bg-muted/50">
+                  {role.name}
+                </td>
                 {chart.tasks.map((task, taskIndex) => {
                   const value = chart.matrix[role.id]?.[task.id] || null;
                   const isFocused =

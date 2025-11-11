@@ -18,7 +18,7 @@ import RaciHeaderBar from "./RaciHeaderBar";
 import RolesEditor from "./RolesEditor";
 import TasksEditor from "./TasksEditor";
 import ThemeSelector from "./ThemeSelector";
-import RaciPreview from "./RaciPreview";
+import PreviewModal from "./PreviewModal";
 import ExportButtons from "./ExportButtons";
 import ResetControls from "./ResetControls";
 import RaciMatrixEditor from "./RaciMatrixEditor";
@@ -40,7 +40,7 @@ export default function RaciGeneratorPage() {
   const search = useSearch({ strict: false }) as { importData?: string };
   const [isInitialized, setIsInitialized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [importNotification, setImportNotification] = useState<{
     chartTitle: string;
     timestamp: string;
@@ -323,6 +323,39 @@ export default function RaciGeneratorPage() {
                     </CardContent>
                   </Card>
 
+                  {/* Preview Card - New */}
+                  <Card className="border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-4 border-b border-red-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">👁️</span>
+                        <div>
+                          <Label className="text-red-700 font-semibold text-sm block">
+                            Live Preview
+                          </Label>
+                          <p className="text-xs text-red-600">
+                            See your matrix with theme
+                          </p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      {chart.roles.length > 0 && chart.tasks.length > 0 ? (
+                        <button
+                          onClick={() => setShowPreviewModal(true)}
+                          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                        >
+                          Open Preview
+                        </button>
+                      ) : (
+                        <div className="text-center py-2">
+                          <p className="text-xs text-red-600 font-medium">
+                            Add roles & tasks to preview
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   {/* Export Card - Enhanced Design */}
                   <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-4 border-b border-emerald-200">
@@ -528,33 +561,7 @@ export default function RaciGeneratorPage() {
               )}
             </div>
 
-            {/* Live Theme Preview Toggle */}
-            {chart.roles.length > 0 && chart.tasks.length > 0 && (
-              <div>
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="mb-4 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-                >
-                  {showPreview ? "🔍 Hide Preview" : "👁️ Show Live Preview"}
-                </button>
 
-                {showPreview && (
-                  <Card className="border-slate-200 shadow-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-black">
-                        Live Theme Preview
-                      </CardTitle>
-                      <Caption className="text-slate-600 mt-1">
-                        See how your matrix looks with the current theme
-                      </Caption>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <RaciPreview chart={chart} highContrast={highContrast} />
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
 
             {/* Tips Card */}
             <Card className="border-slate-200 bg-emerald-50 shadow-sm">
@@ -604,6 +611,12 @@ export default function RaciGeneratorPage() {
       </div>
 
       {/* Modals */}
+      <PreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        chart={chart}
+        highContrast={highContrast}
+      />
       <ErrorModal />
     </main>
   );

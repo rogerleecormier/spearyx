@@ -12,6 +12,7 @@ export { default as TasksEditor } from "./TasksEditor";
 export { default as RaciMatrixEditor } from "./RaciMatrixEditor";
 export { default as ThemeSelector } from "./ThemeSelector";
 export { default as RaciPreview } from "./RaciPreview";
+export { default as PreviewModal } from "./PreviewModal";
 export { default as HighContrastToggle } from "./HighContrastToggle";
 export { default as ExportButtons } from "./ExportButtons";
 export { default as ResetControls } from "./ResetControls";
