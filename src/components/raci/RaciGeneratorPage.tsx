@@ -561,8 +561,6 @@ export default function RaciGeneratorPage() {
               )}
             </div>
 
-
-
             {/* Tips Card */}
             <Card className="border-slate-200 bg-emerald-50 shadow-sm">
               <CardHeader>

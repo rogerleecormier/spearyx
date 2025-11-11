@@ -157,47 +157,18 @@ export function loadPresetMatrix(
 /**
  * Quick preset patterns for common RACI assignments
  * These generate matrix templates based on standard patterns
+ * 
+ * Following RACI best practices:
+ * - Exactly ONE Accountable (A) per task
+ * - Avoid "All Responsible" or "All Accountable" (creates confusion)
+ * - Avoid single bottleneck patterns (poor for distributed teams)
+ * - Focus on realistic technical project structures
  */
 export const QUICK_PRESETS = {
   /**
-   * All Responsible: All roles are Responsible
-   * Common for broad collaborative tasks
-   */
-  allResponsible: (
-    roleIds: string[],
-    taskIds: string[]
-  ): RaciChart["matrix"] => {
-    const matrix: RaciChart["matrix"] = {};
-    for (const roleId of roleIds) {
-      matrix[roleId] = {};
-      for (const taskId of taskIds) {
-        matrix[roleId][taskId] = "R";
-      }
-    }
-    return matrix;
-  },
-
-  /**
-   * All Accountable: All roles are Accountable
-   * Common for accountability tracking
-   */
-  allAccountable: (
-    roleIds: string[],
-    taskIds: string[]
-  ): RaciChart["matrix"] => {
-    const matrix: RaciChart["matrix"] = {};
-    for (const roleId of roleIds) {
-      matrix[roleId] = {};
-      for (const taskId of taskIds) {
-        matrix[roleId][taskId] = "A";
-      }
-    }
-    return matrix;
-  },
-
-  /**
    * One Accountable per Task: Rotate accountable role per task
-   * Ensures single accountable per task, others consulted/informed
+   * BEST PRACTICE: Ensures single accountable per task, others responsible/consulted
+   * Realistic for balanced team structures where accountability rotates by domain
    */
   oneAccountablePerTask: (
     roleIds: string[],
@@ -229,68 +200,9 @@ export const QUICK_PRESETS = {
   },
 
   /**
-   * CEO/Lead Accountable: First role (CEO/Lead) accountable, others responsible/consulted
-   * Classic hierarchical pattern
-   */
-  leaderAccountable: (
-    roleIds: string[],
-    taskIds: string[]
-  ): RaciChart["matrix"] => {
-    const matrix: RaciChart["matrix"] = {};
-
-    for (const roleId of roleIds) {
-      matrix[roleId] = {};
-    }
-
-    for (const taskId of taskIds) {
-      for (let i = 0; i < roleIds.length; i++) {
-        const roleId = roleIds[i];
-        if (i === 0) {
-          matrix[roleId][taskId] = "A";
-        } else if (i === 1) {
-          matrix[roleId][taskId] = "R";
-        } else {
-          matrix[roleId][taskId] = "C";
-        }
-      }
-    }
-
-    return matrix;
-  },
-
-  /**
-   * Distributed: Each role has one task as Accountable
-   * Distributes accountability across roles
-   */
-  distributed: (roleIds: string[], taskIds: string[]): RaciChart["matrix"] => {
-    const matrix: RaciChart["matrix"] = {};
-
-    for (const roleId of roleIds) {
-      matrix[roleId] = {};
-    }
-
-    for (let i = 0; i < taskIds.length; i++) {
-      const taskId = taskIds[i];
-      for (let j = 0; j < roleIds.length; j++) {
-        const roleId = roleIds[j];
-        const isAccountable = j === i % roleIds.length;
-
-        if (isAccountable) {
-          matrix[roleId][taskId] = "A";
-        } else if (j < roleIds.length - 1) {
-          matrix[roleId][taskId] = "R";
-        } else {
-          matrix[roleId][taskId] = "I";
-        }
-      }
-    }
-
-    return matrix;
-  },
-
-  /**
    * Execution Model: One R, one A, all others C or I
-   * Follows strict RACI principles
+   * BEST PRACTICE: Strict RACI implementation with clear ownership and support roles
+   * One executor, one decision-maker, others provide input or stay informed
    */
   executionModel: (
     roleIds: string[],
@@ -319,6 +231,84 @@ export const QUICK_PRESETS = {
 
     return matrix;
   },
+
+  /**
+   * Functional Team Model: Role-specific accountability by domain
+   * RECOMMENDED: First role (subject matter expert) responsible, second role (lead/manager) accountable
+   * Ideal for cross-functional teams where domain experts execute and leads approve
+   */
+  functionalTeamModel: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
+    const matrix: RaciChart["matrix"] = {};
+
+    if (roleIds.length < 2) {
+      // Fallback: Use executionModel if insufficient roles
+      return QUICK_PRESETS.executionModel(roleIds, taskIds);
+    }
+
+    for (const roleId of roleIds) {
+      matrix[roleId] = {};
+    }
+
+    for (const taskId of taskIds) {
+      for (let i = 0; i < roleIds.length; i++) {
+        const roleId = roleIds[i];
+        if (i === 0) {
+          // First role: Responsible (executes the work)
+          matrix[roleId][taskId] = "R";
+        } else if (i === 1) {
+          // Second role: Accountable (approves/owns outcome)
+          matrix[roleId][taskId] = "A";
+        } else {
+          // Others: Consulted for broader perspective
+          matrix[roleId][taskId] = "C";
+        }
+      }
+    }
+
+    return matrix;
+  },
+
+  /**
+   * Reviewer/Approval Model: Task owner executes, reviewer approves
+   * RECOMMENDED: Strong for code review, QA approval workflows in tech teams
+   * First role responsible, second role accountable with mandatory review, others informed of completion
+   */
+  reviewerApprovalModel: (
+    roleIds: string[],
+    taskIds: string[]
+  ): RaciChart["matrix"] => {
+    const matrix: RaciChart["matrix"] = {};
+
+    if (roleIds.length < 2) {
+      // Fallback: Use executionModel if insufficient roles
+      return QUICK_PRESETS.executionModel(roleIds, taskIds);
+    }
+
+    for (const roleId of roleIds) {
+      matrix[roleId] = {};
+    }
+
+    for (const taskId of taskIds) {
+      for (let i = 0; i < roleIds.length; i++) {
+        const roleId = roleIds[i];
+        if (i === 0) {
+          // First role: Responsible (implements/executes)
+          matrix[roleId][taskId] = "R";
+        } else if (i === 1) {
+          // Second role: Accountable (mandatory reviewer/approver)
+          matrix[roleId][taskId] = "A";
+        } else {
+          // Others: Informed of task completion
+          matrix[roleId][taskId] = "I";
+        }
+      }
+    }
+
+    return matrix;
+  },
 };
 
 /**
@@ -329,29 +319,21 @@ export function getQuickPresetInfo(presetKey: string): {
   description: string;
 } {
   const info: Record<string, { name: string; description: string }> = {
-    allResponsible: {
-      name: "All Responsible",
-      description: "All roles are responsible for all tasks",
-    },
-    allAccountable: {
-      name: "All Accountable",
-      description: "All roles are accountable for all tasks",
-    },
     oneAccountablePerTask: {
       name: "One Accountable per Task",
-      description: "Each task has exactly one accountable role",
-    },
-    leaderAccountable: {
-      name: "Leader Accountable",
-      description: "First role accountable, others responsible or consulted",
-    },
-    distributed: {
-      name: "Distributed Accountability",
-      description: "Accountability distributed across roles",
+      description: "Each task has exactly one accountable role, rotating accountability",
     },
     executionModel: {
       name: "Execution Model",
-      description: "One R, one A, others C or I per task",
+      description: "One executor, one decision-maker, others consulted or informed",
+    },
+    functionalTeamModel: {
+      name: "Functional Team Model",
+      description: "Domain expert responsible, team lead accountable, others consulted",
+    },
+    reviewerApprovalModel: {
+      name: "Reviewer/Approval Model",
+      description: "Task owner executes, reviewer approves, others informed",
     },
   };
 
