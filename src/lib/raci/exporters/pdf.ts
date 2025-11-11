@@ -65,7 +65,12 @@ function hexToRgb(hex: string): [number, number, number] {
     : [0, 0, 0];
 }
 
-function addTitleSection(doc: jsPDF, chart: RaciChart, theme: PdfTheme, yPos: number): number {
+function addTitleSection(
+  doc: jsPDF,
+  chart: RaciChart,
+  theme: PdfTheme,
+  yPos: number
+): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   let currentY = yPos;
@@ -85,7 +90,9 @@ function addTitleSection(doc: jsPDF, chart: RaciChart, theme: PdfTheme, yPos: nu
   doc.setTextColor(...hexToRgb(theme.colors.primary));
   doc.setFontSize(theme.fonts.title);
   doc.setFont("helvetica", "bold");
-  doc.text(chart.title, 15 + logoWidth, currentY + 5, { maxWidth: pageWidth - 30 - logoWidth });
+  doc.text(chart.title, 15 + logoWidth, currentY + 5, {
+    maxWidth: pageWidth - 30 - logoWidth,
+  });
 
   // Description
   currentY += 18;
@@ -102,19 +109,32 @@ function addTitleSection(doc: jsPDF, chart: RaciChart, theme: PdfTheme, yPos: nu
   doc.setTextColor(...hexToRgb(theme.colors.text));
   doc.setFontSize(theme.fonts.body - 1);
   doc.setFont("helvetica", "normal");
-  doc.text(`Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`, 15, currentY);
-  doc.text(`Created: ${new Date(chart.createdAt).toLocaleDateString()}`, 15, currentY + 6);
+  doc.text(
+    `Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`,
+    15,
+    currentY
+  );
+  doc.text(
+    `Created: ${new Date(chart.createdAt).toLocaleDateString()}`,
+    15,
+    currentY + 6
+  );
 
   return currentY + 12;
 }
 
-function addMatrix(doc: jsPDF, chart: RaciChart, theme: PdfTheme, startY: number): number {
+function addMatrix(
+  doc: jsPDF,
+  chart: RaciChart,
+  theme: PdfTheme,
+  startY: number
+): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
 
   // Build grid structure like PNG/XLSX - matching RaciPreview format
   const rows: Array<Array<string>> = [];
-  
+
   // Header row with roles
   const headerRow: Array<string> = ["Task"];
   for (const role of chart.roles) {
@@ -125,12 +145,12 @@ function addMatrix(doc: jsPDF, chart: RaciChart, theme: PdfTheme, startY: number
   // Data rows - one per task
   for (const task of chart.tasks) {
     const row: Array<string> = [task.name];
-    
+
     for (const role of chart.roles) {
       const value = chart.matrix[role.id]?.[task.id];
       row.push(value || "");
     }
-    
+
     rows.push(row);
   }
 
@@ -218,9 +238,14 @@ function addMatrix(doc: jsPDF, chart: RaciChart, theme: PdfTheme, startY: number
           // Draw text in white
           doc.setTextColor(255, 255, 255);
           doc.setFont("helvetica", "bold");
-          doc.text(value, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, {
-            align: "center",
-          });
+          doc.text(
+            value,
+            data.cell.x + data.cell.width / 2,
+            data.cell.y + data.cell.height / 2 + 1,
+            {
+              align: "center",
+            }
+          );
         }
       }
     },
@@ -251,16 +276,16 @@ function addLegend(doc: jsPDF, theme: PdfTheme, startY: number): number {
 
   for (const item of legendItems) {
     const rgb = hexToRgb(item.color);
-    
+
     // Color box
     doc.setFillColor(rgb[0], rgb[1], rgb[2]);
     doc.rect(margin, yPosition, 8, 8, "F");
-    
+
     // Label
     doc.setTextColor(...hexToRgb(theme.colors.text));
     doc.setFont("helvetica", "normal");
     doc.text(`${item.code} - ${item.label}`, margin + 12, yPosition + 2);
-    
+
     yPosition += 15;
   }
 
@@ -295,13 +320,16 @@ export async function exportToPdf(
   // Check if matrix will fit on current page
   const estimatedMatrixHeight = (chart.tasks.length + 2) * 8;
   const estimatedLegendHeight = 70;
-  
-  if (currentY + estimatedMatrixHeight + estimatedLegendHeight + 20 < pageHeight) {
+
+  if (
+    currentY + estimatedMatrixHeight + estimatedLegendHeight + 20 <
+    pageHeight
+  ) {
     // Everything fits on one page
     currentY += 5;
     currentY = addMatrix(doc, chart, theme, currentY);
     currentY += 10;
-    
+
     if (options.includeLogo !== false) {
       addLegend(doc, theme, currentY);
     }
@@ -309,7 +337,7 @@ export async function exportToPdf(
     // Matrix fits on first page, legend goes to second page
     currentY += 5;
     addMatrix(doc, chart, theme, currentY);
-    
+
     doc.addPage();
     if (options.includeLogo !== false) {
       addLegend(doc, theme, 15);
@@ -319,7 +347,7 @@ export async function exportToPdf(
     doc.addPage();
     let matrixY = addMatrix(doc, chart, theme, 15);
     matrixY += 10;
-    
+
     if (currentY + estimatedLegendHeight < pageHeight) {
       addLegend(doc, theme, matrixY);
     } else if (options.includeLogo !== false) {

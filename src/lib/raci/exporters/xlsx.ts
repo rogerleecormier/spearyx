@@ -55,26 +55,35 @@ function createMatrixSheet(
   // Title row - will share row with logo
   const titleRowNum = 1;
   sheet.addRow([chart.title]);
-  sheet.getRow(titleRowNum).font = { bold: true, size: 14, color: { argb: `FF${theme.colors.primary}` } };
-  sheet.getRow(titleRowNum).alignment = { horizontal: "left", vertical: "middle" };
-  sheet.mergeCells(`B${titleRowNum}:${String.fromCharCode(65 + chart.roles.length)}${titleRowNum}`);
+  sheet.getRow(titleRowNum).font = {
+    bold: true,
+    size: 14,
+    color: { argb: `FF${theme.colors.primary}` },
+  };
+  sheet.getRow(titleRowNum).alignment = {
+    horizontal: "left",
+    vertical: "middle",
+  };
+  sheet.mergeCells(
+    `B${titleRowNum}:${String.fromCharCode(65 + chart.roles.length)}${titleRowNum}`
+  );
   sheet.getRow(titleRowNum).height = 24;
 
   // Logo if available - placed in same row as title (column A)
   if (chart.logo) {
     try {
       // Convert base64 to buffer for exceljs
-      const base64Data = chart.logo.split(',')[1] || chart.logo;
-      const logoBuffer = Buffer.from(base64Data, 'base64') as any;
-      
+      const base64Data = chart.logo.split(",")[1] || chart.logo;
+      const logoBuffer = Buffer.from(base64Data, "base64") as any;
+
       const imageId = workbook.addImage({
         buffer: logoBuffer,
-        extension: 'png',
+        extension: "png",
       });
-      
+
       // Place logo in column A, same row as title
-      sheet.addImage(imageId, 'A1:A1');
-      sheet.getColumn('A').width = 5;
+      sheet.addImage(imageId, "A1:A1");
+      sheet.getColumn("A").width = 5;
     } catch (e) {
       console.error("Failed to add logo to XLSX:", e);
     }
@@ -84,9 +93,19 @@ function createMatrixSheet(
   let currentRow = 2;
   if (chart.description) {
     sheet.addRow([chart.description]);
-    sheet.getRow(currentRow).font = { size: 11, italic: true, color: { argb: `FF${theme.colors.text}` } };
-    sheet.getRow(currentRow).alignment = { horizontal: "left", vertical: "middle", wrapText: true };
-    sheet.mergeCells(`A${currentRow}:${String.fromCharCode(65 + chart.roles.length)}${currentRow}`);
+    sheet.getRow(currentRow).font = {
+      size: 11,
+      italic: true,
+      color: { argb: `FF${theme.colors.text}` },
+    };
+    sheet.getRow(currentRow).alignment = {
+      horizontal: "left",
+      vertical: "middle",
+      wrapText: true,
+    };
+    sheet.mergeCells(
+      `A${currentRow}:${String.fromCharCode(65 + chart.roles.length)}${currentRow}`
+    );
     sheet.getRow(currentRow).height = 18;
     currentRow = currentRow + 1;
   }
@@ -112,7 +131,10 @@ function createMatrixSheet(
       pattern: "solid",
       fgColor: { argb: `FF${theme.colors.primary}` },
     };
-    cell.alignment = { horizontal: i === 1 ? "left" : "center", vertical: "middle" };
+    cell.alignment = {
+      horizontal: i === 1 ? "left" : "center",
+      vertical: "middle",
+    };
     cell.border = {
       top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
       bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
@@ -140,7 +162,11 @@ function createMatrixSheet(
 
     // Style task name cell
     const taskCell = dataRow.getCell(1);
-    taskCell.font = { bold: true, size: 11, color: { argb: `FF${theme.colors.text}` } };
+    taskCell.font = {
+      bold: true,
+      size: 11,
+      color: { argb: `FF${theme.colors.text}` },
+    };
     taskCell.fill = {
       type: "pattern",
       pattern: "solid",
@@ -266,7 +292,11 @@ function createLegendSheet(workbook: Workbook, theme: XlsxTheme): Worksheet {
   return sheet;
 }
 
-function createMetadataSheet(workbook: Workbook, chart: RaciChart, theme: XlsxTheme): Worksheet {
+function createMetadataSheet(
+  workbook: Workbook,
+  chart: RaciChart,
+  theme: XlsxTheme
+): Worksheet {
   const sheet = workbook.addWorksheet("Metadata");
 
   // Title
@@ -298,12 +328,20 @@ function createMetadataSheet(workbook: Workbook, chart: RaciChart, theme: XlsxTh
     const valueCell = row.getCell(2);
 
     // Key cell - styled
-    keyCell.font = { bold: true, size: 11, color: { argb: `FF${theme.colors.primary}` } };
+    keyCell.font = {
+      bold: true,
+      size: 11,
+      color: { argb: `FF${theme.colors.primary}` },
+    };
     keyCell.alignment = { horizontal: "left", vertical: "top" };
 
     // Value cell
     valueCell.font = { size: 11, color: { argb: `FF${theme.colors.text}` } };
-    valueCell.alignment = { horizontal: "left", vertical: "top", wrapText: true };
+    valueCell.alignment = {
+      horizontal: "left",
+      vertical: "top",
+      wrapText: true,
+    };
 
     sheet.getRow(3 + i).height = 18;
   }

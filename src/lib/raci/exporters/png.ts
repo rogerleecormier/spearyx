@@ -142,7 +142,7 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   for (let rowIndex = 0; rowIndex < chart.tasks.length; rowIndex++) {
     const task = chart.tasks[rowIndex];
     const row = table.insertRow();
-    
+
     // Alternating row colors - matching RaciPreview
     const bgColor = rowIndex % 2 === 0 ? theme.colors.background : "#f9fafb";
     row.style.backgroundColor = bgColor;

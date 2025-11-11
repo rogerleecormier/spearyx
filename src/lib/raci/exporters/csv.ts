@@ -28,14 +28,20 @@ function generateCsvContent(
   if (options.includeMetadata !== false) {
     lines.push("CHART INFORMATION");
     lines.push(`Title${delimiter}${escapeCSV(chart.title)}`);
-    lines.push(`Description${delimiter}${escapeCSV(chart.description || "(No description)")}`);
+    lines.push(
+      `Description${delimiter}${escapeCSV(chart.description || "(No description)")}`
+    );
     if (chart.logo) {
       lines.push(`Logo${delimiter}[Included in export]`);
     }
     lines.push(`Total Roles${delimiter}${chart.roles.length}`);
     lines.push(`Total Tasks${delimiter}${chart.tasks.length}`);
-    lines.push(`Created${delimiter}${new Date(chart.createdAt).toLocaleDateString()}`);
-    lines.push(`Updated${delimiter}${new Date(chart.updatedAt).toLocaleDateString()}`);
+    lines.push(
+      `Created${delimiter}${new Date(chart.createdAt).toLocaleDateString()}`
+    );
+    lines.push(
+      `Updated${delimiter}${new Date(chart.updatedAt).toLocaleDateString()}`
+    );
     lines.push("");
   }
 

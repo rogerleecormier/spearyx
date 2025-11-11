@@ -95,15 +95,18 @@ function addTitleSlide(
   }
 
   // Metadata
-  slide.addText(`Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`, {
-    x: 0.5,
-    y: yPos,
-    w: 9,
-    h: 0.4,
-    fontSize: 14,
-    color: "#999999",
-    align: "left",
-  });
+  slide.addText(
+    `Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`,
+    {
+      x: 0.5,
+      y: yPos,
+      w: 9,
+      h: 0.4,
+      fontSize: 14,
+      color: "#999999",
+      align: "left",
+    }
+  );
 
   slide.addText(`Created: ${new Date(chart.createdAt).toLocaleDateString()}`, {
     x: 0.5,
@@ -155,7 +158,10 @@ function addMatrixSlide(
   // Data rows
   for (const task of chart.tasks) {
     const row: Array<{ text: string; options?: any }> = [
-      { text: task.name, options: { bold: true, color: theme.colors.text, fontSize: 10 } },
+      {
+        text: task.name,
+        options: { bold: true, color: theme.colors.text, fontSize: 10 },
+      },
     ];
 
     for (const role of chart.roles) {
@@ -366,7 +372,7 @@ function addBreakdownSlide(
     const statHeight = 0.5;
     for (let i = 0; i < stats.length; i++) {
       const stat = stats[i];
-      const xPos = 0.7 + (i * 2.1);
+      const xPos = 0.7 + i * 2.1;
 
       slide.addShape(prs.ShapeType.rect, {
         x: xPos,
