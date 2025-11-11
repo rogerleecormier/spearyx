@@ -34,14 +34,6 @@ interface PdfTheme {
   };
 }
 
-const RACI_LABELS: Record<string, string> = {
-  R: "Responsible",
-  A: "Accountable",
-  C: "Consulted",
-  I: "Informed",
-  null: "-",
-};
-
 function getPdfTheme(themeId?: string): PdfTheme {
   const baseTheme = getActiveTheme(themeId || "default");
   return {
@@ -73,76 +65,89 @@ function hexToRgb(hex: string): [number, number, number] {
     : [0, 0, 0];
 }
 
-function buildMatrixRows(chart: RaciChart): Array<Array<string>> {
-  const rows: Array<Array<string>> = [];
-  const roleIds = Object.keys(chart.matrix);
+function addTitleSection(doc: jsPDF, chart: RaciChart, theme: PdfTheme, yPos: number): number {
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-  for (const roleId of roleIds) {
-    const role = chart.roles.find((r: any) => r.id === roleId);
-    const roleName = role?.name || roleId;
+  let currentY = yPos;
+  let logoWidth = 0;
 
-    for (const taskId in chart.matrix[roleId]) {
-      const task = chart.tasks.find((t: any) => t.id === taskId);
-      const taskName = task?.name || taskId;
-      const value = chart.matrix[roleId][taskId];
-      const label = RACI_LABELS[value || "null"];
-
-      rows.push([taskName, roleName, label]);
+  // Logo if available - positioned to the left of title
+  if (chart.logo) {
+    try {
+      doc.addImage(chart.logo, "PNG", 15, currentY - 6, 15, 15);
+      logoWidth = 20; // Logo width + gap
+    } catch (e) {
+      console.error("Failed to add logo to PDF:", e);
     }
   }
 
-  return rows;
-}
-
-function addTitlePage(doc: jsPDF, chart: RaciChart, theme: PdfTheme): number {
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  const primaryRgb = hexToRgb(theme.colors.primary);
-  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
-  doc.rect(0, 0, pageWidth, 100, "F");
-
-  doc.setTextColor(255, 255, 255);
+  // Title - positioned to the right of logo at same height
+  doc.setTextColor(...hexToRgb(theme.colors.primary));
   doc.setFontSize(theme.fonts.title);
   doc.setFont("helvetica", "bold");
-  doc.text(chart.title, 20, 50, { maxWidth: pageWidth - 40 });
+  doc.text(chart.title, 15 + logoWidth, currentY + 5, { maxWidth: pageWidth - 30 - logoWidth });
 
+  // Description
+  currentY += 18;
+  if (chart.description) {
+    doc.setTextColor(...hexToRgb(theme.colors.text));
+    doc.setFontSize(theme.fonts.body);
+    doc.setFont("helvetica", "normal");
+    const descLines = doc.splitTextToSize(chart.description, pageWidth - 30);
+    doc.text(descLines, 15, currentY);
+    currentY += descLines.length * 5 + 5;
+  }
+
+  // Metadata
   doc.setTextColor(...hexToRgb(theme.colors.text));
-  doc.setFontSize(theme.fonts.body);
+  doc.setFontSize(theme.fonts.body - 1);
   doc.setFont("helvetica", "normal");
-  doc.text(`Roles: ${chart.roles.length}`, 20, 120);
-  doc.text(`Tasks: ${chart.tasks.length}`, 20, 135);
+  doc.text(`Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`, 15, currentY);
+  doc.text(`Created: ${new Date(chart.createdAt).toLocaleDateString()}`, 15, currentY + 6);
 
-  const description = chart.description || "RACI Chart";
-  doc.setFontSize(theme.fonts.caption);
-  doc.text(description, 20, 160, { maxWidth: pageWidth - 40 });
-
-  doc.addPage();
-  return 1;
+  return currentY + 12;
 }
 
-function addMatrixPage(doc: jsPDF, chart: RaciChart, theme: PdfTheme): void {
+function addMatrix(doc: jsPDF, chart: RaciChart, theme: PdfTheme, startY: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
 
-  doc.setTextColor(...hexToRgb(theme.colors.text));
-  doc.setFontSize(theme.fonts.heading);
-  doc.setFont("helvetica", "bold");
-  doc.text("RACI Matrix", margin, 20);
+  // Build grid structure like PNG/XLSX - matching RaciPreview format
+  const rows: Array<Array<string>> = [];
+  
+  // Header row with roles
+  const headerRow: Array<string> = ["Task"];
+  for (const role of chart.roles) {
+    headerRow.push(role.name);
+  }
+  rows.push(headerRow);
 
-  const rows = buildMatrixRows(chart);
-  const columns = ["Task", "Role", "Assignment"];
+  // Data rows - one per task
+  for (const task of chart.tasks) {
+    const row: Array<string> = [task.name];
+    
+    for (const role of chart.roles) {
+      const value = chart.matrix[role.id]?.[task.id];
+      row.push(value || "");
+    }
+    
+    rows.push(row);
+  }
+
+  const columns = rows[0];
+  const body = rows.slice(1);
 
   autoTable(doc, {
     head: [columns],
-    body: rows,
-    startY: 35,
+    body: body,
+    startY: startY,
     margin: margin,
     didDrawPage: (data: any) => {
       const pageSize = doc.internal.pageSize;
       const pageHeight = pageSize.getHeight();
 
       doc.setTextColor(128, 128, 128);
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       const pageCount = (doc as any).internal.pages.length - 1;
       doc.text(
         `Page ${data.pageNumber} of ${pageCount}`,
@@ -156,74 +161,110 @@ function addMatrixPage(doc: jsPDF, chart: RaciChart, theme: PdfTheme): void {
       textColor: [255, 255, 255],
       fontStyle: "bold",
       fontSize: theme.fonts.body,
+      cellPadding: 3,
+      lineColor: hexToRgb(theme.colors.border),
+      lineWidth: 0.5,
     },
     bodyStyles: {
       fontSize: theme.fonts.body - 1,
       textColor: hexToRgb(theme.colors.text),
+      cellPadding: 3,
+      lineColor: hexToRgb(theme.colors.border),
+      lineWidth: 0.5,
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245],
+      fillColor: [249, 250, 251],
+      lineColor: hexToRgb(theme.colors.border),
+      lineWidth: 0.5,
     },
     columnStyles: {
-      0: { halign: "left", cellWidth: 80 },
-      1: { halign: "left", cellWidth: 60 },
-      2: { halign: "center", cellWidth: 40 },
+      0: { halign: "left" },
     },
     didDrawCell: (data: any) => {
-      if (data.section === "body" && data.column.index === 2) {
-        const value = data.cell.text[0];
-        let cellColor = theme.colors.background;
+      // Color RACI cells (skip first column which is task name)
+      if (data.section === "body" && data.column.index > 0) {
+        const cellText = data.cell.text;
+        const value = Array.isArray(cellText) ? cellText[0] : cellText;
 
-        switch (value) {
-          case "Responsible":
-            cellColor = theme.colors.raci.r;
-            break;
-          case "Accountable":
-            cellColor = theme.colors.raci.a;
-            break;
-          case "Consulted":
-            cellColor = theme.colors.raci.c;
-            break;
-          case "Informed":
-            cellColor = theme.colors.raci.i;
-            break;
+        let fillColor: [number, number, number] | null = null;
+
+        if (value === "R") {
+          fillColor = hexToRgb(theme.colors.raci.r);
+        } else if (value === "A") {
+          fillColor = hexToRgb(theme.colors.raci.a);
+        } else if (value === "C") {
+          fillColor = hexToRgb(theme.colors.raci.c);
+        } else if (value === "I") {
+          fillColor = hexToRgb(theme.colors.raci.i);
         }
 
-        const rgb = hexToRgb(cellColor);
-        data.cell.fillColor = rgb;
+        if (fillColor) {
+          // Draw background rectangle with RACI color
+          doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+          doc.rect(
+            data.cell.x,
+            data.cell.y,
+            data.cell.width,
+            data.cell.height,
+            "F"
+          );
+
+          // Draw border
+          const borderColor = hexToRgb(theme.colors.border);
+          doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+          doc.setLineWidth(0.5);
+          doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height);
+
+          // Draw text in white
+          doc.setTextColor(255, 255, 255);
+          doc.setFont("helvetica", "bold");
+          doc.text(value, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, {
+            align: "center",
+          });
+        }
       }
     },
   });
+
+  // Get final Y position from autoTable
+  const finalY = (doc as any).lastAutoTable?.finalY ?? startY + 50;
+  return finalY;
 }
 
-function addLegendPage(doc: jsPDF, theme: PdfTheme): void {
-  const margin = 20;
+function addLegend(doc: jsPDF, theme: PdfTheme, startY: number): number {
+  const margin = 15;
 
-  doc.addPage();
-  doc.setTextColor(...hexToRgb(theme.colors.text));
+  doc.setTextColor(...hexToRgb(theme.colors.primary));
   doc.setFontSize(theme.fonts.heading);
   doc.setFont("helvetica", "bold");
-  doc.text("RACI Legend", margin, 20);
+  doc.text("RACI Legend", margin, startY);
 
   const legendItems = [
-    { label: "R - Responsible", color: theme.colors.raci.r },
-    { label: "A - Accountable", color: theme.colors.raci.a },
-    { label: "C - Consulted", color: theme.colors.raci.c },
-    { label: "I - Informed", color: theme.colors.raci.i },
+    { code: "R", label: "Responsible", color: theme.colors.raci.r },
+    { code: "A", label: "Accountable", color: theme.colors.raci.a },
+    { code: "C", label: "Consulted", color: theme.colors.raci.c },
+    { code: "I", label: "Informed", color: theme.colors.raci.i },
   ];
 
-  let yPosition = 40;
+  let yPosition = startY + 10;
   doc.setFontSize(theme.fonts.body);
-  doc.setFont("helvetica", "normal");
 
   for (const item of legendItems) {
     const rgb = hexToRgb(item.color);
+    
+    // Color box
     doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-    doc.rect(margin, yPosition - 3, 10, 10, "F");
+    doc.rect(margin, yPosition, 8, 8, "F");
+    
+    // Label
     doc.setTextColor(...hexToRgb(theme.colors.text));
-    doc.text(item.label, margin + 15, yPosition + 2);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${item.code} - ${item.label}`, margin + 12, yPosition + 2);
+    
     yPosition += 15;
   }
+
+  return yPosition;
 }
 
 export async function exportToPdf(
@@ -244,11 +285,47 @@ export async function exportToPdf(
     format: pageSize,
   });
 
-  addTitlePage(doc, chart, theme);
-  addMatrixPage(doc, chart, theme);
+  // Calculate page height
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let currentY = 15;
 
-  if (options.includeLogo !== false) {
-    addLegendPage(doc, theme);
+  // Add title section
+  currentY = addTitleSection(doc, chart, theme, currentY);
+
+  // Check if matrix will fit on current page
+  const estimatedMatrixHeight = (chart.tasks.length + 2) * 8;
+  const estimatedLegendHeight = 70;
+  
+  if (currentY + estimatedMatrixHeight + estimatedLegendHeight + 20 < pageHeight) {
+    // Everything fits on one page
+    currentY += 5;
+    currentY = addMatrix(doc, chart, theme, currentY);
+    currentY += 10;
+    
+    if (options.includeLogo !== false) {
+      addLegend(doc, theme, currentY);
+    }
+  } else if (currentY + estimatedMatrixHeight + 20 < pageHeight) {
+    // Matrix fits on first page, legend goes to second page
+    currentY += 5;
+    addMatrix(doc, chart, theme, currentY);
+    
+    doc.addPage();
+    if (options.includeLogo !== false) {
+      addLegend(doc, theme, 15);
+    }
+  } else {
+    // Matrix doesn't fit on first page, both go to second page
+    doc.addPage();
+    let matrixY = addMatrix(doc, chart, theme, 15);
+    matrixY += 10;
+    
+    if (currentY + estimatedLegendHeight < pageHeight) {
+      addLegend(doc, theme, matrixY);
+    } else if (options.includeLogo !== false) {
+      doc.addPage();
+      addLegend(doc, theme, 15);
+    }
   }
 
   const pdfBlob = doc.output("blob");

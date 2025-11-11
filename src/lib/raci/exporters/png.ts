@@ -49,36 +49,65 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
     max-width: 1200px;
   `;
 
+  // Logo and title header
+  const headerWrapper = document.createElement("div");
+  headerWrapper.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  `;
+
+  // Logo if available
+  if (chart.logo) {
+    const logo = document.createElement("img");
+    logo.src = chart.logo;
+    logo.style.cssText = `
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    `;
+    headerWrapper.appendChild(logo);
+  }
+
   // Title
   const title = document.createElement("h1");
   title.textContent = chart.title;
   title.style.cssText = `
     color: ${theme.colors.primary};
-    margin: 0 0 10px 0;
-    font-size: 28px;
+    margin: 0;
+    font-size: 24px;
     font-weight: 700;
+    flex: 1;
   `;
-  container.appendChild(title);
+  headerWrapper.appendChild(title);
+  container.appendChild(headerWrapper);
 
   // Description
   if (chart.description) {
     const desc = document.createElement("p");
     desc.textContent = chart.description;
     desc.style.cssText = `
-      color: #666;
-      margin: 0 0 30px 0;
-      font-size: 14px;
+      color: ${theme.colors.text};
+      margin: 0 0 24px 0;
+      font-size: 13px;
+      opacity: 0.7;
     `;
     container.appendChild(desc);
+  } else {
+    // Add spacing if no description
+    const spacing = document.createElement("div");
+    spacing.style.cssText = "margin-bottom: 16px;";
+    container.appendChild(spacing);
   }
 
-  // Matrix table
+  // Matrix table - matching RaciPreview design
   const table = document.createElement("table");
   table.style.cssText = `
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid ${theme.colors.border};
-    margin-bottom: 30px;
+    margin-bottom: 24px;
+    font-size: 13px;
   `;
 
   // Header row
@@ -88,60 +117,60 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
   const headerCell = headerRow.insertCell();
   headerCell.textContent = "Task";
   headerCell.style.cssText = `
-    padding: 12px;
+    padding: 8px 12px;
     color: white;
-    font-weight: 700;
+    font-weight: 600;
     text-align: left;
     border: 1px solid ${theme.colors.border};
+    font-size: 13px;
   `;
 
   for (const role of chart.roles) {
     const cell = headerRow.insertCell();
     cell.textContent = role.name;
     cell.style.cssText = `
-      padding: 12px;
+      padding: 8px 12px;
       color: white;
-      font-weight: 700;
+      font-weight: 600;
       text-align: center;
       border: 1px solid ${theme.colors.border};
+      font-size: 12px;
     `;
   }
 
   // Data rows
-  for (const task of chart.tasks) {
+  for (let rowIndex = 0; rowIndex < chart.tasks.length; rowIndex++) {
+    const task = chart.tasks[rowIndex];
     const row = table.insertRow();
-    row.style.backgroundColor =
-      table.rows.length % 2 === 0 ? "#f9fafb" : theme.colors.background;
+    
+    // Alternating row colors - matching RaciPreview
+    const bgColor = rowIndex % 2 === 0 ? theme.colors.background : "#f9fafb";
+    row.style.backgroundColor = bgColor;
 
     const taskCell = row.insertCell();
     taskCell.textContent = task.name;
     taskCell.style.cssText = `
-      padding: 12px;
+      padding: 8px 12px;
       color: ${theme.colors.text};
       font-weight: 500;
       border: 1px solid ${theme.colors.border};
+      text-align: left;
+      font-size: 13px;
     `;
 
     for (const role of chart.roles) {
       const value = chart.matrix[role.id]?.[task.id];
-      const label = value
-        ? value === "R"
-          ? "R"
-          : value === "A"
-            ? "A"
-            : value === "C"
-              ? "C"
-              : "I"
-        : "";
+      const label = value || "";
 
       const cell = row.insertCell();
       cell.textContent = label;
       cell.style.cssText = `
-        padding: 12px;
+        padding: 8px 12px;
         text-align: center;
         font-weight: 600;
         border: 1px solid ${theme.colors.border};
         color: white;
+        font-size: 13px;
       `;
 
       if (value) {
@@ -153,28 +182,30 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
         };
         cell.style.backgroundColor = colorMap[value];
       } else {
-        cell.style.backgroundColor = theme.colors.background;
+        cell.style.backgroundColor = bgColor;
         cell.style.color = theme.colors.text;
+        cell.style.fontWeight = "400";
       }
     }
   }
 
   container.appendChild(table);
 
-  // Legend
+  // Legend - 4 column layout matching RaciPreview
   const legend = document.createElement("div");
   legend.style.cssText = `
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 20px;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid ${theme.colors.border};
   `;
 
   const legendItems = [
-    { label: "R - Responsible", color: theme.colors.raci.r },
-    { label: "A - Accountable", color: theme.colors.raci.a },
-    { label: "C - Consulted", color: theme.colors.raci.c },
-    { label: "I - Informed", color: theme.colors.raci.i },
+    { code: "R", color: theme.colors.raci.r },
+    { code: "A", color: theme.colors.raci.a },
+    { code: "C", color: theme.colors.raci.c },
+    { code: "I", color: theme.colors.raci.i },
   ];
 
   for (const item of legendItems) {
@@ -182,21 +213,22 @@ function createMatrixHtml(chart: RaciChart, theme: PngTheme): HTMLElement {
     legendItem.style.cssText = `
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     `;
 
     const colorBox = document.createElement("div");
     colorBox.style.cssText = `
-      width: 24px;
-      height: 24px;
+      width: 12px;
+      height: 12px;
       background-color: ${item.color};
-      border-radius: 4px;
+      border-radius: 2px;
     `;
 
     const label = document.createElement("span");
-    label.textContent = item.label;
+    label.textContent = item.code;
     label.style.cssText = `
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 600;
       color: ${theme.colors.text};
     `;
 

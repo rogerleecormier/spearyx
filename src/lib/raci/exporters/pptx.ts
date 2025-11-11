@@ -46,44 +46,72 @@ function addTitleSlide(
   theme: PptxTheme
 ): void {
   const slide = prs.addSlide();
+  slide.background = { color: "ffffff" };
 
-  // Background
-  slide.background = { color: theme.colors.primary };
+  let xPos = 0.5;
 
-  // Title
+  // Logo if available - placed inline with title
+  if (chart.logo) {
+    try {
+      slide.addImage({
+        data: chart.logo,
+        x: xPos,
+        y: 1,
+        w: 0.8,
+        h: 0.8,
+      });
+      xPos += 1;
+    } catch (e) {
+      console.error("Failed to add logo to PPTX:", e);
+    }
+  }
+
+  // Title with primary color - positioned to right of logo
   slide.addText(chart.title, {
-    x: 0.5,
-    y: 2.5,
-    w: 9,
-    h: 1.5,
-    fontSize: 54,
+    x: xPos,
+    y: 1,
+    w: 9 - xPos,
+    h: 0.8,
+    fontSize: 44,
     bold: true,
-    color: "ffffff",
+    color: theme.colors.primary,
     align: "left",
+    valign: "middle",
   });
 
   // Description
+  let yPos = 2;
   if (chart.description) {
     slide.addText(chart.description, {
       x: 0.5,
-      y: 4.2,
+      y: yPos,
       w: 9,
-      h: 1,
-      fontSize: 24,
-      color: "f0f0f0",
+      h: 0.8,
+      fontSize: 18,
+      color: theme.colors.text,
       align: "left",
     });
+    yPos += 1;
   }
 
-  // Footer stats
-  const stats = `${chart.roles.length} Roles  •  ${chart.tasks.length} Tasks`;
-  slide.addText(stats, {
+  // Metadata
+  slide.addText(`Roles: ${chart.roles.length}  •  Tasks: ${chart.tasks.length}`, {
     x: 0.5,
-    y: 5.8,
+    y: yPos,
     w: 9,
-    h: 0.5,
-    fontSize: 16,
-    color: "e0e0e0",
+    h: 0.4,
+    fontSize: 14,
+    color: "#999999",
+    align: "left",
+  });
+
+  slide.addText(`Created: ${new Date(chart.createdAt).toLocaleDateString()}`, {
+    x: 0.5,
+    y: yPos + 0.5,
+    w: 9,
+    h: 0.4,
+    fontSize: 12,
+    color: "#999999",
     align: "left",
   });
 }
@@ -94,8 +122,9 @@ function addMatrixSlide(
   theme: PptxTheme
 ): void {
   const slide = prs.addSlide();
+  slide.background = { color: "ffffff" };
 
-  // Title
+  // Title with primary color
   slide.addText("RACI Matrix", {
     x: 0.5,
     y: 0.5,
@@ -111,13 +140,13 @@ function addMatrixSlide(
 
   // Header row
   const headerRow: Array<{ text: string; options?: any }> = [
-    { text: "Task", options: { bold: true, color: "ffffff" } },
+    { text: "Task", options: { bold: true, color: "ffffff", fontSize: 10 } },
   ];
 
   for (const role of chart.roles) {
     headerRow.push({
       text: role.name,
-      options: { bold: true, color: "ffffff" },
+      options: { bold: true, color: "ffffff", fontSize: 9 },
     });
   }
 
@@ -125,21 +154,14 @@ function addMatrixSlide(
 
   // Data rows
   for (const task of chart.tasks) {
-    const row: Array<{ text: string; options?: any }> = [{ text: task.name }];
+    const row: Array<{ text: string; options?: any }> = [
+      { text: task.name, options: { bold: true, color: theme.colors.text, fontSize: 10 } },
+    ];
 
     for (const role of chart.roles) {
       const value = chart.matrix[role.id]?.[task.id];
-      const label = value
-        ? value === "R"
-          ? "Responsible"
-          : value === "A"
-            ? "Accountable"
-            : value === "C"
-              ? "Consulted"
-              : "Informed"
-        : "";
 
-      const cellOptions: any = { align: "center" };
+      const cellOptions: any = { align: "center", fontSize: 10 };
 
       if (value) {
         const colorMap: Record<string, string> = {
@@ -151,9 +173,11 @@ function addMatrixSlide(
         cellOptions.fill = { color: colorMap[value] };
         cellOptions.color = "ffffff";
         cellOptions.bold = true;
+      } else {
+        cellOptions.color = theme.colors.text;
       }
 
-      row.push({ text: label, options: cellOptions });
+      row.push({ text: value || "", options: cellOptions });
     }
 
     tableData.push(row);
@@ -164,20 +188,21 @@ function addMatrixSlide(
     x: 0.5,
     y: 1.2,
     w: 9,
-    h: 4.5,
+    h: 5.2,
     colW: [2.5, 1.25],
-    border: { pt: 1, color: theme.colors.border },
+    border: { pt: 0.5, color: theme.colors.border },
     fill: { color: theme.colors.background },
     color: theme.colors.text,
-    fontSize: 11,
+    fontSize: 10,
     rowH: [0.35],
   });
 }
 
 function addLegendSlide(prs: PptxGenJS, theme: PptxTheme): void {
   const slide = prs.addSlide();
+  slide.background = { color: "ffffff" };
 
-  // Title
+  // Title with primary color
   slide.addText("RACI Legend", {
     x: 0.5,
     y: 0.5,
@@ -189,37 +214,62 @@ function addLegendSlide(prs: PptxGenJS, theme: PptxTheme): void {
   });
 
   const legendItems = [
-    { label: "R - Responsible", color: theme.colors.raci.r },
-    { label: "A - Accountable", color: theme.colors.raci.a },
-    { label: "C - Consulted", color: theme.colors.raci.c },
-    { label: "I - Informed", color: theme.colors.raci.i },
+    { code: "R", label: "Responsible", color: theme.colors.raci.r },
+    { code: "A", label: "Accountable", color: theme.colors.raci.a },
+    { code: "C", label: "Consulted", color: theme.colors.raci.c },
+    { code: "I", label: "Informed", color: theme.colors.raci.i },
   ];
 
-  let yPosition = 1.5;
-  for (const item of legendItems) {
-    // Color box
+  // 4 column layout like RaciPreview
+  const colWidth = 2.1;
+  const colHeight = 1.2;
+  let xPos = 0.5;
+  let yPos = 1.3;
+
+  for (let i = 0; i < legendItems.length; i++) {
+    const item = legendItems[i];
+
+    // Color box with code
     slide.addShape(prs.ShapeType.rect, {
-      x: 1,
-      y: yPosition,
+      x: xPos,
+      y: yPos,
       w: 0.4,
       h: 0.4,
       fill: { color: item.color },
-      line: { color: theme.colors.border },
+      line: { type: "none" },
     });
 
-    // Label
-    slide.addText(item.label, {
-      x: 1.7,
-      y: yPosition,
-      w: 7,
+    // Code text
+    slide.addText(item.code, {
+      x: xPos,
+      y: yPos,
+      w: 0.4,
       h: 0.4,
-      fontSize: 18,
+      fontSize: 16,
+      bold: true,
+      color: "ffffff",
+      align: "center",
+      valign: "middle",
+    });
+
+    // Label text
+    slide.addText(item.label, {
+      x: xPos + 0.5,
+      y: yPos,
+      w: colWidth - 0.5,
+      h: 0.4,
+      fontSize: 12,
+      bold: true,
       color: theme.colors.text,
       align: "left",
       valign: "middle",
     });
 
-    yPosition += 0.8;
+    xPos += colWidth;
+    if ((i + 1) % 4 === 0) {
+      xPos = 0.5;
+      yPos += colHeight;
+    }
   }
 }
 
@@ -230,10 +280,13 @@ function addBreakdownSlide(
 ): void {
   const slide = prs.addSlide();
 
-  // Title
+  // White background
+  slide.background = { color: "ffffff" };
+
+  // Title with primary color
   slide.addText("Role Assignments", {
     x: 0.5,
-    y: 0.5,
+    y: 0.3,
     w: 9,
     h: 0.5,
     fontSize: 32,
@@ -241,21 +294,41 @@ function addBreakdownSlide(
     color: theme.colors.primary,
   });
 
+  // Subtitle line
+  slide.addShape(prs.ShapeType.rect, {
+    x: 0.5,
+    y: 0.85,
+    w: 1.3,
+    h: 0.05,
+    fill: { color: theme.colors.primary },
+    line: { type: "none" },
+  });
+
   let yPosition = 1.3;
 
   for (const role of chart.roles) {
-    // Role name
-    slide.addText(role.name, {
+    // Role name with background
+    slide.addShape(prs.ShapeType.rect, {
       x: 0.5,
       y: yPosition,
       w: 9,
       h: 0.35,
-      fontSize: 16,
-      bold: true,
-      color: theme.colors.primary,
+      fill: { color: theme.colors.primary },
+      line: { type: "none" },
     });
 
-    yPosition += 0.4;
+    slide.addText(role.name, {
+      x: 0.7,
+      y: yPosition,
+      w: 8.6,
+      h: 0.35,
+      fontSize: 16,
+      bold: true,
+      color: "ffffff",
+      valign: "middle",
+    });
+
+    yPosition += 0.45;
 
     // Count each RACI value for this role
     let responsible = 0,
@@ -281,17 +354,43 @@ function addBreakdownSlide(
       }
     }
 
-    const stats = `R: ${responsible}  •  A: ${accountable}  •  C: ${consulted}  •  I: ${informed}`;
-    slide.addText(stats, {
-      x: 1,
-      y: yPosition,
-      w: 8,
-      h: 0.3,
-      fontSize: 12,
-      color: "#666666",
-    });
+    // Stats row with colors
+    const stats = [
+      { label: `R: ${responsible}`, color: theme.colors.raci.r },
+      { label: `A: ${accountable}`, color: theme.colors.raci.a },
+      { label: `C: ${consulted}`, color: theme.colors.raci.c },
+      { label: `I: ${informed}`, color: theme.colors.raci.i },
+    ];
 
-    yPosition += 0.6;
+    const statWidth = 2;
+    const statHeight = 0.5;
+    for (let i = 0; i < stats.length; i++) {
+      const stat = stats[i];
+      const xPos = 0.7 + (i * 2.1);
+
+      slide.addShape(prs.ShapeType.rect, {
+        x: xPos,
+        y: yPosition,
+        w: statWidth,
+        h: statHeight,
+        fill: { color: stat.color },
+        line: { type: "none" },
+      });
+
+      slide.addText(stat.label, {
+        x: xPos,
+        y: yPosition,
+        w: statWidth,
+        h: statHeight,
+        fontSize: 11,
+        bold: true,
+        color: "ffffff",
+        align: "center",
+        valign: "middle",
+      });
+    }
+
+    yPosition += 0.7;
   }
 }
 

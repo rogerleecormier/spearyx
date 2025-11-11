@@ -52,50 +52,122 @@ function createMatrixSheet(
 ): Worksheet {
   const sheet = workbook.addWorksheet("RACI Matrix");
 
+  // Title row - will share row with logo
+  const titleRowNum = 1;
+  sheet.addRow([chart.title]);
+  sheet.getRow(titleRowNum).font = { bold: true, size: 14, color: { argb: `FF${theme.colors.primary}` } };
+  sheet.getRow(titleRowNum).alignment = { horizontal: "left", vertical: "middle" };
+  sheet.mergeCells(`B${titleRowNum}:${String.fromCharCode(65 + chart.roles.length)}${titleRowNum}`);
+  sheet.getRow(titleRowNum).height = 24;
+
+  // Logo if available - placed in same row as title (column A)
+  if (chart.logo) {
+    try {
+      // Convert base64 to buffer for exceljs
+      const base64Data = chart.logo.split(',')[1] || chart.logo;
+      const logoBuffer = Buffer.from(base64Data, 'base64') as any;
+      
+      const imageId = workbook.addImage({
+        buffer: logoBuffer,
+        extension: 'png',
+      });
+      
+      // Place logo in column A, same row as title
+      sheet.addImage(imageId, 'A1:A1');
+      sheet.getColumn('A').width = 5;
+    } catch (e) {
+      console.error("Failed to add logo to XLSX:", e);
+    }
+  }
+
+  // Description row (if exists)
+  let currentRow = 2;
+  if (chart.description) {
+    sheet.addRow([chart.description]);
+    sheet.getRow(currentRow).font = { size: 11, italic: true, color: { argb: `FF${theme.colors.text}` } };
+    sheet.getRow(currentRow).alignment = { horizontal: "left", vertical: "middle", wrapText: true };
+    sheet.mergeCells(`A${currentRow}:${String.fromCharCode(65 + chart.roles.length)}${currentRow}`);
+    sheet.getRow(currentRow).height = 18;
+    currentRow = currentRow + 1;
+  }
+
+  // Empty row for spacing
+  currentRow++;
+
   // Header row with roles
   const headerValues = ["Task"];
   chart.roles.forEach((role) => {
     headerValues.push(role.name);
   });
   const headerRow = sheet.addRow(headerValues);
+  sheet.getRow(currentRow).height = 18;
 
-  // Style header row
-  const headerFont = { bold: true, color: { argb: "FFFFFFFF" } };
-
-  headerRow.font = headerFont;
-  headerRow.fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: `FF${theme.colors.primary}` },
-  };
-  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  // Style header row - primary color background with white text
+  const headerFont = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+  for (let i = 1; i <= chart.roles.length + 1; i++) {
+    const cell = headerRow.getCell(i);
+    cell.font = headerFont;
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: `FF${theme.colors.primary}` },
+    };
+    cell.alignment = { horizontal: i === 1 ? "left" : "center", vertical: "middle" };
+    cell.border = {
+      top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      left: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      right: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+    };
+  }
 
   // Data rows
+  let rowIndex = 0;
   for (const task of chart.tasks) {
     const rowValues: string[] = [task.name];
 
     chart.roles.forEach((role) => {
       const value = chart.matrix[role.id]?.[task.id];
-      const label = value
-        ? value === "R"
-          ? "Responsible"
-          : value === "A"
-            ? "Accountable"
-            : value === "C"
-              ? "Consulted"
-              : "Informed"
-        : "";
-
-      rowValues.push(label);
+      rowValues.push(value || "");
     });
 
     const dataRow = sheet.addRow(rowValues);
+    sheet.getRow(currentRow + 1 + rowIndex).height = 16;
 
-    // Apply styling to each cell
+    // Alternate row background
+    const isAlternate = rowIndex % 2 === 1;
+    const bgColor = isAlternate ? "f9fafb" : "ffffff";
+
+    // Style task name cell
+    const taskCell = dataRow.getCell(1);
+    taskCell.font = { bold: true, size: 11, color: { argb: `FF${theme.colors.text}` } };
+    taskCell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: `FF${bgColor}` },
+    };
+    taskCell.alignment = { horizontal: "left", vertical: "middle" };
+    taskCell.border = {
+      top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      left: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      right: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+    };
+
+    // Apply styling to each RACI cell
     chart.roles.forEach((role, roleIndex) => {
-      const cellIndex = roleIndex + 2; // +2 because Excel is 1-indexed and first column is task name
+      const cellIndex = roleIndex + 2;
       const cell = dataRow.getCell(cellIndex);
       const value = chart.matrix[role.id]?.[task.id];
+
+      cell.font = { bold: true, size: 11 };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+        bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+        left: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+        right: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      };
 
       if (value) {
         const colorMap: Record<string, string> = {
@@ -110,16 +182,24 @@ function createMatrixSheet(
           pattern: "solid",
           fgColor: { argb: `FF${colorMap[value]}` },
         };
+        cell.font = { bold: true, size: 11, color: { argb: "FFFFFFFF" } };
+      } else {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: `FF${bgColor}` },
+        };
+        cell.font = { size: 11, color: { argb: `FF${theme.colors.text}` } };
       }
-
-      cell.alignment = { horizontal: "center", vertical: "middle" };
     });
+
+    rowIndex++;
   }
 
   // Set column widths
   sheet.getColumn(1).width = 30;
   chart.roles.forEach((_, index) => {
-    sheet.getColumn(index + 2).width = 20;
+    sheet.getColumn(index + 2).width = 16;
   });
 
   return sheet;
@@ -128,58 +208,107 @@ function createMatrixSheet(
 function createLegendSheet(workbook: Workbook, theme: XlsxTheme): Worksheet {
   const sheet = workbook.addWorksheet("Legend");
 
+  // Title
   const titleRow = sheet.addRow(["RACI Legend"]);
   titleRow.font = {
     bold: true,
     size: 14,
-    color: { argb: `FF${theme.colors.text}` },
+    color: { argb: `FF${theme.colors.primary}` },
   };
+  titleRow.alignment = { horizontal: "left", vertical: "middle" };
+  sheet.getRow(1).height = 18;
 
-  sheet.addRow([]);
+  sheet.addRow([]); // Spacing
 
   const legendItems = [
-    { label: "R - Responsible", color: theme.colors.raci.r },
-    { label: "A - Accountable", color: theme.colors.raci.a },
-    { label: "C - Consulted", color: theme.colors.raci.c },
-    { label: "I - Informed", color: theme.colors.raci.i },
+    { code: "R", label: "Responsible", color: theme.colors.raci.r },
+    { code: "A", label: "Accountable", color: theme.colors.raci.a },
+    { code: "C", label: "Consulted", color: theme.colors.raci.c },
+    { code: "I", label: "Informed", color: theme.colors.raci.i },
   ];
 
   for (const item of legendItems) {
-    const row = sheet.addRow([item.label]);
-    const cell = row.getCell(1);
-    cell.fill = {
+    const row = sheet.addRow([item.code, item.label]);
+    const codeCell = row.getCell(1);
+    const labelCell = row.getCell(2);
+
+    // Code cell with RACI color
+    codeCell.fill = {
       type: "pattern",
       pattern: "solid",
       fgColor: { argb: `FF${item.color}` },
     };
-    cell.font = { bold: true, size: 11 };
-    cell.alignment = { vertical: "middle", wrapText: true };
+    codeCell.font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+    codeCell.alignment = { horizontal: "center", vertical: "middle" };
+    codeCell.border = {
+      top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      left: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      right: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+    };
+
+    // Label cell
+    labelCell.font = { size: 11, color: { argb: `FF${theme.colors.text}` } };
+    labelCell.alignment = { horizontal: "left", vertical: "middle" };
+    labelCell.border = {
+      top: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      bottom: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      left: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+      right: { style: "thin", color: { argb: `FF${theme.colors.border}` } },
+    };
+
+    sheet.getRow(3 + legendItems.indexOf(item)).height = 16;
   }
 
-  sheet.getColumn(1).width = 40;
+  sheet.getColumn(1).width = 8;
+  sheet.getColumn(2).width = 25;
 
   return sheet;
 }
 
-function createMetadataSheet(workbook: Workbook, chart: RaciChart): Worksheet {
+function createMetadataSheet(workbook: Workbook, chart: RaciChart, theme: XlsxTheme): Worksheet {
   const sheet = workbook.addWorksheet("Metadata");
+
+  // Title
+  const titleRow = sheet.addRow(["Chart Information"]);
+  titleRow.font = {
+    bold: true,
+    size: 14,
+    color: { argb: `FF${theme.colors.primary}` },
+  };
+  titleRow.alignment = { horizontal: "left", vertical: "middle" };
+  sheet.getRow(1).height = 18;
+
+  sheet.addRow([]); // Spacing
 
   const data = [
     ["Title", chart.title],
-    ["Description", chart.description || "-"],
-    ["Total Roles", chart.roles.length],
-    ["Total Tasks", chart.tasks.length],
-    ["Created", new Date(chart.createdAt).toLocaleString()],
-    ["Updated", new Date(chart.updatedAt).toLocaleString()],
-    ["Version", chart.version],
+    ["Description", chart.description || "(No description provided)"],
+    ["Total Roles", chart.roles.length.toString()],
+    ["Total Tasks", chart.tasks.length.toString()],
+    ["Created", new Date(chart.createdAt).toLocaleDateString()],
+    ["Updated", new Date(chart.updatedAt).toLocaleDateString()],
   ];
 
-  for (const [key, value] of data) {
+  for (let i = 0; i < data.length; i++) {
+    const [key, value] = data[i];
     const row = sheet.addRow([key, value]);
-    row.getCell(1).font = { bold: true };
+
+    const keyCell = row.getCell(1);
+    const valueCell = row.getCell(2);
+
+    // Key cell - styled
+    keyCell.font = { bold: true, size: 11, color: { argb: `FF${theme.colors.primary}` } };
+    keyCell.alignment = { horizontal: "left", vertical: "top" };
+
+    // Value cell
+    valueCell.font = { size: 11, color: { argb: `FF${theme.colors.text}` } };
+    valueCell.alignment = { horizontal: "left", vertical: "top", wrapText: true };
+
+    sheet.getRow(3 + i).height = 18;
   }
 
-  sheet.getColumn(1).width = 20;
+  sheet.getColumn(1).width = 15;
   sheet.getColumn(2).width = 40;
 
   return sheet;
@@ -205,7 +334,7 @@ export async function exportToXlsx(
   }
 
   if (options.includeMetadata !== false) {
-    createMetadataSheet(workbook, chart);
+    createMetadataSheet(workbook, chart, theme);
   }
 
   // Generate buffer
