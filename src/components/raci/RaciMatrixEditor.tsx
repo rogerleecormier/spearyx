@@ -372,11 +372,11 @@ export default function RaciMatrixEditor({
       </div>
 
       {/* Keyboard Navigation Help */}
-      <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <Label className="text-blue-900 dark:text-blue-100 font-semibold block mb-2">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <Label className="text-red-900 font-semibold block mb-2">
           ⌨️ Keyboard Navigation
         </Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-blue-800 dark:text-blue-200">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-red-800">
           <div>
             <strong>Space</strong> - Cycle forward
           </div>

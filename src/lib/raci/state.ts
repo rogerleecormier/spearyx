@@ -190,6 +190,26 @@ export function raciReducer(state: RaciChart, action: RaciAction): RaciChart {
       };
     }
 
+    case "loadTemplate": {
+      return {
+        ...state,
+        roles: action.payload.roles,
+        tasks: action.payload.tasks,
+        matrix: action.payload.matrix,
+        title: action.payload.title || state.title,
+        description: action.payload.description || state.description,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    case "loadPreset": {
+      return {
+        ...state,
+        matrix: action.payload.matrix,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
     case "reset": {
       return createInitialChart();
     }

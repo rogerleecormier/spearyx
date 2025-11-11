@@ -179,5 +179,19 @@ export type RaciAction =
       payload: { matrix: Record<string, Record<string, RaciValue>> };
     }
   | { type: "updateTheme"; payload: { theme: string } }
+  | {
+      type: "loadTemplate";
+      payload: {
+        roles: RaciRole[];
+        tasks: RaciTask[];
+        matrix: Record<string, Record<string, RaciValue>>;
+        title?: string;
+        description?: string;
+      };
+    }
+  | {
+      type: "loadPreset";
+      payload: { matrix: Record<string, Record<string, RaciValue>> };
+    }
   | { type: "reset" }
   | { type: "setState"; payload: { chart: RaciChart } };

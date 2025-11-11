@@ -82,6 +82,20 @@ export function useRaciState(initialChart?: RaciChart) {
     dispatch({ type: "updateTheme", payload: { theme } });
   }, []);
 
+  const loadTemplate = useCallback(
+    (roles: RaciRole[], tasks: RaciTask[], matrix: RaciChart["matrix"], title?: string, description?: string) => {
+      dispatch({
+        type: "loadTemplate",
+        payload: { roles, tasks, matrix, title, description },
+      });
+    },
+    []
+  );
+
+  const loadPreset = useCallback((matrix: RaciChart["matrix"]) => {
+    dispatch({ type: "loadPreset", payload: { matrix } });
+  }, []);
+
   const reset = useCallback(() => {
     dispatch({ type: "reset" });
   }, []);
@@ -106,6 +120,8 @@ export function useRaciState(initialChart?: RaciChart) {
     updateDescription,
     updateMatrix,
     updateTheme,
+    loadTemplate,
+    loadPreset,
     reset,
     setState,
   };
