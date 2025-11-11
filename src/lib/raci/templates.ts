@@ -157,7 +157,7 @@ export function loadPresetMatrix(
 /**
  * Quick preset patterns for common RACI assignments
  * These generate matrix templates based on standard patterns
- * 
+ *
  * Following RACI best practices:
  * - Exactly ONE Accountable (A) per task
  * - Avoid "All Responsible" or "All Accountable" (creates confusion)
@@ -321,15 +321,18 @@ export function getQuickPresetInfo(presetKey: string): {
   const info: Record<string, { name: string; description: string }> = {
     oneAccountablePerTask: {
       name: "One Accountable per Task",
-      description: "Each task has exactly one accountable role, rotating accountability",
+      description:
+        "Each task has exactly one accountable role, rotating accountability",
     },
     executionModel: {
       name: "Execution Model",
-      description: "One executor, one decision-maker, others consulted or informed",
+      description:
+        "One executor, one decision-maker, others consulted or informed",
     },
     functionalTeamModel: {
       name: "Functional Team Model",
-      description: "Domain expert responsible, team lead accountable, others consulted",
+      description:
+        "Domain expert responsible, team lead accountable, others consulted",
     },
     reviewerApprovalModel: {
       name: "Reviewer/Approval Model",
