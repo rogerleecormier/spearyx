@@ -48,37 +48,37 @@
       "pm": {
         "req": "A",
         "arch": "C",
-        "impl": "I",
+        "impl": "C",
         "test": "C",
         "deploy": "A"
       },
       "backend": {
         "req": "C",
         "arch": "R",
-        "impl": "R",
-        "test": "R",
-        "deploy": "R"
+        "impl": "A",
+        "test": "C",
+        "deploy": "C"
       },
       "frontend": {
         "req": "C",
         "arch": "R",
-        "impl": "R",
-        "test": "R",
-        "deploy": "R"
+        "impl": "A",
+        "test": "C",
+        "deploy": "C"
       },
       "qa": {
         "req": "C",
         "arch": "C",
-        "impl": "I",
+        "impl": "C",
         "test": "A",
         "deploy": "C"
       },
       "designer": {
-        "req": "R",
+        "req": "C",
         "arch": "C",
         "impl": "C",
-        "test": "I",
-        "deploy": "I"
+        "test": "C",
+        "deploy": "C"
       }
     }
   },
@@ -137,17 +137,17 @@
       "marketing": {
         "strategy": "A",
         "design": "C",
-        "proto": "I",
-        "build": "I",
-        "content": "C",
+        "proto": "C",
+        "build": "C",
+        "content": "A",
         "launch": "A"
       },
       "design": {
         "strategy": "R",
         "design": "A",
-        "proto": "R",
+        "proto": "A",
         "build": "C",
-        "content": "I",
+        "content": "C",
         "launch": "C"
       },
       "frontend": {
@@ -155,24 +155,24 @@
         "design": "C",
         "proto": "C",
         "build": "A",
-        "content": "I",
-        "launch": "R"
+        "content": "C",
+        "launch": "C"
       },
       "content": {
         "strategy": "C",
-        "design": "I",
-        "proto": "I",
-        "build": "I",
+        "design": "C",
+        "proto": "C",
+        "build": "C",
         "content": "A",
         "launch": "C"
       },
       "pm": {
-        "strategy": "R",
+        "strategy": "A",
         "design": "C",
         "proto": "C",
         "build": "C",
         "content": "C",
-        "launch": "R"
+        "launch": "A"
       }
     }
   },
@@ -229,43 +229,43 @@
     ],
     "matrix": {
       "admin": {
-        "assess": "A",
-        "plan": "R",
-        "map": "A",
-        "train": "R",
+        "assess": "C",
+        "plan": "A",
+        "map": "C",
+        "train": "A",
         "cutover": "A",
         "support-phase": "A"
       },
       "analyst": {
-        "assess": "R",
+        "assess": "A",
         "plan": "R",
         "map": "A",
         "train": "C",
-        "cutover": "R",
-        "support-phase": "I"
+        "cutover": "C",
+        "support-phase": "C"
       },
       "change": {
         "assess": "C",
-        "plan": "R",
-        "map": "I",
+        "plan": "C",
+        "map": "C",
         "train": "A",
         "cutover": "C",
-        "support-phase": "R"
+        "support-phase": "C"
       },
       "user": {
         "assess": "C",
         "plan": "C",
-        "map": "I",
-        "train": "R",
+        "map": "C",
+        "train": "C",
         "cutover": "C",
         "support-phase": "C"
       },
       "support": {
-        "assess": "I",
+        "assess": "C",
         "plan": "C",
-        "map": "I",
+        "map": "C",
         "train": "C",
-        "cutover": "R",
+        "cutover": "A",
         "support-phase": "A"
       }
     }

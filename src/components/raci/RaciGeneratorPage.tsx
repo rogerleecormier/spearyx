@@ -24,7 +24,13 @@ import ResetControls from "./ResetControls";
 import RaciMatrixEditor from "./RaciMatrixEditor";
 import ErrorModal from "./ErrorModal";
 import { QuickPresetsGrid } from "./QuickPresetsGrid";
+import { MatrixHintsAndStatus } from "./MatrixHintsAndStatus";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import {
   Hero,
   Headline,
@@ -284,13 +290,14 @@ export default function RaciGeneratorPage() {
                       <CardTitle className="text-black">
                         Chart Details
                       </CardTitle>
-                      <div className="group relative">
-                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
                           Set your project name and upload a logo
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-                        </div>
-                      </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <Caption className="text-slate-600 mt-1">
                       Configure project metadata
@@ -321,14 +328,15 @@ export default function RaciGeneratorPage() {
                       <CardTitle className="text-black">
                         Description & AI Generation
                       </CardTitle>
-                      <div className="group relative">
-                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
                           Describe your project and use AI to generate initial
                           roles and tasks
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-                        </div>
-                      </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <Caption className="text-slate-600 mt-1">
                       Add context and let AI suggest roles & tasks
@@ -353,15 +361,24 @@ export default function RaciGeneratorPage() {
                     // But since setState is async, we need to use the current rendered chart
                     setChart({ ...chart, tasks });
                   }}
-                  onGenerateComplete={(roles, tasks) => {
+                  onGenerateComplete={(roles, tasks, matrix) => {
                     console.log(
-                      "RaciGeneratorPage received roles and tasks:",
+                      "RaciGeneratorPage received roles, tasks, and matrix:",
                       roles,
-                      tasks
+                      tasks,
+                      matrix
                     );
                     console.log("Current chart before update:", chart);
-                    // Single setState call with both roles and tasks to avoid race condition
+                    // Single setState call with roles, tasks, and optional matrix
                     const newChart = { ...chart, roles, tasks };
+                    // Apply matrix if provided (from fallback mode)
+                    if (matrix) {
+                      newChart.matrix = matrix;
+                      console.log(
+                        "Applied generated matrix from fallback:",
+                        matrix
+                      );
+                    }
                     console.log("New chart after spread:", newChart);
                     setChart(newChart);
                   }}
@@ -387,13 +404,14 @@ export default function RaciGeneratorPage() {
                           </span>
                         )}
                       </CardTitle>
-                      <div className="group relative">
-                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
                           Add team members and their positions/titles
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-                        </div>
-                      </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <Caption className="text-slate-600 mt-1">
                       Define team members and positions{" "}
@@ -434,13 +452,14 @@ export default function RaciGeneratorPage() {
                           </span>
                         )}
                       </CardTitle>
-                      <div className="group relative">
-                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
                           Define activities, deliverables, and work items
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-                        </div>
-                      </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <Caption className="text-slate-600 mt-1">
                       List activities and deliverables{" "}
@@ -481,14 +500,15 @@ export default function RaciGeneratorPage() {
                           <CardTitle className="text-black">
                             RACI Matrix
                           </CardTitle>
-                          <div className="group relative">
-                            <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+                            </TooltipTrigger>
+                            <TooltipContent>
                               Apply patterns or assign R, A, C, I values to each
                               role-task combination
-                              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-                            </div>
-                          </div>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                         <Caption className="text-slate-600 mt-1">
                           Assign responsibilities
@@ -516,6 +536,14 @@ export default function RaciGeneratorPage() {
                       theme={chart.theme}
                       highContrast={highContrast}
                     />
+
+                    {/* Matrix Hints and Status - Tips & Keyboard Commands */}
+                    <div className="pt-4 border-t border-slate-200">
+                      <MatrixHintsAndStatus
+                        chart={chart}
+                        validation={validation}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
@@ -533,50 +561,6 @@ export default function RaciGeneratorPage() {
                 </Card>
               )}
             </div>
-
-            {/* Tips Card */}
-            <Card className="border-slate-200 bg-emerald-50 shadow-sm">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Info className="w-5 h-5 text-emerald-600" />
-                  <CardTitle className="text-base text-slate-900">
-                    Tips for Success
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  <li className="flex gap-2">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span>Auto-saves every 5 seconds to your browser</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span>
-                      Use keyboard navigation:{" "}
-                      <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded text-slate-900 font-mono">
-                        Tab
-                      </kbd>{" "}
-                      to move,{" "}
-                      <kbd className="px-2 py-0.5 bg-slate-100 text-xs border border-slate-200 rounded text-slate-900 font-mono">
-                        Esc
-                      </kbd>{" "}
-                      to cancel
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span>
-                      Click the up/down arrows or drag to reorder items
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span>Click matrix cells to assign RACI values</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Sidebar: Controls, Export, and Danger Zone */}

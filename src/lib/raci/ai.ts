@@ -416,7 +416,7 @@ export class AIService {
     switch (promptType) {
       case "projectTypeClassification":
         return {
-          type: projectType || "Mobile App",
+          type: AI_FALLBACKS.classifyProjectType(projectDescription),
           confidence: 0.5,
         } as T;
 
@@ -489,6 +489,38 @@ export class AIError extends Error {
  * Fallback data generator for when AI is unavailable
  */
 export const AI_FALLBACKS = {
+  /**
+   * Classify project type from description
+   */
+  classifyProjectType(input: string): string {
+    const lowerInput = input.toLowerCase();
+
+    // Check more specific project types first before generic keywords
+    if (lowerInput.includes("crm")) {
+      return "crm migration";
+    } else if (
+      lowerInput.includes("website") ||
+      lowerInput.includes("web") ||
+      lowerInput.includes("redesign")
+    ) {
+      return "web redesign";
+    } else if (
+      lowerInput.includes("marketing") ||
+      lowerInput.includes("campaign")
+    ) {
+      return "marketing campaign";
+    } else if (
+      lowerInput.includes("data") ||
+      lowerInput.includes("analytics")
+    ) {
+      return "data analytics";
+    } else if (lowerInput.includes("mobile") || lowerInput.includes("app")) {
+      return "mobile app";
+    }
+
+    return "mobile app"; // Default fallback
+  },
+
   /**
    * Fallback roles based on project type or description
    * Searches for keywords in the input to determine appropriate roles

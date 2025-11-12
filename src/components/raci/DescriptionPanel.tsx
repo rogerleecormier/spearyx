@@ -16,19 +16,163 @@
 import { useState, useCallback, useRef } from "react";
 import { Loader2, AlertCircle, CheckCircle, Info } from "lucide-react";
 import { aiService, AIError } from "@/lib/raci/ai";
-import { getTemplates } from "@/lib/raci/templates";
+import { getTemplates, getTemplateById } from "@/lib/raci/templates";
 import { Body, Caption } from "@/components/Typography";
 import { Button } from "@/components/ui/button";
-import { RaciRole, RaciTask } from "@/types/raci";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { RaciRole, RaciTask, RaciChart } from "@/types/raci";
+import { QUICK_PRESETS } from "@/lib/raci/templates";
 
 interface DescriptionPanelProps {
   description: string;
   onChange: (description: string) => void;
   onGenerateRoles?: (roles: RaciRole[]) => void;
   onGenerateTasks?: (tasks: RaciTask[]) => void;
-  onGenerateComplete?: (roles: RaciRole[], tasks: RaciTask[]) => void;
+  onGenerateComplete?: (
+    roles: RaciRole[],
+    tasks: RaciTask[],
+    matrix?: RaciChart["matrix"]
+  ) => void;
   disabled?: boolean;
   onFallbackStatusChange?: (isFallback: boolean) => void;
+}
+
+/**
+ * Map AI-classified project types to template IDs
+ * Handles case-insensitive and partial matching
+ */
+function mapProjectTypeToTemplateId(projectType: string): string | null {
+  const normalized = projectType.toLowerCase().trim();
+
+  // Map common variations to template IDs
+  if (normalized.includes("mobile") && normalized.includes("app")) {
+    return "mobile-app";
+  }
+  if (normalized.includes("web") && normalized.includes("redesign")) {
+    return "web-redesign";
+  }
+  if (normalized.includes("crm") && normalized.includes("migration")) {
+    return "crm-migration";
+  }
+
+  return null;
+}
+
+/**
+ * Generate RACI matrix from template by mapping role/task IDs
+ * Uses positional mapping to apply template RACI patterns to extracted roles/tasks
+ *
+ * Strategy:
+ * 1. If extracted roles/tasks match template size exactly, use direct mapping
+ * 2. Otherwise, use positional mapping with smart fallback to preserve template patterns
+ * 3. For extra roles/tasks beyond template, apply best-practice RACI pattern
+ */
+function generateMatrixFromTemplate(
+  template: any,
+  _roleNames: string[],
+  roleIds: string[],
+  taskIds: string[]
+): RaciChart["matrix"] | null {
+  if (!template || !template.matrix || !template.roles || !template.tasks) {
+    console.log(
+      "generateMatrixFromTemplate: Template missing required properties",
+      {
+        hasTemplate: !!template,
+        hasMatrix: template?.matrix ? true : false,
+        hasRoles: template?.roles ? true : false,
+        hasTasks: template?.tasks ? true : false,
+      }
+    );
+    return null;
+  }
+
+  const templateRoleIds = template.roles.map((r: any) => r.id);
+  const templateTaskIds = template.tasks.map((t: any) => t.id);
+  const newMatrix: RaciChart["matrix"] = {};
+
+  // Log the mapping for debugging
+  console.log("generateMatrixFromTemplate START:", {
+    templateId: template.id,
+    templateRoleIds: templateRoleIds,
+    templateTaskIds: templateTaskIds,
+    extractedRoles: roleIds.length,
+    templateRoles: templateRoleIds.length,
+    extractedTasks: taskIds.length,
+    templateTasks: templateTaskIds.length,
+    templateMatrixRoleKeys: Object.keys(template.matrix),
+    templateMatrixSample: {
+      firstRole: template.matrix[templateRoleIds[0]],
+      firstRoleTasks: Object.keys(template.matrix[templateRoleIds[0]] || {})
+        .length,
+    },
+  });
+
+  // For each extracted role, map it to template role by position
+  for (let i = 0; i < roleIds.length; i++) {
+    const extractedRoleId = roleIds[i];
+    const templateRoleId =
+      templateRoleIds[Math.min(i, templateRoleIds.length - 1)];
+
+    newMatrix[extractedRoleId] = {};
+
+    // For each extracted task, map it from template
+    for (let j = 0; j < taskIds.length; j++) {
+      const extractedTaskId = taskIds[j];
+      const templateTaskId =
+        templateTaskIds[Math.min(j, templateTaskIds.length - 1)];
+
+      // Get the RACI value from template
+      const raciValue = template.matrix[templateRoleId]?.[templateTaskId];
+
+      // Log first few entries to see what's happening
+      if (i === 0 && j < 3) {
+        console.log(
+          `Template matrix lookup [${templateRoleId}][${templateTaskId}]:`,
+          {
+            raciValue,
+            templateRoleData: template.matrix[templateRoleId],
+            allTemplateTaskIds: Object.keys(
+              template.matrix[templateRoleId] || {}
+            ),
+          }
+        );
+      }
+
+      if (raciValue) {
+        newMatrix[extractedRoleId][extractedTaskId] = raciValue as
+          | "R"
+          | "A"
+          | "C"
+          | "I"
+          | null;
+      } else {
+        // If template doesn't have this combination, use best-practice pattern
+        // Accountable role (typically 2nd role): A
+        // Responsible role (typically 1st role): R
+        // Others: C
+        if (i === 0) {
+          newMatrix[extractedRoleId][extractedTaskId] = "R";
+        } else if (i === 1) {
+          newMatrix[extractedRoleId][extractedTaskId] = "A";
+        } else {
+          newMatrix[extractedRoleId][extractedTaskId] = "C";
+        }
+      }
+    }
+  }
+
+  // Log results
+  console.log("Matrix after template mapping - FINAL:", {
+    rolesGenerated: Object.keys(newMatrix).length,
+    firstRoleData: newMatrix[roleIds[0]],
+    secondRoleData: newMatrix[roleIds[1]],
+  });
+
+  return Object.keys(newMatrix).length > 0 ? newMatrix : null;
 }
 
 /**
@@ -129,10 +273,76 @@ export default function DescriptionPanel({
       );
       console.log("Calling onGenerateTasks with:", taskObjects);
 
+      // Check if fallback was used
+      const fallbackUsed = aiService.isFallbackActive();
+      setIsFallback(fallbackUsed);
+      if (onFallbackStatusChange) {
+        onFallbackStatusChange(fallbackUsed);
+      }
+
+      // Generate matrix if in fallback mode
+      let generatedMatrix: RaciChart["matrix"] | undefined;
+      if (fallbackUsed) {
+        const roleIds = roleObjects.map((r) => r.id);
+        const taskIds = taskObjects.map((t) => t.id);
+
+        // Try to use template-based matrix first
+        const templateId = mapProjectTypeToTemplateId(projectType);
+        let templateMatrix: RaciChart["matrix"] | null = null;
+
+        console.log("Fallback mode - trying to load template", {
+          projectType,
+          templateId,
+          extractedRoleNames: roleNames,
+          extractedRoleIds: roleIds,
+          extractedTaskNames: taskObjects.map((t) => t.name),
+          extractedTaskIds: taskIds,
+        });
+
+        if (templateId) {
+          const template = getTemplateById(templateId);
+          console.log("Template loaded:", {
+            templateId,
+            found: !!template,
+            templateRoles: template?.roles.map((r: any) => ({
+              id: r.id,
+              name: r.name,
+            })),
+            templateTasks: template?.tasks.map((t: any) => ({
+              id: t.id,
+              name: t.name,
+            })),
+            templateMatrix: template?.matrix,
+          });
+
+          if (template) {
+            templateMatrix = generateMatrixFromTemplate(
+              template,
+              roleNames,
+              roleIds,
+              taskIds
+            );
+            console.log("Template matrix generated:", {
+              generated: !!templateMatrix,
+              matrix: templateMatrix,
+            });
+          }
+        }
+
+        // Fall back to functionalTeamModel if template not found or failed
+        generatedMatrix =
+          templateMatrix || QUICK_PRESETS.functionalTeamModel(roleIds, taskIds);
+        console.log("Final generated matrix for fallback:", {
+          fromTemplate: !!templateMatrix,
+          templateId,
+          matrix: generatedMatrix,
+        });
+      }
+
       // Call combined callback if available, otherwise call individual ones
       if (onGenerateComplete) {
-        console.log("Calling onGenerateComplete with roles and tasks");
-        onGenerateComplete(roleObjects, taskObjects);
+        console.log("Calling onGenerateComplete with roles, tasks, and matrix");
+        onGenerateComplete(roleObjects, taskObjects, generatedMatrix);
       } else {
         // Fall back to individual callbacks for backward compatibility
         if (onGenerateRoles) {
@@ -141,13 +351,6 @@ export default function DescriptionPanel({
         if (onGenerateTasks) {
           onGenerateTasks(taskObjects);
         }
-      }
-
-      // Check if fallback was used
-      const fallbackUsed = aiService.isFallbackActive();
-      setIsFallback(fallbackUsed);
-      if (onFallbackStatusChange) {
-        onFallbackStatusChange(fallbackUsed);
       }
 
       setSuccess(true);
@@ -224,13 +427,14 @@ export default function DescriptionPanel({
           <span className="text-xs font-semibold text-slate-600 uppercase">
             Quick Examples
           </span>
-          <div className="group relative">
-            <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>
               Select a template to populate your description
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-            </div>
-          </div>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {getTemplates()
@@ -239,20 +443,25 @@ export default function DescriptionPanel({
               <button
                 key={template.id}
                 onClick={() => handleQuickPrompt(template.aiPrompt!)}
-                className="group relative p-2 text-left text-xs font-medium bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-400 rounded transition-colors min-h-12 flex items-center justify-center"
+                className="p-2 text-left text-xs font-medium bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-400 rounded transition-colors min-h-12 flex items-center justify-center"
                 title={template.aiPromptDescription}
               >
-                <div className="flex flex-col items-center gap-1 text-center">
-                  <span className="text-blue-600 text-sm">✨</span>
-                  <span className="text-slate-900 leading-tight">
-                    {template.name}
-                  </span>
-                </div>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded py-2 px-3 whitespace-normal z-50 shadow-lg pointer-events-none w-max max-w-xs">
-                  {template.aiPromptDescription}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex flex-col items-center gap-1 text-center">
+                      <span className="text-blue-600 text-sm">✨</span>
+                      <span className="text-slate-900 leading-tight">
+                        {template.name}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs whitespace-normal"
+                  >
+                    {template.aiPromptDescription}
+                  </TooltipContent>
+                </Tooltip>
               </button>
             ))}
         </div>
@@ -264,13 +473,14 @@ export default function DescriptionPanel({
           <label htmlFor="description" className="text-sm font-medium">
             Project Description
           </label>
-          <div className="group relative">
-            <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>
               AI uses this to suggest roles and tasks
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-slate-900" />
-            </div>
-          </div>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <textarea
           id="description"

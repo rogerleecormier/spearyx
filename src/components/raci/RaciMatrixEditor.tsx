@@ -13,6 +13,11 @@
 import { useCallback, useRef, useState } from "react";
 import { RaciChart, RaciValue } from "@/types/raci";
 import { Label, Caption } from "@/components/Typography";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import themingConfig from "@/config/theming.json";
 
 interface RaciMatrixEditorProps {
@@ -321,8 +326,11 @@ export default function RaciMatrixEditor({
       {/* Matrix Container */}
       <div className="border border-border rounded-lg bg-card overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-muted border-b border-border">
+          <thead style={{ overflow: "visible" }}>
+            <tr
+              className="bg-muted border-b border-border"
+              style={{ overflow: "visible" }}
+            >
               <th className="px-4 py-3 text-left text-xs font-semibold text-foreground min-w-[150px] border-r border-border bg-muted">
                 Role / Task
               </th>
@@ -334,23 +342,30 @@ export default function RaciMatrixEditor({
                     className={`px-3 py-2 text-center text-xs font-semibold min-w-[90px] border-r border-border last:border-r-0 ${
                       !isValid ? "bg-error-50 dark:bg-error-950" : ""
                     }`}
+                    style={{ overflow: "visible" }}
                   >
-                    <div className="break-words">
-                      <div className="font-medium text-foreground">
-                        {task.name}
-                      </div>
-                      {task.description && (
-                        <Caption className="text-muted-foreground mt-1">
-                          {task.description.substring(0, 30)}
-                          {task.description.length > 30 ? "..." : ""}
-                        </Caption>
-                      )}
-                      {!isValid && (
-                        <div className="text-xs text-error-600 dark:text-error-400 font-semibold mt-1">
-                          ⚠️ Missing A
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="break-words relative cursor-help"
+                          style={{ overflow: "visible" }}
+                        >
+                          <div className="font-medium text-foreground">
+                            {task.name}
+                          </div>
+                          {!isValid && (
+                            <div className="text-xs text-error-600 dark:text-error-400 font-semibold mt-1">
+                              ⚠️ Missing A
+                            </div>
+                          )}
                         </div>
+                      </TooltipTrigger>
+                      {task.description && (
+                        <TooltipContent side="top" className="max-w-xs">
+                          {task.description}
+                        </TooltipContent>
                       )}
-                    </div>
+                    </Tooltip>
                   </th>
                 );
               })}
@@ -425,49 +440,10 @@ export default function RaciMatrixEditor({
         </table>
       </div>
 
-      {/* Scroll Behavior Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <Label className="text-blue-900 font-semibold block mb-2">
-          📋 Matrix Tips
-        </Label>
-        <div className="text-xs text-blue-800 space-y-1">
-          <p>
-            • <strong>Column headers stay visible</strong> when scrolling down
-          </p>
-          <p>
-            • <strong>Role names stay visible</strong> when scrolling right
-          </p>
-          <p>
-            • <strong>Use scroll bars</strong> to navigate the matrix
-          </p>
-        </div>
-      </div>
-
-      {/* Keyboard Navigation Help */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <Label className="text-red-900 font-semibold block mb-2">
-          ⌨️ Keyboard Navigation
-        </Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-red-800">
-          <div>
-            <strong>Space</strong> - Cycle forward
-          </div>
-          <div>
-            <strong>Shift+Space</strong> - Cycle backward
-          </div>
-          <div>
-            <strong>Arrow keys</strong> - Navigate
-          </div>
-          <div>
-            <strong>Click</strong> - Cycle value
-          </div>
-        </div>
-      </div>
-
       {/* Validation Status */}
       <div className="border border-border rounded-lg p-4 bg-card">
         <Label className="font-semibold block mb-2">Validation Status</Label>
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-3">
           {chart.tasks.map((task) => {
             const isValid = getTaskValidationStatus(task.id);
             // Use theme colors: R color for valid (good), A color for invalid (bad)
@@ -482,11 +458,11 @@ export default function RaciMatrixEditor({
                     backgroundColor: statusColor,
                     color: "#ffffff",
                   }}
-                  className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold"
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                 >
                   {isValid ? "✓" : "!"}
                 </div>
-                <span className="text-foreground">
+                <span className="text-foreground min-w-0">
                   {task.name}:{" "}
                   {isValid ? "Has Accountable" : "Missing Accountable (A)"}
                 </span>
