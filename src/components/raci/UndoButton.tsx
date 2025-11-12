@@ -5,28 +5,35 @@
 
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface UndoButtonProps {
   canUndo: boolean;
+  onUndo: () => void;
 }
 
-export default function UndoButton({ canUndo }: UndoButtonProps) {
-  const handleUndo = () => {
-    // TODO: Implement undo
-    console.log("Undo triggered");
-  };
-
+export default function UndoButton({ canUndo, onUndo }: UndoButtonProps) {
   return (
-    <Button
-      onClick={handleUndo}
-      disabled={!canUndo}
-      variant="outline"
-      title="Undo last action (Ctrl+Z)"
-      aria-label="Undo last action"
-    >
-      <RotateCcw size={16} />
-      Undo
-      <span className="text-xs text-muted-foreground ml-1">(Ctrl+Z)</span>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          onClick={onUndo}
+          disabled={!canUndo}
+          variant="outline"
+          aria-label="Undo last action (Ctrl+Z)"
+        >
+          <RotateCcw size={16} />
+          Undo
+          <span className="text-xs text-muted-foreground ml-1">(Ctrl+Z)</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        Undo last action (Ctrl+Z)
+      </TooltipContent>
+    </Tooltip>
   );
 }

@@ -353,3 +353,55 @@ export function useTheme(initialTheme: string = "default") {
     setHighContrast,
   };
 }
+
+
+/**
+ * useUndo - Single-step undo functionality with localStorage persistence
+ * Stores the previous chart state and allows reverting to it
+ */
+export function useUndo(chart: RaciChart, setState: (chart: RaciChart) => void) {
+  const [previousChart, setPreviousChart] = useState<RaciChart | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
+
+  // Save current state before any change
+  useEffect(() => {
+    // Store previous state in localStorage for persistence across sessions
+    try {
+      const stored = localStorage.getItem("raci-undo-state");
+      if (stored) {
+        setPreviousChart(JSON.parse(stored));
+        setCanUndo(true);
+      }
+    } catch (error) {
+      console.error("Failed to load undo state:", error);
+    }
+  }, []);
+
+  // Update undo state whenever chart changes
+  useEffect(() => {
+    try {
+      // Save current chart as the undo state for next time
+      localStorage.setItem("raci-undo-state", JSON.stringify(chart));
+    } catch (error) {
+      console.error("Failed to save undo state:", error);
+    }
+  }, [chart]);
+
+  const undo = useCallback(() => {
+    if (previousChart) {
+      setState(previousChart);
+      setPreviousChart(null);
+      setCanUndo(false);
+      try {
+        localStorage.removeItem("raci-undo-state");
+      } catch (error) {
+        console.error("Failed to clear undo state:", error);
+      }
+    }
+  }, [previousChart, setState]);
+
+  return {
+    canUndo,
+    undo,
+  };
+}

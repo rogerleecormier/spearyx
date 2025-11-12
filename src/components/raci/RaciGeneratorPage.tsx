@@ -11,6 +11,8 @@ import { useRaciState } from "@/lib/raci/hooks";
 import { useValidation } from "@/lib/raci/hooks";
 import { useAutoSave } from "@/lib/raci/hooks";
 import { useTheme } from "@/lib/raci/hooks";
+import { useUndo } from "@/lib/raci/hooks";
+import { useKeyboardNav } from "@/lib/raci/hooks";
 import { loadChartFromStorage } from "@/lib/raci/hooks";
 import { decodeChart } from "@/lib/raci/encoding";
 import RaciHeaderBar from "./RaciHeaderBar";
@@ -21,6 +23,7 @@ import ThemeSelector from "./ThemeSelector";
 import PreviewModal from "./PreviewModal";
 import ExportButtons from "./ExportButtons";
 import ResetControls from "./ResetControls";
+import UndoButton from "./UndoButton";
 import RaciMatrixEditor from "./RaciMatrixEditor";
 import ErrorModal from "./ErrorModal";
 import { QuickPresetsGrid } from "./QuickPresetsGrid";
@@ -70,6 +73,13 @@ export default function RaciGeneratorPage() {
 
   // Auto-save
   const { isSaving, lastSaved } = useAutoSave(chart);
+
+
+  // Undo functionality
+  const { canUndo, undo } = useUndo(chart, setChart);
+
+  // Keyboard navigation
+  const { handleCtrlZ } = useKeyboardNav();
 
   // Theme management
   const { highContrast, setHighContrast } = useTheme(chart.theme);
@@ -155,6 +165,18 @@ export default function RaciGeneratorPage() {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [showErrorModal]);
 
+  // Handle Ctrl+Z for undo
+  useEffect(() => {
+    const handleKeyDown = handleCtrlZ(() => {
+      if (canUndo) {
+        undo();
+      }
+    });
+
+    window.addEventListener("keydown", handleKeyDown as EventListener);
+    return () => window.removeEventListener("keydown", handleKeyDown as EventListener);
+  }, [canUndo, undo, handleCtrlZ]);
+
   // Handlers
   const handleReset = useCallback(() => {
     reset();
@@ -218,47 +240,47 @@ export default function RaciGeneratorPage() {
               </Body>
             </div>
             <div className="flex items-center gap-4 text-sm">
-              {!validation.isValid && (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium">
-                    {validation.errors.length} issue
-                    {validation.errors.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-              )}
-              {validation.isValid && (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-700">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium">Valid</span>
-                </div>
-              )}
-              {isFallbackActive && (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-                  <Info className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium text-xs">
-                    Using template data
-                  </span>
-                </div>
-              )}
-              <div className="h-6 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-2 text-slate-600">
-                {isSaving && (
-                  <>
-                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                    <span>Saving...</span>
-                  </>
-                )}
-                {!isSaving && lastSaved && (
-                  <>
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span>
-                      Saved {new Date(lastSaved).toLocaleTimeString()}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
+               {!validation.isValid && (
+                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600">
+                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                   <span className="font-medium">
+                     {validation.errors.length} issue
+                     {validation.errors.length !== 1 ? "s" : ""}
+                   </span>
+                 </div>
+               )}
+               {validation.isValid && (
+                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-700">
+                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                   <span className="font-medium">Valid</span>
+                 </div>
+               )}
+               {isFallbackActive && (
+                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                   <Info className="w-4 h-4 flex-shrink-0" />
+                   <span className="font-medium text-xs">
+                     Using template data
+                   </span>
+                 </div>
+               )}
+               <div className="h-6 w-px bg-slate-200"></div>
+               <div className="flex items-center gap-2 text-slate-600">
+                 {isSaving && (
+                   <>
+                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                     <span>Saving...</span>
+                   </>
+                 )}
+                 {!isSaving && lastSaved && (
+                   <>
+                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                     <span>
+                       Saved {new Date(lastSaved).toLocaleTimeString()}
+                     </span>
+                   </>
+                 )}
+               </div>
+             </div>
           </div>
         </div>
       </header>
@@ -269,13 +291,57 @@ export default function RaciGeneratorPage() {
           {/* Left Content: Steps 1-5 and Matrix */}
           <div className="lg:col-span-9 space-y-6 order-1 lg:order-1">
             {/* Header */}
-            <div className="space-y-2">
-              <Overline className="text-red-600 mb-2">
-                Build Your Chart
-              </Overline>
-              <Headline as="h3" className="text-black text-lg">
-                Define Roles & Tasks
-              </Headline>
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Overline className="text-red-600 mb-2">
+                  Build Your Chart
+                </Overline>
+                <Headline as="h3" className="text-black text-lg">
+                  Define Roles & Tasks
+                </Headline>
+              </div>
+              <div className="flex items-center gap-4 text-sm">
+                {!validation.isValid && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium">
+                      {validation.errors.length} issue
+                      {validation.errors.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                )}
+                {validation.isValid && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-700">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium">Valid</span>
+                  </div>
+                )}
+                {isFallbackActive && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                    <Info className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium text-xs">
+                      Using template data
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-slate-600">
+                  {isSaving && (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                      <span>Saving...</span>
+                    </>
+                  )}
+                  {!isSaving && lastSaved && (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span>
+                        Saved {new Date(lastSaved).toLocaleTimeString()}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <UndoButton canUndo={canUndo} onUndo={undo} />
+              </div>
             </div>
 
             {/* Step 1: Chart Details */}
