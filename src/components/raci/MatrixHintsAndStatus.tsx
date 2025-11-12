@@ -96,7 +96,6 @@ export function MatrixHintsAndStatus({
           <button
             className="p-1.5 hover:bg-slate-200 rounded-md transition-colors"
             aria-label="Matrix help"
-            title="Tips and shortcuts"
           >
             <HelpCircle className="w-4 h-4 text-slate-500 hover:text-slate-700" />
           </button>

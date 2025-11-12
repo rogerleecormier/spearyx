@@ -13,6 +13,11 @@ import {
   Check,
 } from "lucide-react";
 import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import {
   exportToPdf,
   exportToXlsx,
   exportToCsv,
@@ -36,7 +41,6 @@ interface ExportState {
   loading: boolean;
   format: ExportFormat | null;
   error: string | null;
-  hoveredTooltip: ExportFormat | null;
   linkCopied: boolean;
   linkError: string | null;
 }
@@ -104,7 +108,6 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
     loading: false,
     format: null,
     error: null,
-    hoveredTooltip: null,
     linkCopied: false,
     linkError: null,
   });
@@ -225,75 +228,64 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
             {rowFormats.map((fmt) => {
               const IconComponent = fmt.icon;
               const isLoading = state.format === fmt.id && state.loading;
-              const isHovered = state.hoveredTooltip === fmt.id;
 
               return (
-                <div key={fmt.id} className="relative">
-                  {/* Tooltip */}
-                  {isHovered && !state.loading && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 p-2 bg-slate-900 text-white rounded-lg text-xs whitespace-normal z-50 animate-in fade-in duration-200">
-                      <p className="font-semibold">{fmt.label}</p>
-                      <p className="text-slate-300 text-xs mt-1">
-                        {fmt.description}
-                      </p>
-                      <div className="absolute top-full left-2 w-2 h-2 bg-slate-900 transform rotate-45" />
-                    </div>
-                  )}
-
-                  {/* Button */}
-                  <button
-                    onClick={() => handleExport(fmt.id as ExportFormat)}
-                    onMouseEnter={() =>
-                      setState((prev) => ({ ...prev, hoveredTooltip: fmt.id }))
-                    }
-                    onMouseLeave={() =>
-                      setState((prev) => ({ ...prev, hoveredTooltip: null }))
-                    }
-                    disabled={state.loading && state.format !== fmt.id}
-                    className={`
-                      w-full flex items-center gap-3 p-3 rounded-lg
-                      border-2 border-slate-200 transition-all duration-200
-                      ${fmt.color}
-                      disabled:opacity-40 disabled:cursor-not-allowed
-                      relative
-                      ${
-                        isLoading
-                          ? "border-emerald-500 ring-2 ring-emerald-200"
-                          : ""
-                      }
-                    `}
-                  >
-                    {/* Loading Spinner */}
-                    {isLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-
-                    {/* Icon - Left Side */}
-                    <IconComponent
-                      className={`w-6 h-6 flex-shrink-0 text-slate-600 ${
-                        isLoading ? "opacity-0" : ""
-                      }`}
-                    />
-
-                    {/* Text Content - Right Side */}
-                    <div
-                      className={`flex-1 text-left min-w-0 ${
-                        isLoading ? "opacity-0" : ""
-                      }`}
+                <Tooltip key={fmt.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => handleExport(fmt.id as ExportFormat)}
+                      disabled={state.loading && state.format !== fmt.id}
+                      className={`
+                        w-full flex items-center gap-3 p-3 rounded-lg
+                        border-2 border-slate-200 transition-all duration-200
+                        ${fmt.color}
+                        disabled:opacity-40 disabled:cursor-not-allowed
+                        relative
+                        ${
+                          isLoading
+                            ? "border-emerald-500 ring-2 ring-emerald-200"
+                            : ""
+                        }
+                      `}
                     >
-                      <div className="font-semibold text-sm text-slate-900 leading-tight">
-                        {fmt.shortLabel}
-                      </div>
-                    </div>
+                      {/* Loading Spinner */}
+                      {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
 
-                    {/* Chevron - Right */}
-                    <span className="text-slate-400 transition-colors flex-shrink-0">
-                      →
-                    </span>
-                  </button>
-                </div>
+                      {/* Icon - Left Side */}
+                      <IconComponent
+                        className={`w-6 h-6 flex-shrink-0 text-slate-600 ${
+                          isLoading ? "opacity-0" : ""
+                        }`}
+                      />
+
+                      {/* Text Content - Right Side */}
+                      <div
+                        className={`flex-1 text-left min-w-0 ${
+                          isLoading ? "opacity-0" : ""
+                        }`}
+                      >
+                        <div className="font-semibold text-sm text-slate-900 leading-tight">
+                          {fmt.shortLabel}
+                        </div>
+                      </div>
+
+                      {/* Chevron - Right */}
+                      <span className="text-slate-400 transition-colors flex-shrink-0">
+                        →
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="font-semibold">{fmt.label}</p>
+                      <p className="text-xs">{fmt.description}</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
           </div>
