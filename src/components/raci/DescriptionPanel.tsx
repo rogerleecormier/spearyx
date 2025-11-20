@@ -28,8 +28,10 @@ import { RaciRole, RaciTask, RaciChart } from "@/types/raci";
 import { QUICK_PRESETS } from "@/lib/raci/templates";
 
 interface DescriptionPanelProps {
+  title: string;
   description: string;
   onChange: (description: string) => void;
+  onTitleChange: (title: string) => void;
   onGenerateRoles?: (roles: RaciRole[]) => void;
   onGenerateTasks?: (tasks: RaciTask[]) => void;
   onGenerateComplete?: (
@@ -179,8 +181,10 @@ function generateMatrixFromTemplate(
  * Description Panel with AI integration
  */
 export default function DescriptionPanel({
+  title,
   description,
   onChange,
+  onTitleChange,
   onGenerateRoles,
   onGenerateTasks,
   onGenerateComplete,
@@ -192,7 +196,18 @@ export default function DescriptionPanel({
   const [success, setSuccess] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState<string | null>(null);
   const [isFallback, setIsFallback] = useState(false);
+  const [isTitleEditable, setIsTitleEditable] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const requestIdRef = useRef<string | null>(null);
+
+  const handleTitleEditClick = () => {
+    setIsTitleEditable(true);
+    setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 0);
+  };
+
+  // ... (keep existing handleGenerate and other handlers) ...
 
   /**
    * Handle AI generation from project description
@@ -420,81 +435,91 @@ export default function DescriptionPanel({
   );
 
   return (
-    <div className="space-y-3">
-      {/* Quick Prompt Templates */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-600 uppercase">
-            Quick Examples
-          </span>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-            </TooltipTrigger>
-            <TooltipContent>
-              Select a template to populate your description
-            </TooltipContent>
-          </Tooltip>
+    <div className="space-y-8">
+      {/* Project Title Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="project-title"
+              className="text-sm font-semibold text-slate-900"
+            >
+              Project Title
+            </label>
+            {!isTitleEditable && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                ✨ AI Generated
+              </span>
+            )}
+          </div>
+          {!isTitleEditable && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTitleEditClick}
+              className="h-8 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+            >
+              Edit Manually
+            </Button>
+          )}
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {getTemplates()
-            .filter((template) => template.aiPrompt)
-            .map((template) => (
-              <button
-                key={template.id}
-                onClick={() => handleQuickPrompt(template.aiPrompt!)}
-                className="p-2 text-left text-xs font-medium bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-400 rounded transition-colors min-h-12 flex items-center justify-center"
-                title={template.aiPromptDescription}
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-1 text-center">
-                      <span className="text-blue-600 text-sm">✨</span>
-                      <span className="text-slate-900 leading-tight">
-                        {template.name}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="max-w-xs whitespace-normal"
-                  >
-                    {template.aiPromptDescription}
-                  </TooltipContent>
-                </Tooltip>
-              </button>
-            ))}
+        <div className="relative group">
+          <input
+            ref={titleInputRef}
+            id="project-title"
+            type="text"
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="Enter a project title..."
+            className={`w-full px-4 py-3 text-base border rounded-lg transition-all duration-200 ${
+              isTitleEditable
+                ? "bg-white border-slate-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 shadow-sm"
+                : "bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed"
+            }`}
+            readOnly={!isTitleEditable}
+            disabled={disabled}
+          />
         </div>
       </div>
 
       {/* Description Input */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <label htmlFor="description" className="text-sm font-medium">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="description"
+            className="text-sm font-semibold text-slate-900"
+          >
             Project Description
           </label>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 cursor-help hover:text-slate-800 transition-colors">
+                <Info className="w-3.5 h-3.5" />
+                <span>How it works</span>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
-              AI uses this to suggest roles and tasks
+              AI analyzes your description to suggest relevant roles and tasks
+              automatically.
             </TooltipContent>
           </Tooltip>
         </div>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Describe your project scope, objectives, and team structure... AI can use this to suggest roles and tasks."
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-24 resize-y max-h-80"
-          disabled={disabled || isLoading}
-          aria-label="Project description"
-          aria-describedby={error ? "description-error" : "description-help"}
-        />
-        <Caption className="text-xs text-muted-foreground">
-          Provide context about your project to help AI suggest roles and tasks.
-          Drag the bottom-right corner to resize.
+
+        <div className="relative">
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Describe your project in detail...&#10;&#10;Example: 'We are building a mobile app for a food delivery service. We need a product manager to oversee the roadmap, a backend engineer for the API, and a designer for the UI. The project involves user authentication, order tracking, and payment processing.'"
+            className="w-full px-4 py-4 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 min-h-[240px] resize-y text-base leading-relaxed shadow-sm transition-all duration-200"
+            disabled={disabled || isLoading}
+            aria-label="Project description"
+            aria-describedby={error ? "description-error" : "description-help"}
+          />
+        </div>
+        <Caption className="text-xs text-slate-500">
+          The more details you provide, the more accurate the generated RACI chart
+          will be.
         </Caption>
       </div>
 
@@ -502,12 +527,15 @@ export default function DescriptionPanel({
       {error && (
         <div
           id="description-error"
-          className="flex items-start gap-2 p-3 rounded-md bg-red-50 border border-red-200"
+          className="flex items-start gap-3 p-4 rounded-lg bg-red-50 border border-red-100 animate-in fade-in slide-in-from-top-2"
           role="alert"
         >
-          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <Body className="text-sm text-red-600">{error}</Body>
+            <h4 className="text-sm font-semibold text-red-900 mb-1">
+              Generation Failed
+            </h4>
+            <Body className="text-sm text-red-700">{error}</Body>
           </div>
         </div>
       )}
@@ -515,60 +543,93 @@ export default function DescriptionPanel({
       {/* Success Message */}
       {success && (
         <div
-          className="flex items-start gap-2 p-3 rounded-md bg-green-50 border border-green-200"
+          className="flex items-start gap-3 p-4 rounded-lg bg-green-50 border border-green-100 animate-in fade-in slide-in-from-top-2"
           role="status"
         >
-          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <Body className="text-sm text-green-600">
+            <h4 className="text-sm font-semibold text-green-900 mb-1">
+              Success!
+            </h4>
+            <Body className="text-sm text-green-700">
               {isFallback
-                ? "✨ Generated using template data (AI unavailable)"
+                ? "Generated using template data (AI unavailable)"
                 : "Roles and tasks generated successfully!"}
             </Body>
           </div>
         </div>
       )}
 
-      {/* Rate Limit Info */}
-      {rateLimitInfo && (
-        <Caption className="text-xs text-muted-foreground">
-          {rateLimitInfo}
-        </Caption>
-      )}
-
       {/* Action Buttons */}
-      <div className="flex gap-2">
+      <div className="space-y-3 pt-2">
         <Button
           onClick={handleGenerate}
           disabled={disabled || isLoading || !description.trim()}
-          className="gap-2"
+          className="w-full h-14 text-lg font-semibold bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all duration-200 rounded-xl flex items-center justify-center gap-3"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Analyzing Project...
             </>
           ) : (
-            "Generate from Description"
+            <>
+              <span>✨</span>
+              Generate Roles & Tasks
+            </>
           )}
         </Button>
 
         {isLoading && (
           <Button
             onClick={handleCancel}
-            variant="outline"
+            variant="ghost"
+            className="w-full text-slate-500 hover:text-slate-800"
             disabled={!isLoading}
           >
-            Cancel
+            Cancel Generation
           </Button>
+        )}
+
+        {rateLimitInfo && (
+          <p className="text-center text-xs text-slate-400 mt-2">
+            {rateLimitInfo}
+          </p>
         )}
       </div>
 
-      {/* Helper Text */}
-      <Caption className="text-xs text-muted-foreground">
-        Click &quot;Generate from Description&quot; to use AI to suggest roles
-        and tasks based on your project description.
-      </Caption>
+      {/* Quick Prompt Templates - Moved to bottom */}
+      <div className="pt-6 border-t border-slate-100">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Need Inspiration? Try an Example
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {getTemplates()
+            .filter((template) => template.aiPrompt)
+            .map((template) => (
+              <button
+                key={template.id}
+                onClick={() => handleQuickPrompt(template.aiPrompt!)}
+                className="group p-3 text-left rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 flex items-start gap-3"
+                title={template.aiPromptDescription}
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                  <span className="text-sm">💡</span>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-slate-700 group-hover:text-blue-700">
+                    {template.name}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                    {template.aiPromptDescription}
+                  </div>
+                </div>
+              </button>
+            ))}
+        </div>
+      </div>
     </div>
   );
 }

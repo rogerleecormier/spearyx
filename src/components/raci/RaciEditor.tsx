@@ -6,6 +6,7 @@
 
 import { RaciSessionState, RaciChart, RaciRole, RaciTask } from "@/types/raci";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useValidation } from "@/lib/raci/hooks";
 import RaciHeaderBar from "./RaciHeaderBar";
 import DescriptionPanel from "./DescriptionPanel";
 import RolesEditor from "./RolesEditor";
@@ -22,16 +23,22 @@ interface RaciEditorProps {
 }
 
 export default function RaciEditor({ state, setState }: RaciEditorProps) {
+  const validation = useValidation(state.chart);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card shadow-sm">
         <div className="px-6 py-4 max-w-7xl mx-auto">
           <RaciHeaderBar
-            chart={state.chart}
-            onChange={(chart: RaciChart) => {
-              setState({ ...state, chart });
+            title={state.chart.title}
+            onTitleChange={(title) => {
+              setState({
+                ...state,
+                chart: { ...state.chart, title },
+              });
             }}
+            validation={validation}
           />
         </div>
       </header>
@@ -47,7 +54,14 @@ export default function RaciEditor({ state, setState }: RaciEditorProps) {
             </CardHeader>
             <CardContent>
               <DescriptionPanel
+                title={state.chart.title}
                 description={state.chart.description}
+                onTitleChange={(title) => {
+                  setState({
+                    ...state,
+                    chart: { ...state.chart, title },
+                  });
+                }}
                 onChange={(desc: string) => {
                   setState({
                     ...state,
@@ -142,17 +156,21 @@ export default function RaciEditor({ state, setState }: RaciEditorProps) {
             <CardContent>
               <RaciMatrixEditor
                 chart={state.chart}
-                onChange={(chart: RaciChart) => {
-                  setState({ ...state, chart });
+                onMatrixChange={(matrix) => {
+                  setState({
+                    ...state,
+                    chart: { ...state.chart, matrix },
+                  });
                 }}
+                theme={state.ui.selectedTheme}
               />
             </CardContent>
           </Card>
 
           {/* Action Bar */}
           <div className="flex gap-4 justify-between items-center pt-4 border-t border-border">
-            <UndoButton canUndo={state.undo.canUndo} />
-            <ExportButtons chart={state.chart} theme={state.ui.selectedTheme} />
+            <UndoButton canUndo={state.undo.canUndo} onUndo={() => {}} />
+            <ExportButtons chart={state.chart} />
           </div>
         </main>
       </div>

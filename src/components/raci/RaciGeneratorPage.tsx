@@ -15,7 +15,7 @@ import { useUndo } from "@/lib/raci/hooks";
 import { useKeyboardNav } from "@/lib/raci/hooks";
 import { loadChartFromStorage } from "@/lib/raci/hooks";
 import { decodeChart } from "@/lib/raci/encoding";
-import RaciHeaderBar from "./RaciHeaderBar";
+import LogoUploader from "./LogoUploader";
 import DescriptionPanel from "./DescriptionPanel";
 import RolesEditor from "./RolesEditor";
 import TasksEditor from "./TasksEditor";
@@ -302,7 +302,8 @@ export default function RaciGeneratorPage() {
               </div>
             </div>
 
-            {/* Step 1: Chart Details */}
+
+            {/* Step 1: Project Details & AI Generation */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-3">
@@ -312,45 +313,7 @@ export default function RaciGeneratorPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-black">
-                        Chart Details
-                      </CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Set your project name and upload a logo
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Caption className="text-slate-600 mt-1">
-                      Configure project metadata
-                    </Caption>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <RaciHeaderBar
-                  title={chart.title}
-                  logo={chart.logo}
-                  onTitleChange={updateTitle}
-                  onLogoChange={updateLogo}
-                  validation={validation}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Step 2: Description & AI Generation */}
-            <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-black">
-                        Description & AI Generation
+                        Project Details & AI Generation
                       </CardTitle>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -370,7 +333,9 @@ export default function RaciGeneratorPage() {
               </CardHeader>
               <CardContent>
                 <DescriptionPanel
+                  title={chart.title}
                   description={chart.description}
+                  onTitleChange={updateTitle}
                   onChange={(desc: string) => updateDescription(desc)}
                   onGenerateRoles={(roles) => {
                     console.log("RaciGeneratorPage received roles:", roles);
@@ -411,12 +376,12 @@ export default function RaciGeneratorPage() {
               </CardContent>
             </Card>
 
-            {/* Step 3: Roles */}
+            {/* Step 2: Roles */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                    3
+                    2
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -459,12 +424,12 @@ export default function RaciGeneratorPage() {
               </CardContent>
             </Card>
 
-            {/* Step 4: Tasks */}
+            {/* Step 3: Tasks */}
             <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                    4
+                    3
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -507,17 +472,17 @@ export default function RaciGeneratorPage() {
               </CardContent>
             </Card>
 
-            {/* Step 5: RACI Matrix */}
+            {/* Step 4: RACI Matrix */}
 
             {/* Matrix Section */}
             <div>
-              {/* Step 5: Matrix Editor */}
+              {/* Step 4: Matrix Editor */}
               {chart.roles.length > 0 && chart.tasks.length > 0 ? (
                 <Card className="border-slate-200 shadow-sm">
                   <CardHeader>
                     <div className="flex items-start gap-3">
                       <div className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                        5
+                        4
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -591,6 +556,13 @@ export default function RaciGeneratorPage() {
           <div className="lg:col-span-3 space-y-6 order-2 lg:order-2">
             {/* Controls Row */}
             <div className="space-y-3">
+              {/* Logo Uploader */}
+              <LogoUploader
+                logo={chart.logo}
+                onLogoChange={updateLogo}
+                validation={validation}
+              />
+
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="pb-3 border-b border-slate-200">
                   <Label className="text-slate-700 font-semibold text-xs">
