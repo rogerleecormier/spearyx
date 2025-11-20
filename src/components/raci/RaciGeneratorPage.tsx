@@ -239,48 +239,6 @@ export default function RaciGeneratorPage() {
                 Define roles and responsibilities with crystal clarity
               </Body>
             </div>
-            <div className="flex items-center gap-4 text-sm">
-               {!validation.isValid && (
-                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600">
-                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                   <span className="font-medium">
-                     {validation.errors.length} issue
-                     {validation.errors.length !== 1 ? "s" : ""}
-                   </span>
-                 </div>
-               )}
-               {validation.isValid && (
-                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-700">
-                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                   <span className="font-medium">Valid</span>
-                 </div>
-               )}
-               {isFallbackActive && (
-                 <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-                   <Info className="w-4 h-4 flex-shrink-0" />
-                   <span className="font-medium text-xs">
-                     Using template data
-                   </span>
-                 </div>
-               )}
-               <div className="h-6 w-px bg-slate-200"></div>
-               <div className="flex items-center gap-2 text-slate-600">
-                 {isSaving && (
-                   <>
-                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                     <span>Saving...</span>
-                   </>
-                 )}
-                 {!isSaving && lastSaved && (
-                   <>
-                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                     <span>
-                       Saved {new Date(lastSaved).toLocaleTimeString()}
-                     </span>
-                   </>
-                 )}
-               </div>
-             </div>
           </div>
         </div>
       </header>

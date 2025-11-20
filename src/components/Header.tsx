@@ -1,31 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { Layers, ChevronDown } from "lucide-react";
+import { Layers, ChevronDown, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleLinkClick = () => {
-    setIsOpen(false);
-  };
-
   const isDev = import.meta.env.DEV;
 
   return (
@@ -41,49 +26,65 @@ export default function Header() {
         {isDev && (
           <div className="flex items-center gap-4">
             {/* Components Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <Button
-                variant="outline"
-                className="text-slate-900"
-                onClick={() => setIsOpen(!isOpen)}
-              >
-                <Layers size={20} />
-                <span className="hidden sm:inline ml-2">Components</span>
-                <ChevronDown
-                  size={16}
-                  className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                />
-              </Button>
-
-              {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-                  <Link
-                    to="/cards"
-                    onClick={handleLinkClick}
-                    className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-                  >
-                    <Layers size={18} className="mr-2 text-primary-500" />
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-slate-900 font-medium hover:bg-slate-100"
+                >
+                  <Layers size={18} className="mr-2" />
+                  Components
+                  <ChevronDown size={16} className="ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/cards" className="flex items-center">
+                    <Layers size={16} className="mr-2 text-primary-500" />
                     <span>Card Library</span>
                   </Link>
-                  <Link
-                    to="/typography"
-                    onClick={handleLinkClick}
-                    className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors"
-                  >
-                    <Layers size={18} className="mr-2 text-primary-500" />
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/typography" className="flex items-center">
+                    <Layers size={16} className="mr-2 text-primary-500" />
                     <span>Typography</span>
                   </Link>
-                </div>
-              )}
-            </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Tools Dropdown */}
-            <Link
-              to="/tools/raci-generator"
-              className="px-3 py-2 text-sm font-medium text-slate-900 hover:bg-slate-100 rounded transition-colors"
-            >
-              Tools
-            </Link>
+            {/* Tools Dropdown */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-slate-900 font-medium hover:bg-slate-100"
+                >
+                  <Wrench size={18} className="mr-2" />
+                  Tools
+                  <ChevronDown size={16} className="ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Available Tools</DropdownMenuLabel>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/tools/raci-generator">RACI Generator</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Coming Soon</DropdownMenuLabel>
+                <DropdownMenuItem disabled>
+                  Project Charter Generator
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  Communications Plan Generator
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  Risk Management Plan Generator
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>Stakeholder Register</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
