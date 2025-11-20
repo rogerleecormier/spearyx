@@ -4,7 +4,7 @@
  * Uses shadcn/ui components and site design system
  */
 
-import { RaciSessionState, RaciChart, RaciRole, RaciTask } from "@/types/raci";
+import { RaciSessionState, RaciRole, RaciTask } from "@/types/raci";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useValidation } from "@/lib/raci/hooks";
 import RaciHeaderBar from "./RaciHeaderBar";
@@ -141,7 +141,9 @@ export default function RaciEditor({ state, setState }: RaciEditorProps) {
                   });
                 }}
               />
-              <ResetControls />
+              <ResetControls onReset={function(): void {
+                              throw new Error("Function not implemented.");
+                          } } />
             </CardContent>
           </Card>
         </aside>
