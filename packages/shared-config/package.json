@@ -1,0 +1,20 @@
+{
+  "name": "@spearyx/shared-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles": "./src/styles.css",
+    "./tailwind.config": "./tailwind.config.ts"
+  },
+  "scripts": {
+    "build": "echo 'No build needed for source imports'"
+  },
+  "dependencies": {
+    "tailwindcss": "^4.0.6",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {}
+}

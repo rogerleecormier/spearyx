@@ -16,7 +16,7 @@ export function Headline({
   const fontWeight = variant === "bold" ? "font-bold" : "font-semibold";
   return (
     <Component
-      className={`text-headline ${fontWeight} ${className}`}
+      className={`text-4xl ${fontWeight} leading-tight ${className}`}
     >
       {children}
     </Component>

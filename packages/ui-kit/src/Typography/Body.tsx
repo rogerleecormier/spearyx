@@ -15,21 +15,21 @@ export function Body({
   weight = "normal",
   as: Component = "p",
 }: BodyProps) {
-  const sizeClass = {
-    lg: "text-body-lg",
-    base: "text-body",
-    sm: "text-body-sm",
-  }[size];
+  const sizeClasses = {
+    sm: "text-sm leading-normal",
+    base: "text-base leading-relaxed",
+    lg: "text-lg leading-relaxed",
+  };
 
-  const fontWeight = {
+  const weightClasses = {
     normal: "font-normal",
     medium: "font-medium",
     semibold: "font-semibold",
-  }[weight];
+  };
 
   return (
     <Component
-      className={`${sizeClass} ${fontWeight} leading-relaxed ${className}`}
+      className={`${sizeClasses[size]} ${weightClasses[weight]} ${className}`}
     >
       {children}
     </Component>

@@ -16,7 +16,7 @@ export function Display({
   const fontWeight = variant === "bold" ? "font-bold" : "font-semibold";
   return (
     <Component
-      className={`text-display ${fontWeight} ${className}`}
+      className={`text-5xl ${fontWeight} leading-tight tracking-tight ${className}`}
     >
       {children}
     </Component>

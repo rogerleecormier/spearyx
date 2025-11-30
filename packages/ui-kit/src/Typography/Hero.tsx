@@ -16,7 +16,7 @@ export function Hero({
   const fontWeight = variant === "bold" ? "font-bold" : "font-semibold";
   return (
     <Component
-      className={`text-hero ${fontWeight} ${className}`}
+      className={`text-7xl ${fontWeight} leading-none tracking-tight ${className}`}
     >
       {children}
     </Component>

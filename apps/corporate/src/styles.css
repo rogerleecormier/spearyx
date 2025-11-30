@@ -1,0 +1,8 @@
+/**
+ * Corporate App Global Styles
+ * Imports shared design system styles and custom app-specific overrides
+ */
+
+@import "@spearyx/shared-config/styles";
+
+/* App-specific styles can be added here */

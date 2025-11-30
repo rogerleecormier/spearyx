@@ -1,0 +1,112 @@
+/**
+ * SHARED DESIGN SYSTEM - Global Styles Foundation
+ * Used by: @spearyx/app-web, @spearyx/corporate, @spearyx/jobs
+ *
+ * SINGLE SOURCE OF TRUTH: Design tokens are defined in tailwind.config.ts
+ * This file provides:
+ * - Tailwind integration (@import)
+ * - Base styles and resets
+ * - Global utility classes
+ * - Dark mode and accessibility features
+ */
+
+@import "tailwindcss";
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 0 0% 3.6%;
+    --foreground: 0 0% 98.2%;
+    --card: 0 0% 3.6%;
+    --card-foreground: 0 0% 98.2%;
+    --popover: 0 0% 3.6%;
+    --popover-foreground: 0 0% 98.2%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 98.2%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98.2%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+}
+
+/* ==================== GLOBAL BASE STYLES ==================== */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== SCROLLBAR STYLES ==================== */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Firefox */
+* {
+  scrollbar-color: hsl(var(--muted)) hsl(var(--background));
+  scrollbar-width: thin;
+}
+
+/* ==================== FOCUS STATES ==================== */
+@layer utilities {
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+  }
+  .focus-ring-secondary {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500;
+  }
+}
+
+/* ==================== DARK MODE ADJUSTMENTS ==================== */
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply bg-slate-950 text-slate-50;
+  }
+
+  .card-modern {
+    @apply bg-slate-900 border-slate-700;
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+
+  .no-print {
+    @apply hidden;
+  }
+}

@@ -3,21 +3,21 @@ import { ReactNode } from "react";
 interface LabelProps {
   children: ReactNode;
   className?: string;
-  variant?: "medium" | "semibold";
+  variant?: "normal" | "semibold";
+  htmlFor?: string;
   as?: React.ElementType;
 }
 
 export function Label({
   children,
   className = "",
-  variant = "medium",
+  variant = "normal",
+  htmlFor,
   as: Component = "label",
 }: LabelProps) {
-  const fontWeight = variant === "semibold" ? "font-semibold" : "font-medium";
+  const fontWeight = variant === "normal" ? "font-medium" : "font-semibold";
   return (
-    <Component
-      className={`block text-label ${fontWeight} uppercase tracking-wider ${className}`}
-    >
+    <Component htmlFor={htmlFor} className={`text-sm ${fontWeight} tracking-wide ${className}`}>
       {children}
     </Component>
   );

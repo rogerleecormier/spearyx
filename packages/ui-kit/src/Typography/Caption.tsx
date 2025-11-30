@@ -13,11 +13,9 @@ export function Caption({
   variant = "normal",
   as: Component = "span",
 }: CaptionProps) {
-  const fontWeight = variant === "semibold" ? "font-semibold" : "font-normal";
+  const fontWeight = variant === "normal" ? "font-normal" : "font-semibold";
   return (
-    <Component
-      className={`block text-caption ${fontWeight} ${className}`}
-    >
+    <Component className={`text-sm ${fontWeight} ${className}`}>
       {children}
     </Component>
   );

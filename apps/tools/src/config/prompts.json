@@ -1,0 +1,22 @@
+{
+  "roleExtraction": {
+    "prompt": "Extract 5-8 key roles from this project description: {{projectDescription}}\n\nRespond with only a JSON array of role names (strings), no additional text.",
+    "variables": ["projectDescription"],
+    "maxTokens": 200
+  },
+  "taskGeneration": {
+    "prompt": "For a {{projectType}} project with these roles: {{roles}}\n\nSuggest 6-8 key tasks/milestones.\n\nRespond with only a JSON array of objects with 'name' and 'description' fields.",
+    "variables": ["projectType", "roles"],
+    "maxTokens": 300
+  },
+  "raciAdvice": {
+    "prompt": "For the task '{{task}}' in a {{projectType}} project with roles {{roles}}, suggest the most appropriate RACI assignment.\n\nRespond with only a JSON object mapping role names to RACI values (R, A, C, or I). Ensure exactly one A (Accountable).",
+    "variables": ["task", "projectType", "roles"],
+    "maxTokens": 200
+  },
+  "projectTypeClassification": {
+    "prompt": "Classify this project description into one category: Mobile App, Web Redesign, CRM Migration, Marketing Campaign, Data Analytics, or Other.\n\n{{projectDescription}}\n\nRespond with only the category name.",
+    "variables": ["projectDescription"],
+    "maxTokens": 50
+  }
+}

@@ -15,7 +15,7 @@ export function Subtitle({
 }: SubtitleProps) {
   const fontWeight = variant === "semibold" ? "font-semibold" : "font-normal";
   return (
-    <Component className={`text-subtitle ${fontWeight} ${className}`}>
+    <Component className={`text-xl ${fontWeight} leading-normal ${className}`}>
       {children}
     </Component>
   );

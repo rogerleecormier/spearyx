@@ -1,15 +1,18 @@
 // Cards
-export * from './Cards';
+export * from "./Cards";
 
 // Typography
-export * from './Typography';
+export * from "./Typography";
+
+// Header
+export * from "./Header";
 
 // UI Components
-export * from './ui/avatar';
-export * from './ui/badge';
-export * from './ui/button';
-export * from './ui/card';
-export * from './ui/dropdown-menu';
-export * from './ui/sheet';
-export * from './ui/tooltip';
-export * from './ui/Toaster';
+export * from "./ui/avatar";
+export * from "./ui/badge";
+export * from "./ui/button";
+export * from "./ui/card";
+export * from "./ui/dropdown-menu";
+export * from "./ui/sheet";
+export * from "./ui/tooltip";
+export * from "./ui/Toaster";

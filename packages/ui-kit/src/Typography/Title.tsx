@@ -15,7 +15,7 @@ export function Title({
 }: TitleProps) {
   const fontWeight = variant === "bold" ? "font-bold" : "font-semibold";
   return (
-    <Component className={`text-title ${fontWeight} ${className}`}>
+    <Component className={`text-2xl ${fontWeight} leading-snug ${className}`}>
       {children}
     </Component>
   );
