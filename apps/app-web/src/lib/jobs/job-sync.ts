@@ -1,4 +1,5 @@
 import { schema } from "../../db/db";
+import type { DrizzleD1Database } from "../../db/db";
 import { getD1Database } from "../cloudflare-dev";
 import { jobSources, determineCategoryId } from "./job-sources";
 import { eq } from "drizzle-orm";
@@ -75,13 +76,14 @@ export async function syncJobs(
     updateExisting: boolean;
     addNew: boolean;
     sources?: string[];
+    db?: DrizzleD1Database;
     onLog?: (
       message: string,
       level?: "info" | "success" | "error" | "warning"
     ) => void;
   } = { updateExisting: true, addNew: true }
 ) {
-  const db = await getDb();
+  const db = options.db || (await getDb());
   const log = options.onLog || console.log;
 
   log("=".repeat(50));

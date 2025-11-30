@@ -35,9 +35,10 @@ export const Route = createFileRoute("/api/sync-stream")({
         );
         console.log("🔍 Context.env:", ctx ? !!ctx.env : "no context");
 
+        let db;
         try {
           console.log("🔍 Attempting to get DB from context...");
-          const db = await getDbFromContext(ctx);
+          db = await getDbFromContext(ctx);
           console.log("✅ DB connection successful");
         } catch (error) {
           console.error("❌ DB connection failed:", error);
@@ -53,7 +54,6 @@ export const Route = createFileRoute("/api/sync-stream")({
           );
         }
 
-        const db = await getDbFromContext(ctx);
         const url = new URL(request.url);
         const cleanup = url.searchParams.get("cleanup") === "true";
         const discovery = url.searchParams.get("discovery") === "true";
@@ -162,13 +162,18 @@ export const Route = createFileRoute("/api/sync-stream")({
 
                 // Wait for completion if reconnecting
                 await new Promise<void>((resolve) => {
-                   const checkInterval = setInterval(() => {
-                     const currentSync = getSync(reconnectId);
-                     if (!currentSync || currentSync.status === 'complete' || currentSync.status === 'error' || isControllerClosed) {
-                       clearInterval(checkInterval);
-                       resolve();
-                     }
-                   }, 1000);
+                  const checkInterval = setInterval(() => {
+                    const currentSync = getSync(reconnectId);
+                    if (
+                      !currentSync ||
+                      currentSync.status === "complete" ||
+                      currentSync.status === "error" ||
+                      isControllerClosed
+                    ) {
+                      clearInterval(checkInterval);
+                      resolve();
+                    }
+                  }, 1000);
                 });
 
                 return;
@@ -294,6 +299,7 @@ export const Route = createFileRoute("/api/sync-stream")({
                     updateExisting,
                     addNew,
                     sources,
+                    db,
                     onLog: sendLog,
                   });
 

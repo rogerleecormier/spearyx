@@ -18,7 +18,8 @@ export function getDb(d1: D1Database) {
 // Helper to get DB from context (for use in API routes)
 export async function getDbFromContext(context: any) {
   // Try different possible locations for the DB binding
-  const d1Binding = context?.cloudflare?.env?.DB || context?.env?.DB;
+  const d1Binding =
+    context?.cloudflare?.env?.DB || context?.env?.DB || context?.DB;
 
   if (d1Binding) {
     return getDb(d1Binding);
