@@ -70,6 +70,22 @@ export const Route = createFileRoute("/api/sync-stream")({
 
         const stream = new ReadableStream({
           async start(controller) {
+            // Keep connection alive with periodic comments
+            const keepAliveInterval = setInterval(() => {
+              if (isControllerClosed) {
+                clearInterval(keepAliveInterval);
+                return;
+              }
+              try {
+                const message = `: keep-alive\n\n`;
+                controller.enqueue(encoder.encode(message));
+              } catch (error) {
+                // If we can't write, the controller is probably closed
+                isControllerClosed = true;
+                clearInterval(keepAliveInterval);
+              }
+            }, 10000); // Send every 10 seconds
+
             const sendEvent = (data: any) => {
               if (isControllerClosed) return;
               try {
@@ -84,6 +100,7 @@ export const Route = createFileRoute("/api/sync-stream")({
             // Handle client disconnect
             request.signal.addEventListener("abort", () => {
               isControllerClosed = true;
+              clearInterval(keepAliveInterval);
               try {
                 controller.close();
               } catch (e) {
@@ -110,6 +127,7 @@ export const Route = createFileRoute("/api/sync-stream")({
                   const duration =
                     existingSync.endTime! - existingSync.startTime;
                   sendEvent({ type: "complete", duration });
+                  clearInterval(keepAliveInterval);
                   controller.close();
                   return;
                 } else if (existingSync.status === "error") {
@@ -117,6 +135,7 @@ export const Route = createFileRoute("/api/sync-stream")({
                     type: "error",
                     message: existingSync.error || "Unknown error",
                   });
+                  clearInterval(keepAliveInterval);
                   controller.close();
                   return;
                 }
@@ -125,6 +144,7 @@ export const Route = createFileRoute("/api/sync-stream")({
                 const listener = (event: any) => {
                   sendEvent(event);
                   if (event.type === "complete" || event.type === "error") {
+                    clearInterval(keepAliveInterval);
                     try {
                       controller.close();
                     } catch (e) {}
@@ -136,12 +156,25 @@ export const Route = createFileRoute("/api/sync-stream")({
 
                 // Cleanup listener on abort
                 request.signal.addEventListener("abort", () => {
+                  clearInterval(keepAliveInterval);
                   unsubscribeFromSync(reconnectId, listener);
+                });
+
+                // Wait for completion if reconnecting
+                await new Promise<void>((resolve) => {
+                   const checkInterval = setInterval(() => {
+                     const currentSync = getSync(reconnectId);
+                     if (!currentSync || currentSync.status === 'complete' || currentSync.status === 'error' || isControllerClosed) {
+                       clearInterval(checkInterval);
+                       resolve();
+                     }
+                   }, 1000);
                 });
 
                 return;
               } else {
                 sendEvent({ type: "error", message: "Sync session not found" });
+                clearInterval(keepAliveInterval);
                 controller.close();
                 return;
               }
@@ -324,6 +357,7 @@ export const Route = createFileRoute("/api/sync-stream")({
                 completeSync(syncState.id, errorMessage);
               }
             } finally {
+              clearInterval(keepAliveInterval);
               if (request.signal.aborted) {
                 try {
                   controller.close();

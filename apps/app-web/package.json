@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "mkdir -p dist/server && touch dist/server/server.js && vite build",
-    "serve": "vite preview",
+    "serve": "npx wrangler dev",
     "test": "vitest run",
     "deploy": "npm run build",
-    "preview": "npm run build && vite preview",
+    "preview": "npm run build && npx wrangler dev",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

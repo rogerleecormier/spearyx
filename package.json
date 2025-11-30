@@ -9,6 +9,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "preview": "turbo run preview",
     "deploy": "npm run build && npx wrangler deploy --config ./wrangler.toml"
   },
   "devDependencies": {

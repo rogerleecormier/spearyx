@@ -230,12 +230,14 @@ const sources =
     : undefined;
 
 // Auto-execute when run as a script
-syncJobs({ updateExisting, addNew, sources })
-  .then(() => {
-    console.log("\n✅ Sync finished successfully!");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error("\n❌ Sync failed:", error);
-    process.exit(1);
-  });
+// if (import.meta.url === `file://${process.argv[1]}`) {
+//   syncJobs({ updateExisting, addNew, sources })
+//     .then(() => {
+//       console.log("\n✅ Sync finished successfully!");
+//       process.exit(0);
+//     })
+//     .catch((error) => {
+//       console.error("\n❌ Sync failed:", error);
+//       process.exit(1);
+//     });
+// }
