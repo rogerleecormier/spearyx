@@ -6,6 +6,7 @@ export * from "./Typography";
 
 // Header
 export * from "./Header";
+export * from "./AppHeader";
 
 // UI Components
 export * from "./ui/avatar";

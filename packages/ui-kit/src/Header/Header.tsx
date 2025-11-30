@@ -11,9 +11,9 @@ export function Header({ logo, label, children }: HeaderProps) {
   return (
     <header className="border-b bg-white">
       <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-        <div className="flex items-end gap-3">
+        <div className="flex items-start gap-3">
           {logo}
-          <Overline className="text-slate-500 leading-none mb-0.5">
+          <Overline className="text-slate-500 leading-none mt-0.5">
             {label}
           </Overline>
         </div>

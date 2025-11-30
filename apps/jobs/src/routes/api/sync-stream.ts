@@ -82,8 +82,24 @@ export const Route = createFileRoute("/api/sync-stream")({
           url.searchParams.get("updateExisting") === "true";
         const addNew = url.searchParams.get("addNew") === "true";
         const sourcesParam = url.searchParams.get("sources");
-        const sources = sourcesParam ? sourcesParam.split(",") : undefined;
+        const sources = sourcesParam ? sourcesParam.split(",").filter(s => s.trim()) : undefined;
         const reconnectId = url.searchParams.get("syncId");
+
+        // Validate that at least something is selected
+        const hasAnyOption = cleanup || discovery || maintenance || updateExisting || addNew;
+        
+        if (!hasAnyOption) {
+          return new Response(
+            JSON.stringify({
+              error: "No sync options selected",
+              message: "Please select at least one discovery, cleanup, maintenance, or source sync option"
+            }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" }
+            }
+          );
+        }
 
         const encoder = new TextEncoder();
         let isControllerClosed = false;
@@ -109,11 +125,19 @@ export const Route = createFileRoute("/api/sync-stream")({
             const sendEvent = (data: any) => {
               if (isControllerClosed) return;
               try {
-                const message = `data: ${JSON.stringify(data)}\n\n`;
+                // Properly format Server-Sent Events (SSE) data
+                // Ensure data is a single line to avoid breaking SSE protocol
+                const jsonData = JSON.stringify(data);
+                const message = `data: ${jsonData}\n\n`;
                 controller.enqueue(encoder.encode(message));
               } catch (error) {
                 console.error("Error sending event:", error);
                 isControllerClosed = true;
+                try {
+                  controller.close();
+                } catch (e) {
+                  // Already closed
+                }
               }
             };
 
@@ -213,12 +237,12 @@ export const Route = createFileRoute("/api/sync-stream")({
 
             // Subscribe to updates immediately
             const listener = (event: any) => {
-              sendEvent(event);
+              if (!isControllerClosed) {
+                sendEvent(event);
+              }
               if (event.type === "complete" || event.type === "error") {
-                try {
-                  controller.close();
-                } catch (e) {}
                 unsubscribeFromSync(syncState.id, listener);
+                // Don't close controller here - let the main stream function handle it
               }
             };
             subscribeToSync(syncState.id, listener);
@@ -384,11 +408,15 @@ export const Route = createFileRoute("/api/sync-stream")({
               }
             } finally {
               clearInterval(keepAliveInterval);
-              if (request.signal.aborted) {
+              // Give listeners a moment to send final events, then close
+              setTimeout(() => {
+                isControllerClosed = true;
                 try {
                   controller.close();
-                } catch (e) {}
-              }
+                } catch (e) {
+                  // Already closed
+                }
+              }, 100);
             }
           },
         });

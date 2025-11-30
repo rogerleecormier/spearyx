@@ -1,80 +1,8 @@
 /**
- * RACI-Specific Styles
- * Modern, clean design with responsive layout
+ * RACI-Specific Layout Styles
+ * Uses shared theme variables from @spearyx/shared-config
  */
 
-/* ============================================================================
-   CSS Custom Properties - Theme Variables
-   ============================================================================ */
-
-:root {
-  /* Default theme (Website Default) */
-  --raci-primary: #0066cc;
-  --raci-accent: #ff9500;
-  --raci-background: #ffffff;
-  --raci-surface: #f8fafc;
-  --raci-text: #0f172a;
-  --raci-text-secondary: #64748b;
-  --raci-border: #e2e8f0;
-  --raci-r: #22c55e;
-  --raci-a: #fb923c;
-  --raci-c: #3b82f6;
-  --raci-i: #9ca3af;
-}
-
-/* Theme: Corporate Blue */
-[data-theme="corporate"] {
-  --raci-primary: #003d82;
-  --raci-accent: #d4a574;
-  --raci-background: #ffffff;
-  --raci-surface: #f0f4f8;
-  --raci-text: #1a1a1a;
-  --raci-text-secondary: #666666;
-  --raci-border: #d0d0d0;
-  --raci-r: #0fb338;
-  --raci-a: #e8b923;
-  --raci-c: #0066ff;
-  --raci-i: #a0a0a0;
-}
-
-/* Theme: Minimal Grayscale */
-[data-theme="minimal"] {
-  --raci-primary: #2d3748;
-  --raci-accent: #718096;
-  --raci-background: #ffffff;
-  --raci-surface: #f7fafc;
-  --raci-text: #1a202c;
-  --raci-text-secondary: #4a5568;
-  --raci-border: #cbd5e0;
-  --raci-r: #2d3748;
-  --raci-a: #4a5568;
-  --raci-c: #718096;
-  --raci-i: #a0aec0;
-}
-
-/* High Contrast Mode Override */
-@media (prefers-contrast: more) {
-  :root {
-    --raci-primary: #000080;
-    --raci-text: #000000;
-    --raci-r: #008000;
-    --raci-a: #ff0000;
-    --raci-c: #0000ff;
-    --raci-i: #808080;
-  }
-}
-
-/* High Contrast Mode (forced via data attribute) */
-[data-high-contrast="true"] {
-  --raci-primary: #000080;
-  --raci-text: #000000;
-  --raci-r: #008000;
-  --raci-a: #ff0000;
-  --raci-c: #0000ff;
-  --raci-i: #808080;
-  --raci-background: #ffffff;
-  --raci-border: #000000;
-}
 
 /* ============================================================================
    Layout Container

@@ -10,7 +10,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "preview": "turbo run preview",
-    "deploy": "npm run build && npx wrangler deploy --config ./wrangler.toml"
+    "deploy": "npm run build && npx wrangler deploy --config ./wrangler.toml",
+    "sync:local": "node seed-jobs-db-direct.js && npm --prefix apps/jobs run build && npm --prefix apps/jobs run serve"
   },
   "devDependencies": {
     "turbo": "latest",

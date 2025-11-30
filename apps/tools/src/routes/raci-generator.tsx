@@ -8,6 +8,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import RaciGeneratorPage from "@/components/RaciGeneratorPage";
+import "../raci.css";
 
 interface RaciGeneratorSearch {
   importData?: string;

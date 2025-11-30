@@ -6,29 +6,10 @@ export const Route = createFileRoute("/api/test-db")({
   server: {
     handlers: {
       GET: async ({ context }) => {
-        const ctx = context as any;
-
         try {
           console.log("🔍 Test DB endpoint called");
-          console.log(
-            "🔍 Context:",
-            JSON.stringify(
-              {
-                hasContext: !!ctx,
-                hasCloudflare: !!ctx?.cloudflare,
-                hasCloudflareEnv: !!ctx?.cloudflare?.env,
-                hasEnv: !!ctx?.env,
-                cloudflareEnvKeys: ctx?.cloudflare?.env
-                  ? Object.keys(ctx.cloudflare.env)
-                  : [],
-                envKeys: ctx?.env ? Object.keys(ctx.env) : [],
-              },
-              null,
-              2
-            )
-          );
 
-          const db = await getDbFromContext(ctx);
+          const db = await getDbFromContext(context);
           console.log("✅ DB connection successful");
 
           // Try a simple query

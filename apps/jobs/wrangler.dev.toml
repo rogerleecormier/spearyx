@@ -1,7 +1,6 @@
 name = "spearyx-jobs"
 compatibility_date = "2025-11-05"
 compatibility_flags = ["nodejs_compat"]
-main = "dist/server/server.js"
 
 [[d1_databases]]
 binding = "DB"
