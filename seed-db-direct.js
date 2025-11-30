@@ -54,7 +54,8 @@ const defaultCategories = [
   {
     name: "Sales",
     slug: "sales",
-    description: "Sales representatives, account executives, and business development",
+    description:
+      "Sales representatives, account executives, and business development",
   },
 ];
 

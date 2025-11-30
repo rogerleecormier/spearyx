@@ -24,12 +24,15 @@ export async function getDbFromContext(context: any) {
     return getDb(d1Binding);
   }
 
-    // In development, use local SQLite
+  // In development, use local SQLite
   if (import.meta.env.DEV) {
-    console.log('⚠️  D1 binding not found in context, using local SQLite for development')
-    const dbPath = '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/06a500e275bd2a50241cdcf76c189feed6a340311d3f01e9b730f2df0a30bb26.sqlite'
-    const sqlite = new Database(dbPath)
-    return drizzleSqlite(sqlite, { schema })
+    console.log(
+      "⚠️  D1 binding not found in context, using local SQLite for development"
+    );
+    const dbPath =
+      ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/06a500e275bd2a50241cdcf76c189feed6a340311d3f01e9b730f2df0a30bb26.sqlite";
+    const sqlite = new Database(dbPath);
+    return drizzleSqlite(sqlite, { schema });
   }
 
   // In production, we must have D1
