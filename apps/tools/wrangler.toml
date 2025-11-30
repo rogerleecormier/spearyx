@@ -1,5 +1,7 @@
 name = "spearyx-tools"
 compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+main = "dist/server/server.js"
 
 [assets]
 directory = "dist/client"
