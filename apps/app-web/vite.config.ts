@@ -5,6 +5,8 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 const config = defineConfig({
   plugins: [
     // TanStack Start must come first for proper routing
@@ -13,12 +15,15 @@ const config = defineConfig({
         preset: "cloudflare-pages",
       },
     }),
-    // Cloudflare plugin with proper configuration for D1 bindings
-    cloudflare({
-      configPath: "./wrangler.toml",
-      // Only persist state during local dev to avoid bundling dev deps into the Worker
-      persistState: process.env.NODE_ENV !== "production",
-    }),
+    // Cloudflare plugin only for development - provides local D1 bindings
+    ...(isDev
+      ? [
+          cloudflare({
+            configPath: "./wrangler.toml",
+            persistState: true,
+          }),
+        ]
+      : []),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],

@@ -1,7 +1,7 @@
 name = "spearyx"
 compatibility_date = "2025-11-30"
 compatibility_flags = [ "nodejs_compat" ]
-main = "apps/app-web/dist/server/server.js"
+# Note: main field removed - TanStack Start with cloudflare-pages preset handles this
 
 [observability]
 enabled = true
