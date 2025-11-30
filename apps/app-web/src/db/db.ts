@@ -2,8 +2,8 @@ import {
   drizzle,
   DrizzleD1Database as DrizzleD1DatabaseType,
 } from "drizzle-orm/d1";
-import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+// import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
+// import Database from "better-sqlite3";
 import * as schema from "./schema";
 import { getD1Database } from "../lib/cloudflare-dev";
 
@@ -30,6 +30,11 @@ export async function getDbFromContext(context: any) {
     console.log(
       "⚠️  D1 binding not found in context, using local SQLite for development"
     );
+    const { drizzle: drizzleSqlite } = await import(
+      "drizzle-orm/better-sqlite3"
+    );
+    const { default: Database } = await import("better-sqlite3");
+
     const dbPath =
       ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/06a500e275bd2a50241cdcf76c189feed6a340311d3f01e9b730f2df0a30bb26.sqlite";
     const sqlite = new Database(dbPath);
