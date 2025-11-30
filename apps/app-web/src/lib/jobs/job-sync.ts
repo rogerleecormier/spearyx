@@ -226,4 +226,3 @@ export async function syncJobs(
 
 // Auto-execute when run as a script
 // (Removed for Cloudflare Worker compatibility)
-
