@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1764155496721,
+      "tag": "0000_public_garia",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1764370774989,
+      "tag": "0001_dashing_sleeper",
+      "breakpoints": true
+    }
+  ]
+}
