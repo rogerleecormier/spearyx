@@ -4,20 +4,21 @@ import { createSyncReport, updateDiscoveryStats, updateJobStats, finalizeSyncRep
 import type { SyncReport } from '../../lib/jobs/sync-report'
 import { getDbFromContext } from '../../db/db'
 import { discoverGreenhouseCompanies } from '../../lib/jobs/job-sources/discover-greenhouse-companies'
+import { syncJobs } from '../../lib/jobs/job-sync'
 
 export const Route = createFileRoute('/api/sync-stream')({
   server: {
     handlers: {
       GET: async ({ request, context }) => {
+        const ctx = context as any
         console.log('🔍 Sync-stream endpoint called')
-        console.log('🔍 Context keys:', context ? Object.keys(context) : 'no context')
-        console.log('🔍 Context.cloudflare:', context ? !!context.cloudflare : 'no context')
-        console.log('🔍 Context.env:', context ? !!context.env : 'no context')
+        console.log('🔍 Context keys:', ctx ? Object.keys(ctx) : 'no context')
+        console.log('🔍 Context.cloudflare:', ctx ? !!ctx.cloudflare : 'no context')
+        console.log('🔍 Context.env:', ctx ? !!ctx.env : 'no context')
         
         try {
-          const ctx = context as any
           console.log('🔍 Attempting to get DB from context...')
-          const db = getDbFromContext(ctx)
+          const db = await getDbFromContext(ctx)
           console.log('✅ DB connection successful')
         } catch (error) {
           console.error('❌ DB connection failed:', error)
@@ -27,8 +28,7 @@ export const Route = createFileRoute('/api/sync-stream')({
           })
         }
         
-        const ctx = context as any
-        const db = getDbFromContext(ctx)
+        const db = await getDbFromContext(ctx)
         const url = new URL(request.url)
         const cleanup = url.searchParams.get('cleanup') === 'true'
         const discovery = url.searchParams.get('discovery') === 'true'
@@ -195,7 +195,33 @@ export const Route = createFileRoute('/api/sync-stream')({
               // Step 4: Sync
               if (updateExisting || addNew) {
                 sendLog('📥 Step 4: Job Sync', 'info')
-                sendLog('⚠️ Job Sync scripts not yet migrated to D1', 'warning')
+                const syncStart = Date.now()
+                
+                try {
+                  sendLog('Syncing jobs from configured sources...', 'info')
+                  const result = await syncJobs({ 
+                    updateExisting, 
+                    addNew, 
+                    sources,
+                    onLog: sendLog
+                  })
+                  
+                  updateJobStats(syncReport, {
+                    jobsAdded: result.added,
+                    jobsUpdated: result.updated,
+                    jobsSkipped: result.skipped
+                  })
+                  
+                  const syncDuration = ((Date.now() - syncStart) / 1000).toFixed(1)
+                  sendLog(`✅ Job sync completed in ${syncDuration}s`, 'success')
+                  sendLog(`   Added: ${result.added}`, 'info')
+                  sendLog(`   Updated: ${result.updated}`, 'info')
+                  sendLog(`   Skipped: ${result.skipped}`, 'info')
+                } catch (error) {
+                  if (!request.signal.aborted) {
+                    sendLog(`⚠️  Job sync had errors: ${error}`, 'warning')
+                  }
+                }
                 sendLog('', 'info')
               } else {
                 sendLog('ℹ️  Job sync skipped (neither update nor new jobs selected)', 'info')

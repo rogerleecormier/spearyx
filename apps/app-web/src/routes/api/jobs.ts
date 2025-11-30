@@ -12,7 +12,7 @@ export const Route = createFileRoute('/api/jobs')({
         try {
           const ctx = context as any
           // console.log('API /jobs context keys:', ctx ? Object.keys(ctx) : 'context is null')
-          const db = getDbFromContext(ctx)
+          const db = await getDbFromContext(ctx)
           
           const url = new URL(request.url)
           const query = url.searchParams.get('search') || undefined
@@ -33,14 +33,13 @@ export const Route = createFileRoute('/api/jobs')({
           const offset = (page - 1) * limit
 
           // Fetch all jobs with their categories
-          const jobsData = await db.query.jobs.findMany()
+          const jobsData = await db.select().from(schema.jobs)
 
           // Transform to include category data
           const jobsWithCategories: JobWithCategory[] = await Promise.all(
             jobsData.map(async (job) => {
-              const category = await db.query.categories.findFirst({
-                where: eq(schema.categories.id, job.categoryId),
-              })
+              const categoryResults = await db.select().from(schema.categories).where(eq(schema.categories.id, job.categoryId))
+              const category = categoryResults[0]
               return {
                 ...job,
                 category: category!,

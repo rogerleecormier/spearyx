@@ -16,9 +16,15 @@ import { Route as ToolsIndexRouteImport } from './routes/tools/index'
 import { Route as JobsIndexRouteImport } from './routes/jobs/index'
 import { Route as ToolsRaciGeneratorRouteImport } from './routes/tools/raci-generator'
 import { Route as JobsSyncRouteImport } from './routes/jobs/sync'
+import { Route as ApiTestSimpleInsertRouteImport } from './routes/api/test-simple-insert'
+import { Route as ApiTestJobsRouteImport } from './routes/api/test-jobs'
+import { Route as ApiTestInsertRouteImport } from './routes/api/test-insert'
+import { Route as ApiTestEncodingRouteImport } from './routes/api/test-encoding'
+import { Route as ApiTestDbRouteImport } from './routes/api/test-db'
 import { Route as ApiSyncStreamRouteImport } from './routes/api/sync-stream'
 import { Route as ApiSyncRouteImport } from './routes/api/sync'
 import { Route as ApiJobsRouteImport } from './routes/api/jobs'
+import { Route as ApiDebugDbRouteImport } from './routes/api/debug-db'
 import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
 import { Route as ToolsRaciGeneratorImportRouteImport } from './routes/tools/raci-generator/import'
 
@@ -57,6 +63,31 @@ const JobsSyncRoute = JobsSyncRouteImport.update({
   path: '/jobs/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTestSimpleInsertRoute = ApiTestSimpleInsertRouteImport.update({
+  id: '/api/test-simple-insert',
+  path: '/api/test-simple-insert',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestJobsRoute = ApiTestJobsRouteImport.update({
+  id: '/api/test-jobs',
+  path: '/api/test-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestInsertRoute = ApiTestInsertRouteImport.update({
+  id: '/api/test-insert',
+  path: '/api/test-insert',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestEncodingRoute = ApiTestEncodingRouteImport.update({
+  id: '/api/test-encoding',
+  path: '/api/test-encoding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestDbRoute = ApiTestDbRouteImport.update({
+  id: '/api/test-db',
+  path: '/api/test-db',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSyncStreamRoute = ApiSyncStreamRouteImport.update({
   id: '/api/sync-stream',
   path: '/api/sync-stream',
@@ -70,6 +101,11 @@ const ApiSyncRoute = ApiSyncRouteImport.update({
 const ApiJobsRoute = ApiJobsRouteImport.update({
   id: '/api/jobs',
   path: '/api/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDebugDbRoute = ApiDebugDbRouteImport.update({
+  id: '/api/debug-db',
+  path: '/api/debug-db',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCategoriesRoute = ApiCategoriesRouteImport.update({
@@ -89,9 +125,15 @@ export interface FileRoutesByFullPath {
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
   '/api/categories': typeof ApiCategoriesRoute
+  '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
   '/api/sync-stream': typeof ApiSyncStreamRoute
+  '/api/test-db': typeof ApiTestDbRoute
+  '/api/test-encoding': typeof ApiTestEncodingRoute
+  '/api/test-insert': typeof ApiTestInsertRoute
+  '/api/test-jobs': typeof ApiTestJobsRoute
+  '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/jobs/sync': typeof JobsSyncRoute
   '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
   '/jobs': typeof JobsIndexRoute
@@ -103,9 +145,15 @@ export interface FileRoutesByTo {
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
   '/api/categories': typeof ApiCategoriesRoute
+  '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
   '/api/sync-stream': typeof ApiSyncStreamRoute
+  '/api/test-db': typeof ApiTestDbRoute
+  '/api/test-encoding': typeof ApiTestEncodingRoute
+  '/api/test-insert': typeof ApiTestInsertRoute
+  '/api/test-jobs': typeof ApiTestJobsRoute
+  '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/jobs/sync': typeof JobsSyncRoute
   '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
   '/jobs': typeof JobsIndexRoute
@@ -118,9 +166,15 @@ export interface FileRoutesById {
   '/cards': typeof CardsRoute
   '/typography': typeof TypographyRoute
   '/api/categories': typeof ApiCategoriesRoute
+  '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
   '/api/sync-stream': typeof ApiSyncStreamRoute
+  '/api/test-db': typeof ApiTestDbRoute
+  '/api/test-encoding': typeof ApiTestEncodingRoute
+  '/api/test-insert': typeof ApiTestInsertRoute
+  '/api/test-jobs': typeof ApiTestJobsRoute
+  '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/jobs/sync': typeof JobsSyncRoute
   '/tools/raci-generator': typeof ToolsRaciGeneratorRouteWithChildren
   '/jobs/': typeof JobsIndexRoute
@@ -134,9 +188,15 @@ export interface FileRouteTypes {
     | '/cards'
     | '/typography'
     | '/api/categories'
+    | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
     | '/api/sync-stream'
+    | '/api/test-db'
+    | '/api/test-encoding'
+    | '/api/test-insert'
+    | '/api/test-jobs'
+    | '/api/test-simple-insert'
     | '/jobs/sync'
     | '/tools/raci-generator'
     | '/jobs'
@@ -148,9 +208,15 @@ export interface FileRouteTypes {
     | '/cards'
     | '/typography'
     | '/api/categories'
+    | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
     | '/api/sync-stream'
+    | '/api/test-db'
+    | '/api/test-encoding'
+    | '/api/test-insert'
+    | '/api/test-jobs'
+    | '/api/test-simple-insert'
     | '/jobs/sync'
     | '/tools/raci-generator'
     | '/jobs'
@@ -162,9 +228,15 @@ export interface FileRouteTypes {
     | '/cards'
     | '/typography'
     | '/api/categories'
+    | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
     | '/api/sync-stream'
+    | '/api/test-db'
+    | '/api/test-encoding'
+    | '/api/test-insert'
+    | '/api/test-jobs'
+    | '/api/test-simple-insert'
     | '/jobs/sync'
     | '/tools/raci-generator'
     | '/jobs/'
@@ -177,9 +249,15 @@ export interface RootRouteChildren {
   CardsRoute: typeof CardsRoute
   TypographyRoute: typeof TypographyRoute
   ApiCategoriesRoute: typeof ApiCategoriesRoute
+  ApiDebugDbRoute: typeof ApiDebugDbRoute
   ApiJobsRoute: typeof ApiJobsRoute
   ApiSyncRoute: typeof ApiSyncRoute
   ApiSyncStreamRoute: typeof ApiSyncStreamRoute
+  ApiTestDbRoute: typeof ApiTestDbRoute
+  ApiTestEncodingRoute: typeof ApiTestEncodingRoute
+  ApiTestInsertRoute: typeof ApiTestInsertRoute
+  ApiTestJobsRoute: typeof ApiTestJobsRoute
+  ApiTestSimpleInsertRoute: typeof ApiTestSimpleInsertRoute
   JobsSyncRoute: typeof JobsSyncRoute
   ToolsRaciGeneratorRoute: typeof ToolsRaciGeneratorRouteWithChildren
   JobsIndexRoute: typeof JobsIndexRoute
@@ -237,6 +315,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/test-simple-insert': {
+      id: '/api/test-simple-insert'
+      path: '/api/test-simple-insert'
+      fullPath: '/api/test-simple-insert'
+      preLoaderRoute: typeof ApiTestSimpleInsertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-jobs': {
+      id: '/api/test-jobs'
+      path: '/api/test-jobs'
+      fullPath: '/api/test-jobs'
+      preLoaderRoute: typeof ApiTestJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-insert': {
+      id: '/api/test-insert'
+      path: '/api/test-insert'
+      fullPath: '/api/test-insert'
+      preLoaderRoute: typeof ApiTestInsertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-encoding': {
+      id: '/api/test-encoding'
+      path: '/api/test-encoding'
+      fullPath: '/api/test-encoding'
+      preLoaderRoute: typeof ApiTestEncodingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-db': {
+      id: '/api/test-db'
+      path: '/api/test-db'
+      fullPath: '/api/test-db'
+      preLoaderRoute: typeof ApiTestDbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sync-stream': {
       id: '/api/sync-stream'
       path: '/api/sync-stream'
@@ -256,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/api/jobs'
       fullPath: '/api/jobs'
       preLoaderRoute: typeof ApiJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/debug-db': {
+      id: '/api/debug-db'
+      path: '/api/debug-db'
+      fullPath: '/api/debug-db'
+      preLoaderRoute: typeof ApiDebugDbRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/categories': {
@@ -291,9 +411,15 @@ const rootRouteChildren: RootRouteChildren = {
   CardsRoute: CardsRoute,
   TypographyRoute: TypographyRoute,
   ApiCategoriesRoute: ApiCategoriesRoute,
+  ApiDebugDbRoute: ApiDebugDbRoute,
   ApiJobsRoute: ApiJobsRoute,
   ApiSyncRoute: ApiSyncRoute,
   ApiSyncStreamRoute: ApiSyncStreamRoute,
+  ApiTestDbRoute: ApiTestDbRoute,
+  ApiTestEncodingRoute: ApiTestEncodingRoute,
+  ApiTestInsertRoute: ApiTestInsertRoute,
+  ApiTestJobsRoute: ApiTestJobsRoute,
+  ApiTestSimpleInsertRoute: ApiTestSimpleInsertRoute,
   JobsSyncRoute: JobsSyncRoute,
   ToolsRaciGeneratorRoute: ToolsRaciGeneratorRouteWithChildren,
   JobsIndexRoute: JobsIndexRoute,

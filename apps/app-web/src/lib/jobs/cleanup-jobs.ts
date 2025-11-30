@@ -3,7 +3,9 @@
  * Removes jobs that aren't truly remote or are low quality
  */
 
-import { db, schema } from '../../db/db'
+import { schema } from '../../db/db'
+import { getD1Database } from '../cloudflare-dev'
+import { drizzle } from 'drizzle-orm/d1'
 import { sql, or, like, and, eq, lt } from 'drizzle-orm'
 
 // Parse command line arguments
@@ -12,6 +14,9 @@ const sourceArg = args.find(arg => arg.startsWith('--source='))
 const targetSource = sourceArg ? sourceArg.split('=')[1] : null
 
 async function cleanupJobs() {
+  const d1 = await getD1Database()
+  const db = drizzle(d1, { schema })
+  
   console.log('━'.repeat(50))
   console.log('🧹 Job Cleanup Script')
   if (targetSource) {

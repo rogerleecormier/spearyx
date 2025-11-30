@@ -1,7 +1,12 @@
-import { db, schema } from '../../db/db'
+import { schema } from '../../db/db'
+import { getD1Database } from '../cloudflare-dev'
+import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 
 async function cleanDatabase() {
+  const d1 = await getD1Database()
+  const db = drizzle(d1, { schema })
+  
   console.log('🧹 Cleaning database...')
   
   // Delete all jobs from RemoteOK (which have HTML)

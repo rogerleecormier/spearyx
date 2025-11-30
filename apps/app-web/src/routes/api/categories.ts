@@ -8,10 +8,10 @@ export const Route = createFileRoute('/api/categories')({
     handlers: {
       GET: async ({ context }) => {
         const ctx = context as any
-        const db = getDbFromContext(ctx)
+        const db = await getDbFromContext(ctx)
         try {
           // Fetch all categories with job counts
-          const categoriesWithCounts = await db.query.categories.findMany()
+          const categoriesWithCounts = await db.select().from(schema.categories)
 
           // Get job counts for each category
           const categoriesData = await Promise.all(

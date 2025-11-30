@@ -148,9 +148,7 @@ export async function discoverGreenhouseCompanies(
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'info')
   
   // Load existing companies from DB
-  const existingCompanies = await db.query.discoveredCompanies.findMany({
-    columns: { slug: true }
-  })
+  const existingCompanies = await db.select({ slug: schema.discoveredCompanies.slug }).from(schema.discoveredCompanies)
   const existingSlugs = new Set(existingCompanies.map(c => c.slug))
   
   log(`📊 Current database has ${existingSlugs.size} discovered companies`, 'info')
