@@ -40,7 +40,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: 'apps/jobs'
-          command: deploy
+          command: deploy --config wrangler.toml --verbose
+        env:
+          WRANGLER_LOG: info
 
       - name: Deploy Tools
         uses: cloudflare/wrangler-action@v3
