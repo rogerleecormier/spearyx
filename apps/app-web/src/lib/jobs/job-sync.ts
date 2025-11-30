@@ -219,17 +219,17 @@ export async function syncJobs(
 }
 
 // Parse command line arguments and environment variables
-const args = process.argv.slice(2);
-const updateExisting =
-  process.env.UPDATE_EXISTING !== "false" && !args.includes("--no-update");
-const addNew = process.env.ADD_NEW !== "false" && !args.includes("--no-new");
+// const args = process.argv.slice(2);
+// const updateExisting =
+//   process.env.UPDATE_EXISTING !== "false" && !args.includes("--no-update");
+// const addNew = process.env.ADD_NEW !== "false" && !args.includes("--no-new");
 
 // Parse sources from environment variable
-const sourcesEnv = process.env.SOURCES;
-const sources =
-  sourcesEnv && sourcesEnv.trim() !== ""
-    ? sourcesEnv.split(",").map((s) => s.trim())
-    : undefined;
+// const sourcesEnv = process.env.SOURCES;
+// const sources =
+//   sourcesEnv && sourcesEnv.trim() !== ""
+//     ? sourcesEnv.split(",").map((s) => s.trim())
+//     : undefined;
 
 // Auto-execute when run as a script
 // if (import.meta.url === `file://${process.argv[1]}`) {
