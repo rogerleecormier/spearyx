@@ -8,7 +8,11 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 const config = defineConfig({
   plugins: [
     // TanStack Start must come first for proper routing
-    tanstackStart(),
+    tanstackStart({
+      server: {
+        preset: "cloudflare-pages",
+      },
+    }),
     // Cloudflare plugin with proper configuration for D1 bindings
     cloudflare({
       configPath: "./wrangler.toml",

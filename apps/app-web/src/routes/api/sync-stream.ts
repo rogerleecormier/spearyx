@@ -28,12 +28,22 @@ export const Route = createFileRoute("/api/sync-stream")({
       GET: async ({ request, context }) => {
         const ctx = context as any;
         console.log("🔍 Sync-stream endpoint called");
-        console.log("🔍 Context keys:", ctx ? Object.keys(ctx) : "no context");
-        console.log(
-          "🔍 Context.cloudflare:",
-          ctx ? !!ctx.cloudflare : "no context"
-        );
-        console.log("🔍 Context.env:", ctx ? !!ctx.env : "no context");
+        console.log("🔍 Environment check:", {
+          isDev: import.meta.env.DEV,
+          isProd: import.meta.env.PROD,
+          mode: import.meta.env.MODE,
+        });
+        console.log("🔍 Context structure:", {
+          hasContext: !!ctx,
+          contextKeys: ctx ? Object.keys(ctx) : [],
+          hasCloudflare: !!ctx?.cloudflare,
+          cloudflareKeys: ctx?.cloudflare ? Object.keys(ctx.cloudflare) : [],
+          hasCloudflareEnv: !!ctx?.cloudflare?.env,
+          cloudflareEnvKeys: ctx?.cloudflare?.env ? Object.keys(ctx.cloudflare.env) : [],
+          hasEnv: !!ctx?.env,
+          envKeys: ctx?.env ? Object.keys(ctx.env) : [],
+          hasDB: !!ctx?.DB,
+        });
 
         let db;
         try {
@@ -42,10 +52,14 @@ export const Route = createFileRoute("/api/sync-stream")({
           console.log("✅ DB connection successful");
         } catch (error) {
           console.error("❌ DB connection failed:", error);
+          const errorDetails = error instanceof Error ? error.message : String(error);
+          console.error("❌ Full error stack:", error instanceof Error ? error.stack : "No stack trace");
+          
           return new Response(
             JSON.stringify({
               error: "Database connection failed",
-              details: String(error),
+              details: errorDetails,
+              hint: "Please ensure D1 database is properly configured in wrangler.toml and the Worker has the DB binding",
             }),
             {
               status: 500,

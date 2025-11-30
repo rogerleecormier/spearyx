@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "mkdir -p dist/server && touch dist/server/server.js && vite build",
+    "build": "vite build",
     "serve": "npx wrangler dev",
     "test": "vitest run",
     "deploy": "npm run build",
