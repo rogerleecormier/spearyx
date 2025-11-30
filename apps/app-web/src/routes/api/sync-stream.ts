@@ -39,7 +39,9 @@ export const Route = createFileRoute("/api/sync-stream")({
           hasCloudflare: !!ctx?.cloudflare,
           cloudflareKeys: ctx?.cloudflare ? Object.keys(ctx.cloudflare) : [],
           hasCloudflareEnv: !!ctx?.cloudflare?.env,
-          cloudflareEnvKeys: ctx?.cloudflare?.env ? Object.keys(ctx.cloudflare.env) : [],
+          cloudflareEnvKeys: ctx?.cloudflare?.env
+            ? Object.keys(ctx.cloudflare.env)
+            : [],
           hasEnv: !!ctx?.env,
           envKeys: ctx?.env ? Object.keys(ctx.env) : [],
           hasDB: !!ctx?.DB,
@@ -52,9 +54,13 @@ export const Route = createFileRoute("/api/sync-stream")({
           console.log("✅ DB connection successful");
         } catch (error) {
           console.error("❌ DB connection failed:", error);
-          const errorDetails = error instanceof Error ? error.message : String(error);
-          console.error("❌ Full error stack:", error instanceof Error ? error.stack : "No stack trace");
-          
+          const errorDetails =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            "❌ Full error stack:",
+            error instanceof Error ? error.stack : "No stack trace"
+          );
+
           return new Response(
             JSON.stringify({
               error: "Database connection failed",

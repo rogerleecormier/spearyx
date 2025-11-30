@@ -22,9 +22,9 @@ export async function getDbFromContext(context: any) {
   // - context.cloudflare.env.DB (TanStack Start format)
   // - context.env.DB (direct Cloudflare Worker format)
   // - context.DB (direct binding)
-  
+
   let d1Binding: D1Database | undefined;
-  
+
   // Try all possible context locations
   if (context?.cloudflare?.env?.DB) {
     d1Binding = context.cloudflare.env.DB;
@@ -75,9 +75,12 @@ export async function getDbFromContext(context: any) {
     envKeys: context?.env ? Object.keys(context.env) : [],
     contextKeys: context ? Object.keys(context) : [],
   };
-  
-  console.error("❌ DB binding not found in production. Context structure:", debugInfo);
-  
+
+  console.error(
+    "❌ DB binding not found in production. Context structure:",
+    debugInfo
+  );
+
   throw new Error(
     `DB binding not found in production environment. Please ensure the D1 database is properly configured in wrangler.toml and bound to your Worker. Context structure: ${JSON.stringify(debugInfo)}`
   );
