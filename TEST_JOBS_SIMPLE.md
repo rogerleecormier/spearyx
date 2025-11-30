@@ -13,6 +13,7 @@ http://localhost:5173/api/test-jobs
 ```
 
 This will insert all 5 test jobs and return:
+
 ```json
 {
   "success": true,
@@ -99,7 +100,7 @@ After running the API, you should see 5 new jobs in your database. You can verif
 ✅ **Short descriptions** - Under 500 chars each  
 ✅ **Standard ASCII** - No mangled UTF-8  
 ✅ **Simple formats** - Standard salary "$X - $Y"  
-✅ **Unique URLs** - test.example.com/job-1 through job-5  
+✅ **Unique URLs** - test.example.com/job-1 through job-5
 
 ## Troubleshooting
 
@@ -118,4 +119,3 @@ Once test data inserts successfully:
 2. Test with real job data from job sources
 3. Verify the sync page shows updated counts
 4. Monitor for any encoding issues in the real data
-
