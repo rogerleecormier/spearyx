@@ -4,7 +4,7 @@ compatibility_flags = ["nodejs_compat"]
 main = "dist/server/server.js"
 
 [observability]
-enabled = false
+enabled = true
 head_sampling_rate = 1
 
 [observability.logs]
