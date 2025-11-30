@@ -2,7 +2,7 @@ let platformProxy: any | null = null;
 
 export async function getCloudflareContext() {
   if (!platformProxy) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV || process.env.NODE_ENV === "development") {
       const { getPlatformProxy } = await import("wrangler");
       platformProxy = await getPlatformProxy({
         configPath: "./wrangler.toml",

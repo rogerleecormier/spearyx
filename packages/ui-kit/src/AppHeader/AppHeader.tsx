@@ -52,7 +52,7 @@ export function AppHeader({ app, isDev = false, currentPath, Link }: AppHeaderPr
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuItem asChild className="cursor-pointer">
-            {Link ? (
+            {Link && app === "tools" ? (
               <Link to="/" className="flex items-center">
                 <Wrench size={16} className="mr-2 text-primary-500" />
                 <span>Tools Home</span>
