@@ -1,0 +1,19 @@
+name = "spearyx"
+compatibility_date = "2025-11-30"
+compatibility_flags = [ "nodejs_compat" ]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+preview_database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+migrations_dir = "apps/app-web/drizzle"
+
+# Entrypoint & assets for the worker build
+main = "apps/app-web/dist/server/server.js"
+
+[assets]
+directory = "apps/app-web/dist/client"

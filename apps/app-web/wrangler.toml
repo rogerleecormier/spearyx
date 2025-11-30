@@ -1,6 +1,9 @@
 name = "spearyx-app-web"
-compatibility_date = "2024-04-01"
+compatibility_date = "2025-11-05"
 compatibility_flags = [ "nodejs_compat" ]
+
+# Deployment entrypoint
+main = "dist/server/server.js"
 
 [observability]
 enabled = true
@@ -9,5 +12,10 @@ enabled = true
 binding = "DB"
 database_name = "spearyx-jobs"
 database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
-preview_database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+preview_database_id = "local-spearyx-jobs"
 migrations_dir = "drizzle"
+
+# Vite/Cloudflare plugin emits a build; use `main` defined at the top and `assets` here
+
+[assets]
+directory = "dist/client"

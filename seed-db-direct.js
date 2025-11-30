@@ -3,7 +3,7 @@ import path from "path";
 
 const dbPath = path.join(
   process.cwd(),
-  "apps/app-web/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/620144a4112044e893e18deb703ab416f4251b9350437cf41d528bd572a8ab37.sqlite"
+  "apps/app-web/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/06a500e275bd2a50241cdcf76c189feed6a340311d3f01e9b730f2df0a30bb26.sqlite"
 );
 
 console.log("Seeding database at:", dbPath);
@@ -54,46 +54,30 @@ const defaultCategories = [
   {
     name: "Sales",
     slug: "sales",
-    description:
-      "Sales representatives, account executives, and business development",
+    description: "Sales representatives, account executives, and business development",
   },
 ];
 
-try {
-  console.log("Inserting categories...");
+console.log("Inserting categories...");
 
-  const insert = db.prepare(`
-    INSERT OR IGNORE INTO categories (name, slug, description)
-    VALUES (?, ?, ?)
-  `);
+const insertCategory = db.prepare(
+  "INSERT OR IGNORE INTO categories (name, slug, description, created_at) VALUES (?, ?, ?, ?)"
+);
 
-  let count = 0;
-  for (const category of defaultCategories) {
-    const result = insert.run(
-      category.name,
-      category.slug,
-      category.description
-    );
-    if (result.changes > 0) {
-      count++;
-      console.log(`✅ Added: ${category.name}`);
-    } else {
-      console.log(`⏭️  Skipped: ${category.name} (already exists)`);
-    }
-  }
-
-  // Verify
-  const categoryCount = db
-    .prepare("SELECT COUNT(*) as count FROM categories")
-    .get();
-  console.log(`\n✅ Database seeded! Total categories: ${categoryCount.count}`);
-
-  db.close();
-} catch (err) {
-  console.error(
-    "❌ Error seeding database:",
-    err instanceof Error ? err.message : err
+defaultCategories.forEach((category) => {
+  const now = Math.floor(Date.now() / 1000);
+  const result = insertCategory.run(
+    category.name,
+    category.slug,
+    category.description,
+    now
   );
-  db.close();
-  process.exit(1);
-}
+  if (result.changes > 0) {
+    console.log(`✅ Added: ${category.name}`);
+  } else {
+    console.log(`ℹ️  Skipped: ${category.name} (already exists)`);
+  }
+});
+
+const count = db.prepare("SELECT COUNT(*) as count FROM categories").get();
+console.log(`\n✅ Database seeded! Total categories: ${count.count}`);
