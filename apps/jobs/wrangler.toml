@@ -1,7 +1,7 @@
 name = "spearyx-jobs"
 compatibility_date = "2025-11-30"
 compatibility_flags = ["nodejs_compat"]
-main = "dist/server/server.js"
+main = "worker.ts"
 
 [observability]
 enabled = true

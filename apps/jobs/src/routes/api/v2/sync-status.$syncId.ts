@@ -1,9 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
-import { sql, eq } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/d1'
-import { schema } from '../../../db/db'
-import type { AppLoadContext } from '../../../../app/ssr'
+import { eq } from 'drizzle-orm'
+import { getDbFromContext, schema } from '../../../db/db'
 
 export const Route = createFileRoute('/api/v2/sync-status/$syncId')({
   server: {
@@ -12,15 +10,9 @@ export const Route = createFileRoute('/api/v2/sync-status/$syncId')({
         try {
           const { syncId } = params
           
-          // Get environment from context
-          const appContext = context as unknown as AppLoadContext
-          const env = appContext?.cloudflare?.env
-          if (!env?.DB) {
-            return json({ success: false, error: 'Database not available' }, { status: 500 })
-          }
-
-          // Create DB connection
-          const db = drizzle(env.DB, { schema })
+          // Get DB connection
+          const ctx = context as any
+          const db = await getDbFromContext(ctx)
 
           // Get sync history
           const syncs = await db.select().from(schema.syncHistory).where(eq(schema.syncHistory.id, syncId)).limit(1)
@@ -30,6 +22,14 @@ export const Route = createFileRoute('/api/v2/sync-status/$syncId')({
           }
 
           const sync = syncs[0]
+
+          // Debug: log what we found
+          console.log('📊 Sync status:', {
+            syncId: sync.id,
+            status: sync.status,
+            logCount: sync.logs?.length || 0,
+            hasStats: !!sync.stats
+          })
 
           // Calculate progress (rough estimate based on status)
           let progress = 0

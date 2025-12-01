@@ -1,10 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { syncJobs } from '../../../lib/job-sync'
-import { drizzle } from 'drizzle-orm/d1'
-import { schema } from '../../../db/db'
+import { getDbFromContext, schema } from '../../../db/db'
 import { sql } from 'drizzle-orm'
-import type { AppLoadContext } from '../../../../app/ssr'
 
 interface SyncRequestBody {
   sources?: string[]
@@ -17,31 +15,25 @@ export const Route = createFileRoute('/api/v2/sync')({
     handlers: {
       POST: async ({ request, context }) => {
         try {
-          // Check for authorization
-          const authHeader = request.headers.get('Authorization')
-          const appContext = context as unknown as AppLoadContext
-          const cronSecret = appContext?.cloudflare?.env?.CRON_SECRET
-          
-          // Only check secret if it's set (recommended for production)
-          if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-            return json({ success: false, error: 'Unauthorized' }, { status: 401 })
-          }
+          // Debug: Log context structure
+          console.log('🔍 Context structure:', {
+            hasContext: !!context,
+            contextKeys: context ? Object.keys(context) : [],
+            hasCloudflare: !!(context as any)?.cloudflare,
+            hasEnv: !!(context as any)?.env,
+            hasDB: !!(context as any)?.DB,
+          })
 
           // Parse request body
           const body = (await request.json()) as SyncRequestBody
           const { sources, updateExisting = true, addNew = true } = body
 
-          // Get environment from context
-          const env = appContext?.cloudflare?.env
-          if (!env?.DB) {
-            return json({ success: false, error: 'Database not available' }, { status: 500 })
-          }
+          // Get DB connection
+          const ctx = context as any
+          const db = await getDbFromContext(ctx)
 
           // Create sync ID
           const syncId = crypto.randomUUID()
-          
-          // Create DB connection
-          const db = drizzle(env.DB, { schema })
 
           // Create sync history record
           await db.insert(schema.syncHistory).values({
@@ -59,7 +51,7 @@ export const Route = createFileRoute('/api/v2/sync')({
           })
 
           // Start sync in background (non-blocking)
-          // We return immediately with the syncId so the client can poll for status
+          // Use waitUntil to ensure the sync completes even after response is sent
           const syncPromise = syncJobs({
             updateExisting,
             addNew,
@@ -67,15 +59,19 @@ export const Route = createFileRoute('/api/v2/sync')({
             db,
             onLog: async (message, level = 'info') => {
               // Update sync history with new log
-              const currentSync = await db.select().from(schema.syncHistory).where(sql`id = ${syncId}`).limit(1)
-              if (currentSync.length > 0) {
-                const logs = currentSync[0].logs || []
-                logs.push({
-                  timestamp: new Date().toISOString(),
-                  type: level,
-                  message
-                })
-                await db.update(schema.syncHistory).set({ logs }).where(sql`id = ${syncId}`)
+              try {
+                const currentSync = await db.select().from(schema.syncHistory).where(sql`id = ${syncId}`).limit(1)
+                if (currentSync.length > 0) {
+                  const logs = currentSync[0].logs || []
+                  logs.push({
+                    timestamp: new Date().toLocaleTimeString(),
+                    type: level,
+                    message
+                  })
+                  await db.update(schema.syncHistory).set({ logs }).where(sql`id = ${syncId}`)
+                }
+              } catch (error) {
+                console.error('Error updating logs:', error)
               }
             }
           }).then(async (result) => {
@@ -93,13 +89,20 @@ export const Route = createFileRoute('/api/v2/sync')({
             }).where(sql`id = ${syncId}`)
           }).catch(async (error) => {
             // Update sync history with error
+            console.error('Sync error:', error)
             await db.update(schema.syncHistory).set({
               status: 'failed',
               completedAt: new Date()
             }).where(sql`id = ${syncId}`)
           })
 
-          // Don't await the sync, return immediately
+          // Tell Cloudflare to keep the worker alive until sync completes
+          const cfCtx = (globalThis as any).__CF_CTX__
+          if (cfCtx?.waitUntil) {
+            cfCtx.waitUntil(syncPromise)
+          }
+
+          // Return immediately with syncId
           return json({
             success: true,
             syncId,
