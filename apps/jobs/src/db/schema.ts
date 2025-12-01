@@ -50,7 +50,45 @@ export const discoveredCompanies = sqliteTable('discovered_companies', {
     .default(sql`(unixepoch())`),
 })
 
+export const syncHistory = sqliteTable('sync_history', {
+  id: text('id').primaryKey(),
+  startedAt: integer('started_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  completedAt: integer('completed_at', { mode: 'timestamp' }),
+  status: text('status').notNull().default('running'), // 'running', 'completed', 'failed'
+  sources: text('sources', { mode: 'json' }).$type<string[]>(),
+  stats: text('stats', { mode: 'json' }).$type<{
+    jobsAdded: number
+    jobsUpdated: number
+    jobsDeleted: number
+    companiesAdded: number
+    companiesDeleted: number
+  }>(),
+  logs: text('logs', { mode: 'json' }).$type<Array<{
+    timestamp: string
+    type: 'info' | 'success' | 'error' | 'warning'
+    message: string
+  }>>(),
+})
+
+export const duplicateJobs = sqliteTable('duplicate_jobs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  jobId1: integer('job_id_1').notNull().references(() => jobs.id),
+  jobId2: integer('job_id_2').notNull().references(() => jobs.id),
+  similarityScore: integer('similarity_score').notNull(), // 0-100
+  resolved: integer('resolved', { mode: 'boolean' }).notNull().default(false),
+  resolvedAt: integer('resolved_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+})
+
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
 export type Job = typeof jobs.$inferSelect
 export type NewJob = typeof jobs.$inferInsert
+export type SyncHistory = typeof syncHistory.$inferSelect
+export type NewSyncHistory = typeof syncHistory.$inferInsert
+export type DuplicateJob = typeof duplicateJobs.$inferSelect
+export type NewDuplicateJob = typeof duplicateJobs.$inferInsert

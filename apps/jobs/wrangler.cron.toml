@@ -1,0 +1,10 @@
+name = "spearyx-jobs-cron"
+main = "src/cron-worker.ts"
+compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["0 */4 * * *"] # Run every 4 hours
+
+[observability]
+enabled = true

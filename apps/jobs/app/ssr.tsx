@@ -15,6 +15,8 @@ export type AppLoadContext = {
   cloudflare: {
     env: {
       DB: D1Database;
+      CRON_SECRET?: string;
+      [key: string]: any;
     };
   };
 };
@@ -26,9 +28,7 @@ export const onRequest = async (context: EventContext<any, any, any>) => {
   // Create load context with Cloudflare bindings
   const loadContext: AppLoadContext = {
     cloudflare: {
-      env: {
-        DB: env.DB,
-      },
+      env: env,
     },
   };
 
