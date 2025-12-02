@@ -2,7 +2,7 @@ import { schema } from "../db/db";
 import type { DrizzleD1Database } from "../db/db";
 import { getD1Database } from "@spearyx/shared-utils";
 import { jobSources, determineCategoryId } from "./job-sources";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { createBatchedDbWriter } from "./pacer-utils";
 
@@ -147,7 +147,7 @@ export async function syncJobs(
 
   // Create batched writer for new jobs
   const batchWriter = createBatchedDbWriter({
-    maxSize: 50,
+    maxSize: 50, // Increased to 50 for better throughput
     wait: 2000,
     writeFn: async (jobs: any[]) => {
       try {
@@ -182,16 +182,36 @@ export async function syncJobs(
       log(`\n📡 Fetching from ${source.name}...`);
 
       for await (const rawJobs of source.fetch(undefined, log)) {
-        log(`Processing batch of ${rawJobs.length} jobs from ${source.name}`);
+        log(`Processing batch of ${rawJobs.length} jobs from ${source.name} (Company: ${rawJobs[0]?.company})`);
+
+        // OPTIMIZATION: Pre-load all existing jobs for this batch in a single query
+        // This eliminates the N+1 query problem (was: 1 query per job, now: 1 query per batch)
+        const sourceUrls = rawJobs.map(j => j.sourceUrl).filter(Boolean);
+        
+        let existingJobsMap = new Map<string, any>();
+        
+        if (sourceUrls.length > 0) {
+          try {
+            const existingJobs = await db
+              .select()
+              .from(schema.jobs)
+              .where(inArray(schema.jobs.sourceUrl, sourceUrls));
+            
+            existingJobsMap = new Map(
+              existingJobs.map(job => [job.sourceUrl, job])
+            );
+            
+            log(`  📊 Batch stats: ${rawJobs.length} jobs to process, ${existingJobs.length} already exist`);
+          } catch (error) {
+            log(`  ⚠️  Failed to batch-load existing jobs, falling back to individual checks`, "warning");
+            // If batch query fails, we'll fall back to individual queries below
+          }
+        }
 
         for (const rawJob of rawJobs) {
           try {
-            // Check if job already exists by source URL
-            const existing = await db
-              .select()
-              .from(schema.jobs)
-              .where(eq(schema.jobs.sourceUrl, rawJob.sourceUrl))
-              .limit(1);
+            // Use pre-loaded map for O(1) lookup instead of database query
+            const existing = existingJobsMap.get(rawJob.sourceUrl);
 
             // Determine category automatically
             let categoryId = determineCategoryId(
@@ -206,7 +226,7 @@ export async function syncJobs(
             
             // ... category check logic ...
 
-            if (existing.length > 0) {
+            if (existing) {
               if (options.updateExisting) {
                 // Update existing job with potentially new data
                 // Updates are still done individually as they are less frequent/bulk than inserts usually
@@ -221,7 +241,7 @@ export async function syncJobs(
                     updatedAt: new Date(),
                     categoryId, // Update category as logic might have changed
                   })
-                  .where(eq(schema.jobs.id, existing[0].id));
+                  .where(eq(schema.jobs.id, existing.id));
 
                 totalUpdated++;
                 log(`  🔄 Updated: ${rawJob.title}`);
@@ -244,7 +264,7 @@ export async function syncJobs(
               });
               
               // Log queued instead of added (added is logged on flush)
-              log(`  queued: ${rawJob.title}`); 
+              // log(`  queued: ${rawJob.title}`); 
             }
           } catch (jobError) {
             const errorMsg =

@@ -40,7 +40,7 @@ function getCompanyList(): string[] {
 // Rate limit: 120 requests per minute (2 per second)
 const throttledFetch = createThrottledRateLimitedFetcher({
   throttle: {
-    wait: 500,
+    wait: 1000, // Increased to 1000ms for stability
     trailing: true,
     maxRetries: 3,
     retryDelay: 1000,
@@ -76,8 +76,7 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
   for (const company of companies) {
     // Provide feedback that we are checking this company
     // This is crucial for the UI to show activity
-    // onLog?.(`Checking ${company}...`) // Too verbose? Maybe just log when we find something or error?
-    // Actually, user wants to see activity. Let's log it but maybe simpler.
+    onLog?.(`Checking ${company}...`)
     
     try {
       const url = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`
@@ -158,10 +157,9 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
         })
       
       if (remoteJobs.length > 0) {
-        yield remoteJobs
-        // allJobs.push(...remoteJobs) // No longer needed
         remoteJobsFound += remoteJobs.length
         log(`  ✅ ${company}: Found ${remoteJobs.length} remote job(s)`)
+        yield remoteJobs
         successCount++
       } else {
         // log(`  ➖ ${company}: No remote positions`) // Too verbose for UI

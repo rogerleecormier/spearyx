@@ -32,11 +32,11 @@ function getCompanyList(): string[] {
 }
 
 // Create throttled and rate-limited fetcher for Lever API
-// Throttle: 500ms between requests
+// Throttle: 1000ms between requests
 // Rate limit: 120 requests per minute (2 per second)
 const throttledFetch = createThrottledRateLimitedFetcher({
   throttle: {
-    wait: 500,
+    wait: 1000,
     trailing: true,
     maxRetries: 3,
     retryDelay: 1000,
@@ -68,6 +68,7 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
   let remoteJobsFound = 0
   
   for (const company of companies) {
+    onLog?.(`Checking ${company}...`)
     try {
       // Lever API endpoint: https://api.lever.co/v0/postings/{company}?mode=json
       const url = `https://api.lever.co/v0/postings/${company}?mode=json`

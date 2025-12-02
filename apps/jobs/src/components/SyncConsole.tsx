@@ -17,6 +17,15 @@ export function SyncConsole({ logs, isRunning = false, onClear }: SyncConsolePro
 
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    
+    // Mirror latest log to browser console if it exists
+    const lastLog = logs[logs.length - 1]
+    if (lastLog) {
+      const style = lastLog.type === 'error' ? 'color: red' : 
+                   lastLog.type === 'success' ? 'color: green' : 
+                   lastLog.type === 'warning' ? 'color: orange' : 'color: gray'
+      console.log(`%c[Sync] ${lastLog.message}`, style)
+    }
   }, [logs])
 
   const copyLogs = () => {

@@ -1,4 +1,4 @@
-import { throttle } from '@tanstack/pacer'
+
 
 /**
  * Configuration for throttled API fetching
@@ -46,11 +46,13 @@ export interface RateLimiterConfig {
 
 /**
  * Creates a throttled fetch function that limits the rate of API calls
+ * Uses a queue-based approach (via RateLimiter) to ensure all requests are executed
+ * but spaced out by the 'wait' interval.
  * 
  * @example
  * const throttledFetch = createThrottledFetcher({
  *   wait: 500,
- *   trailing: true,
+ *   trailing: true, // Note: leading/trailing are ignored in this implementation
  *   maxRetries: 3
  * })
  * 
@@ -59,19 +61,37 @@ export interface RateLimiterConfig {
 export function createThrottledFetcher(config: ThrottledFetcherConfig) {
   const {
     wait,
-    leading = false,
-    trailing = true,
     maxRetries = 3,
     retryDelay = 1000,
   } = config
 
-  // Create the base fetch function
-  const baseFetch = async (url: string, options?: RequestInit): Promise<Response> => {
+  // Use rate limiter for spacing (1 request per 'wait' ms)
+  const spacingLimiter = createRateLimiter({
+    maxRequests: 1,
+    windowMs: wait,
+    sliding: true
+  })
+
+  return async (url: string, options?: RequestInit): Promise<Response> => {
+    // Wait for spacing slot
+    await spacingLimiter.waitForSlot()
+    
     let lastError: Error | null = null
     
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch(url, options)
+        // Add timeout to fetch
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
+        
+        // console.log(`[Pacer] Fetching ${url} (attempt ${attempt + 1})...`)
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        // console.log(`[Pacer] Fetched ${url}: ${response.status}`)
         
         // If we get a rate limit error, throw to trigger retry
         if (response.status === 429) {
@@ -86,7 +106,10 @@ export function createThrottledFetcher(config: ThrottledFetcherConfig) {
         
         return response
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error))
+        const err = error instanceof Error ? error : new Error(String(error))
+        // console.log(`[Pacer] Error fetching ${url}: ${err.message}`)
+        
+        lastError = err
         
         if (attempt < maxRetries) {
           // Exponential backoff
@@ -98,11 +121,6 @@ export function createThrottledFetcher(config: ThrottledFetcherConfig) {
     
     throw lastError || new Error('Fetch failed after retries')
   }
-
-  // Create throttled version
-  const throttledFetch = throttle(baseFetch, { wait, leading, trailing })
-
-  return throttledFetch
 }
 
 /**
@@ -161,7 +179,12 @@ export function createBatchedDbWriter<T>(config: BatchedDbWriterConfig<T>) {
       if (currentBatch.length > 0) {
         const batchToProcess = [...currentBatch]
         currentBatch = []
-        await processBatch(batchToProcess)
+        try {
+          await processBatch(batchToProcess)
+        } catch (error) {
+          // Error is already handled by onError in processBatch
+          // We must catch it here to prevent unhandled rejection in setTimeout
+        }
       }
     }, wait)
   }
@@ -324,7 +347,6 @@ export function createThrottledRateLimitedFetcher(config: {
     await rateLimiter.waitForSlot()
     
     // Execute throttled fetch - with trailing:true, this will always execute and return a Promise<Response>
-    return (await throttledFetch(url, options)) as unknown as Response
+    return throttledFetch(url, options)
   }
 }
-
