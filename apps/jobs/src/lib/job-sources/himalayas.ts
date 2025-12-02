@@ -6,8 +6,24 @@
 
 import type { JobSource, RawJobListing } from './types.js'
 import { sanitizeHtml } from '../html-utils.js'
+import { createThrottledRateLimitedFetcher } from '../pacer-utils.js'
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+// Create throttled and rate-limited fetcher for Himalayas API
+// Throttle: 2000ms between requests
+// Rate limit: 30 requests per minute
+const throttledFetch = createThrottledRateLimitedFetcher({
+  throttle: {
+    wait: 2000,
+    trailing: true,
+    maxRetries: 3,
+    retryDelay: 2000,
+  },
+  rateLimit: {
+    maxRequests: 30,
+    windowMs: 60000, // 1 minute
+    sliding: true,
+  },
+})
 
 export async function* fetchHimalayasJobs() {
   const baseUrl = 'https://himalayas.app/jobs/api'
@@ -21,16 +37,12 @@ export async function* fetchHimalayasJobs() {
     while (true) {
       const url = `${baseUrl}?limit=${limit}&offset=${offset}`
       
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 30000)
-      
-      const response = await fetch(url, {
-        signal: controller.signal,
+      const response = await throttledFetch(url, {
         headers: {
           'User-Agent': 'RemoteJobAggregator/1.0'
         }
       })
-      clearTimeout(timeout)
+
       
       if (!response.ok) {
         if (response.status === 429) {
@@ -41,7 +53,7 @@ export async function* fetchHimalayasJobs() {
         break
       }
       
-      const data = await response.json()
+      const data: any = await response.json()
       const jobs = data.jobs || []
       
       if (!jobs || jobs.length === 0) {
@@ -58,7 +70,6 @@ export async function* fetchHimalayasJobs() {
       if (remoteJobs.length === 0) {
         // If no remote jobs in this batch, continue to next page
         offset += limit
-        await sleep(2000)
         continue
       }
       
@@ -87,6 +98,7 @@ export async function* fetchHimalayasJobs() {
       totalJobs += processedJobs.length
       console.log(`   Fetched ${processedJobs.length} jobs (total: ${totalJobs})`)
       
+      
       // If we got fewer jobs than the limit, we've reached the end
       if (jobs.length < limit) {
         break
@@ -94,8 +106,7 @@ export async function* fetchHimalayasJobs() {
       
       offset += limit
       
-      // Rate limiting - wait 2 seconds between requests
-      await sleep(2000)
+      // Throttling handled by throttledFetch
     }
     
     console.log(`✅ Himalayas: ${totalJobs} remote jobs\n`)

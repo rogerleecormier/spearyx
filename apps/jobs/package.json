@@ -24,6 +24,7 @@
     "@spearyx/shared-utils": "*",
     "@spearyx/ui-kit": "*",
     "@tailwindcss/vite": "^4.0.6",
+    "@tanstack/pacer": "^0.16.3",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",

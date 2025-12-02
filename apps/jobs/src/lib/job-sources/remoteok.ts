@@ -1,10 +1,28 @@
 import type { RawJobListing } from './types'
 import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
+import { createThrottledRateLimitedFetcher } from '../pacer-utils'
+
+// Create throttled and rate-limited fetcher for RemoteOK API
+// Throttle: 2000ms between requests (RemoteOK is sensitive to rate limits)
+// Rate limit: 30 requests per minute
+const throttledFetch = createThrottledRateLimitedFetcher({
+  throttle: {
+    wait: 2000,
+    trailing: true,
+    maxRetries: 3,
+    retryDelay: 2000,
+  },
+  rateLimit: {
+    maxRequests: 30,
+    windowMs: 60000, // 1 minute
+    sliding: true,
+  },
+})
 
 export async function* fetchRemoteOKJobs(): AsyncGenerator<RawJobListing[]> {
   try {
     console.log('Fetching jobs from RemoteOK...')
-    const response = await fetch('https://remoteok.com/api')
+    const response = await throttledFetch('https://remoteok.com/api')
     
     if (!response.ok) {
       throw new Error(`RemoteOK API returned ${response.status}`)

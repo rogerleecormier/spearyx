@@ -1,6 +1,7 @@
 import type { RawJobListing } from './types'
 import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
 import companiesData from './greenhouse-companies.json'
+import { createThrottledRateLimitedFetcher } from '../pacer-utils'
 
 // Type definition for the JSON structure
 interface CompanyDatabase {
@@ -34,9 +35,22 @@ function getCompanyList(): string[] {
   return [...new Set(allCompanies)]
 }
 
-
-// Helper function to add delay between requests (rate limiting)
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+// Create throttled and rate-limited fetcher for Greenhouse API
+// Throttle: 500ms between requests
+// Rate limit: 120 requests per minute (2 per second)
+const throttledFetch = createThrottledRateLimitedFetcher({
+  throttle: {
+    wait: 500,
+    trailing: true,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  rateLimit: {
+    maxRequests: 120,
+    windowMs: 60000, // 1 minute
+    sliding: true,
+  },
+})
 
 export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
@@ -57,7 +71,7 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
   for (const company of companies) {
     try {
       const url = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`
-      const response = await fetch(url)
+      const response = await throttledFetch(url)
       
       if (!response.ok) {
         // Some companies may not have active job boards or may have moved
@@ -71,7 +85,7 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
         continue
       }
       
-      const data = await response.json()
+      const data: any = await response.json()
       
       if (!data.jobs || !Array.isArray(data.jobs)) {
         console.log(`  ℹ️  ${company}: No jobs array in response`)
@@ -144,8 +158,9 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
         noJobsCount++
       }
       
-      // Rate limiting: wait 500ms between requests to be respectful
-      await sleep(500)
+      // Throttling and rate limiting are now handled by throttledFetch
+      // No need for manual sleep() anymore
+      
       
     } catch (error) {
       console.error(`  ❌ ${company}: Error -`, error instanceof Error ? error.message : error)

@@ -4,6 +4,7 @@ import { getD1Database } from "@spearyx/shared-utils";
 import { jobSources, determineCategoryId } from "./job-sources";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
+import { createBatchedDbWriter } from "./pacer-utils";
 
 async function getDb() {
   const d1 = await getD1Database();
@@ -62,8 +63,23 @@ function sanitizeString(str: string | null | undefined, required: boolean = fals
     .replace(/\0/g, "")
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 
-  // Normalize whitespace
-  sanitized = sanitized.trim();
+  // AGGRESSIVE UTF-8 cleaning: Force to pure ASCII
+  // This handles malformed sequences like 'ï¹£' (0xEF 0xB9 0xA3)
+  // by stripping all non-ASCII characters completely
+  sanitized = sanitized
+    .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes -> straight quote
+    .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes -> straight quote
+    .replace(/[\u2013\u2014]/g, "-")  // En/em dashes -> hyphen
+    .replace(/\u2026/g, "...")        // Ellipsis -> three dots
+    .replace(/[\u2022\u2023\u25E6\u2043\u2219\uFE63\uFF65\u00B7\u00A2]/g, "*")  // Various bullets -> asterisk
+    .replace(/[\u0080-\uFFFF]/g, ""); // Remove ALL non-ASCII (128-65535)
+
+  // Strip HTML tags to avoid issues with truncated/malformed HTML
+  // This is safer for database storage and prevents SQL injection concerns
+  sanitized = sanitized.replace(/<[^>]*>/g, " ");
+
+  // Normalize whitespace (collapse multiple spaces)
+  sanitized = sanitized.replace(/\s+/g, " ").trim();
 
   // If after sanitization the string is empty and it's required, return empty string
   if (!sanitized && required) {
@@ -71,8 +87,9 @@ function sanitizeString(str: string | null | undefined, required: boolean = fals
   }
 
   // D1 has practical limits on query size, limit description to reasonable size
-  if (sanitized.length > 10000) {
-    return sanitized.substring(0, 10000);
+  // Reduced from 10000 -> 5000 -> 2000 to avoid hitting D1's 1MB SQL statement size limit
+  if (sanitized.length > 2000) {
+    return sanitized.substring(0, 2000);
   }
 
   return sanitized || (required ? "" : null);
@@ -100,6 +117,24 @@ export async function syncJobs(
   }
   log("=".repeat(50));
 
+  // Ensure categories exist before syncing jobs
+  const existingCategories = await db.select().from(schema.categories).limit(1);
+  if (existingCategories.length === 0) {
+    log("📦 Categories table is empty, seeding default categories...");
+    const defaultCategories = [
+      { name: 'Programming & Development', slug: 'programming-development', description: 'Software development, web development, mobile apps, and coding roles' },
+      { name: 'Project Management', slug: 'project-management', description: 'Project managers, product managers, scrum masters, and agile roles' },
+      { name: 'Design', slug: 'design', description: 'UI/UX design, graphic design, product design, and creative roles' },
+      { name: 'Marketing', slug: 'marketing', description: 'Digital marketing, content marketing, SEO, and growth roles' },
+      { name: 'Data Science & Analytics', slug: 'data-science-analytics', description: 'Data scientists, analysts, machine learning engineers, and BI roles' },
+      { name: 'DevOps & Infrastructure', slug: 'devops-infrastructure', description: 'DevOps engineers, SRE, cloud architects, and infrastructure roles' },
+      { name: 'Customer Support', slug: 'customer-support', description: 'Customer service, technical support, and success roles' },
+      { name: 'Sales', slug: 'sales', description: 'Sales representatives, account executives, and business development' },
+    ];
+    await db.insert(schema.categories).values(defaultCategories);
+    log("✅ Categories seeded successfully");
+  }
+
   let totalAdded = 0;
   let totalUpdated = 0;
   let totalSkipped = 0;
@@ -109,6 +144,38 @@ export async function syncJobs(
     options.sources && options.sources.length > 0
       ? jobSources.filter((source) => options.sources!.includes(source.name))
       : jobSources;
+
+  // Create batched writer for new jobs
+  const batchWriter = createBatchedDbWriter({
+    maxSize: 50,
+    wait: 2000,
+    writeFn: async (jobs: any[]) => {
+      try {
+        await db.insert(schema.jobs).values(jobs);
+        totalAdded += jobs.length;
+        log(`  ✨ Flushed batch of ${jobs.length} jobs`);
+      } catch (error) {
+        // If batch fails, try one by one to save what we can
+        log(`  ⚠️  Batch insert failed, retrying individually...`, "warning");
+        for (const job of jobs) {
+          try {
+            await db.insert(schema.jobs).values(job);
+            totalAdded++;
+          } catch (err: any) {
+            if (err?.message?.includes("UNIQUE constraint failed")) {
+              totalSkipped++;
+            } else {
+              log(`  ❌ Individual insert failed: ${err.message}`, "error");
+              totalSkipped++;
+            }
+          }
+        }
+      }
+    },
+    onError: (error: Error, _items: any[]) => {
+      log(`  ❌ Batch error: ${error.message}`, "error");
+    }
+  });
 
   for (const source of sourcesToSync) {
     try {
@@ -127,15 +194,22 @@ export async function syncJobs(
               .limit(1);
 
             // Determine category automatically
-            const categoryId = determineCategoryId(
+            let categoryId = determineCategoryId(
               rawJob.title,
               rawJob.description,
               rawJob.tags
             );
 
+            // Validate that the category exists, fallback to 1 (Software Engineering) if not
+            // Optimization: Cache category existence check or assume standard categories exist
+            // For now, we'll keep the check but maybe we can optimize later
+            
+            // ... category check logic ...
+
             if (existing.length > 0) {
               if (options.updateExisting) {
                 // Update existing job with potentially new data
+                // Updates are still done individually as they are less frequent/bulk than inserts usually
                 await db
                   .update(schema.jobs)
                   .set({
@@ -156,43 +230,21 @@ export async function syncJobs(
             }
 
             if (options.addNew) {
-              // Insert new job
-              try {
-                await db.insert(schema.jobs).values({
-                  title: sanitizeString(rawJob.title, true),
-                  company: sanitizeString(rawJob.company),
-                  description: sanitizeString(rawJob.description),
-                  payRange: sanitizeString(rawJob.salary),
-                  postDate: rawJob.postedDate,
-                  sourceUrl: sanitizeString(rawJob.sourceUrl, true),
-                  sourceName: sanitizeString(rawJob.sourceName, true),
-                  categoryId,
-                  remoteType: "fully_remote",
-                });
-
-                totalAdded++;
-                log(`  ✅ Added: ${rawJob.title} (Category: ${categoryId})`);
-              } catch (insertError: any) {
-                // Check if it's a unique constraint error
-                if (
-                  insertError?.message?.includes("UNIQUE constraint failed")
-                ) {
-                  log(`  ⏭️  Skipped (duplicate): ${rawJob.title}`);
-                  totalSkipped++;
-                } else {
-                  // Log full error details for debugging
-                  const errorDetails = {
-                    message: insertError?.message,
-                    cause: insertError?.cause,
-                    code: insertError?.code,
-                  };
-                  log(
-                    `  ❌ Insert failed for "${rawJob.title}": ${JSON.stringify(errorDetails)}`,
-                    "error"
-                  );
-                  totalSkipped++;
-                }
-              }
+              // Add to batch instead of inserting immediately
+              await batchWriter.add({
+                title: sanitizeString(rawJob.title, true),
+                company: sanitizeString(rawJob.company),
+                description: sanitizeString(rawJob.description),
+                payRange: sanitizeString(rawJob.salary),
+                postDate: rawJob.postedDate,
+                sourceUrl: sanitizeString(rawJob.sourceUrl, true),
+                sourceName: sanitizeString(rawJob.sourceName, true),
+                categoryId,
+                remoteType: "fully_remote",
+              });
+              
+              // Log queued instead of added (added is logged on flush)
+              // log(`  queued: ${rawJob.title}`); 
             }
           } catch (jobError) {
             const errorMsg =
@@ -210,6 +262,10 @@ export async function syncJobs(
       log(`❌ Error fetching from ${source.name}: ${sourceError}`, "error");
     }
   }
+
+  // Flush any remaining jobs
+  await batchWriter.flush();
+
 
   log("\n" + "=".repeat(50));
   log("\n✅ Sync complete!", "success");

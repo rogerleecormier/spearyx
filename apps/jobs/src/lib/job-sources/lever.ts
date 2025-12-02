@@ -2,6 +2,8 @@ import type { RawJobListing } from './types'
 import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
 import companiesData from './lever-companies.json'
 
+import { createThrottledRateLimitedFetcher } from '../pacer-utils'
+
 // Type definition for the JSON structure
 interface CompanyDatabase {
   version: string
@@ -29,8 +31,22 @@ function getCompanyList(): string[] {
   return [...new Set(allCompanies)]
 }
 
-// Helper function to add delay between requests (rate limiting)
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+// Create throttled and rate-limited fetcher for Lever API
+// Throttle: 500ms between requests
+// Rate limit: 120 requests per minute (2 per second)
+const throttledFetch = createThrottledRateLimitedFetcher({
+  throttle: {
+    wait: 500,
+    trailing: true,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  rateLimit: {
+    maxRequests: 120,
+    windowMs: 60000, // 1 minute
+    sliding: true,
+  },
+})
 
 export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
   const companies = getCompanyList()
@@ -50,7 +66,7 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
     try {
       // Lever API endpoint: https://api.lever.co/v0/postings/{company}?mode=json
       const url = `https://api.lever.co/v0/postings/${company}?mode=json`
-      const response = await fetch(url)
+      const response = await throttledFetch(url)
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -63,7 +79,7 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
         continue
       }
       
-      const jobs = await response.json()
+      const jobs: any = await response.json()
       
       if (!jobs || !Array.isArray(jobs)) {
         console.log(`  ℹ️  ${company}: No jobs array in response`)
@@ -138,8 +154,8 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
         noJobsCount++
       }
       
-      // Rate limiting
-      await sleep(500)
+      // Throttling and rate limiting are now handled by throttledFetch
+      
       
     } catch (error) {
       console.error(`  ❌ ${company}: Error -`, error instanceof Error ? error.message : error)
