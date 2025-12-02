@@ -48,14 +48,19 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
+export async function* fetchLeverJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
   const companies = getCompanyList()
   
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('🏢 Fetching jobs from Lever job boards')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`📊 Total companies to check: ${companies.length}`)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+  const log = (msg: string) => {
+    console.log(msg)
+    onLog?.(msg)
+  }
+  
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log('🏢 Fetching jobs from Lever job boards')
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log(`📊 Total companies to check: ${companies.length}`)
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   
   let successCount = 0
   let failCount = 0
@@ -70,10 +75,10 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
       
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`  ℹ️  ${company}: No job board found (404)`)
+          // log(`  ℹ️  ${company}: No job board found (404)`)
           failCount++
         } else {
-          console.warn(`  ⚠️  ${company}: API returned ${response.status}`)
+          log(`  ⚠️  ${company}: API returned ${response.status}`)
           failCount++
         }
         continue
@@ -82,7 +87,7 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
       const jobs: any = await response.json()
       
       if (!jobs || !Array.isArray(jobs)) {
-        console.log(`  ℹ️  ${company}: No jobs array in response`)
+        // log(`  ℹ️  ${company}: No jobs array in response`)
         noJobsCount++
         continue
       }
@@ -147,10 +152,10 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
       if (remoteJobs.length > 0) {
         yield remoteJobs
         remoteJobsFound += remoteJobs.length
-        console.log(`  ✅ ${company}: Found ${remoteJobs.length} remote job(s)`)
+        log(`  ✅ ${company}: Found ${remoteJobs.length} remote job(s)`)
         successCount++
       } else {
-        console.log(`  ➖ ${company}: No remote positions`)
+        // log(`  ➖ ${company}: No remote positions`)
         noJobsCount++
       }
       
@@ -158,20 +163,20 @@ export async function* fetchLeverJobs(): AsyncGenerator<RawJobListing[]> {
       
       
     } catch (error) {
-      console.error(`  ❌ ${company}: Error -`, error instanceof Error ? error.message : error)
+      log(`  ❌ ${company}: Error - ${error instanceof Error ? error.message : error}`)
       failCount++
     }
   }
   
-  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('📈 Lever Sync Summary')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`🎯 Total remote jobs found: ${remoteJobsFound}`)
-  console.log(`✅ Companies with remote jobs: ${successCount}`)
-  console.log(`➖ Companies with no remote jobs: ${noJobsCount}`)
-  console.log(`❌ Failed/Not found: ${failCount}`)
-  console.log(`📊 Success rate: ${((successCount / companies.length) * 100).toFixed(1)}%`)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+  log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log('📈 Lever Sync Summary')
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log(`🎯 Total remote jobs found: ${remoteJobsFound}`)
+  log(`✅ Companies with remote jobs: ${successCount}`)
+  log(`➖ Companies with no remote jobs: ${noJobsCount}`)
+  log(`❌ Failed/Not found: ${failCount}`)
+  log(`📊 Success rate: ${((successCount / companies.length) * 100).toFixed(1)}%`)
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 }
 
 function extractSalaryFromDescription(description: string): string | null {

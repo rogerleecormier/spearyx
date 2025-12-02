@@ -19,9 +19,14 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchRemoteOKJobs(): AsyncGenerator<RawJobListing[]> {
+export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
+  const log = (msg: string) => {
+    console.log(msg)
+    onLog?.(msg)
+  }
+
   try {
-    console.log('Fetching jobs from RemoteOK...')
+    log('Fetching jobs from RemoteOK...')
     const response = await throttledFetch('https://remoteok.com/api')
     
     if (!response.ok) {
@@ -37,7 +42,7 @@ export async function* fetchRemoteOKJobs(): AsyncGenerator<RawJobListing[]> {
     // RemoteOK API returns metadata as first item, skip it
     const jobs = data.slice(1)
     
-    console.log(`Found ${jobs.length} jobs from RemoteOK`)
+    log(`Found ${jobs.length} jobs from RemoteOK`)
     
     const processedJobs = jobs
       .filter((job: any) => {
@@ -73,7 +78,7 @@ export async function* fetchRemoteOKJobs(): AsyncGenerator<RawJobListing[]> {
     yield processedJobs
 
   } catch (error) {
-    console.error('Error fetching from RemoteOK:', error)
+    log(`Error fetching from RemoteOK: ${error}`)
     yield []
   }
 }

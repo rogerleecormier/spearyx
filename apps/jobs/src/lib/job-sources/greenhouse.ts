@@ -52,16 +52,21 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
+export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
   const companies = getCompanyList()
   
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('🏢 Fetching jobs from Greenhouse job boards')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`📊 Total companies to check: ${companies.length}`)
-  console.log(`📅 Database last updated: ${(companiesData as CompanyDatabase).lastUpdated}`)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+  const log = (msg: string) => {
+    console.log(msg)
+    onLog?.(msg)
+  }
+
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log('🏢 Fetching jobs from Greenhouse job boards')
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log(`📊 Total companies to check: ${companies.length}`)
+  log(`📅 Database last updated: ${(companiesData as CompanyDatabase).lastUpdated}`)
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   
   let successCount = 0
   let failCount = 0
@@ -69,6 +74,11 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
   let remoteJobsFound = 0
   
   for (const company of companies) {
+    // Provide feedback that we are checking this company
+    // This is crucial for the UI to show activity
+    // onLog?.(`Checking ${company}...`) // Too verbose? Maybe just log when we find something or error?
+    // Actually, user wants to see activity. Let's log it but maybe simpler.
+    
     try {
       const url = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`
       const response = await throttledFetch(url)
@@ -76,10 +86,10 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
       if (!response.ok) {
         // Some companies may not have active job boards or may have moved
         if (response.status === 404) {
-          console.log(`  ℹ️  ${company}: No job board found (404)`)
+          // log(`  ℹ️  ${company}: No job board found (404)`) // Too verbose
           failCount++
         } else {
-          console.warn(`  ⚠️  ${company}: API returned ${response.status}`)
+          log(`  ⚠️  ${company}: API returned ${response.status}`)
           failCount++
         }
         continue
@@ -88,7 +98,7 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
       const data: any = await response.json()
       
       if (!data.jobs || !Array.isArray(data.jobs)) {
-        console.log(`  ℹ️  ${company}: No jobs array in response`)
+        // log(`  ℹ️  ${company}: No jobs array in response`) // Too verbose
         noJobsCount++
         continue
       }
@@ -151,10 +161,10 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
         yield remoteJobs
         // allJobs.push(...remoteJobs) // No longer needed
         remoteJobsFound += remoteJobs.length
-        console.log(`  ✅ ${company}: Found ${remoteJobs.length} remote job(s)`)
+        log(`  ✅ ${company}: Found ${remoteJobs.length} remote job(s)`)
         successCount++
       } else {
-        console.log(`  ➖ ${company}: No remote positions`)
+        // log(`  ➖ ${company}: No remote positions`) // Too verbose for UI
         noJobsCount++
       }
       
@@ -163,20 +173,20 @@ export async function* fetchGreenhouseJobs(): AsyncGenerator<RawJobListing[]> {
       
       
     } catch (error) {
-      console.error(`  ❌ ${company}: Error -`, error instanceof Error ? error.message : error)
+      log(`  ❌ ${company}: Error - ${error instanceof Error ? error.message : error}`)
       failCount++
     }
   }
   
-  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('📈 Greenhouse Sync Summary')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`🎯 Total remote jobs found: ${remoteJobsFound}`)
-  console.log(`✅ Companies with remote jobs: ${successCount}`)
-  console.log(`➖ Companies with no remote jobs: ${noJobsCount}`)
-  console.log(`❌ Failed/Not found: ${failCount}`)
-  console.log(`📊 Success rate: ${((successCount / companies.length) * 100).toFixed(1)}%`)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+  log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log('📈 Greenhouse Sync Summary')
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  log(`🎯 Total remote jobs found: ${remoteJobsFound}`)
+  log(`✅ Companies with remote jobs: ${successCount}`)
+  log(`➖ Companies with no remote jobs: ${noJobsCount}`)
+  log(`❌ Failed/Not found: ${failCount}`)
+  log(`📊 Success rate: ${((successCount / companies.length) * 100).toFixed(1)}%`)
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   
   // return allJobs // No longer needed
 }

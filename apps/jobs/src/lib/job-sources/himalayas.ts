@@ -25,14 +25,19 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchHimalayasJobs() {
+export async function* fetchHimalayasJobs(query?: string, onLog?: (message: string) => void) {
   const baseUrl = 'https://himalayas.app/jobs/api'
   const limit = 20 // API limit per request
   let offset = 0
   let totalJobs = 0
   
+  const log = (msg: string) => {
+    console.log(msg)
+    onLog?.(msg)
+  }
+  
   try {
-    console.log('\n🔍 Fetching jobs from Himalayas...')
+    log('\n🔍 Fetching jobs from Himalayas...')
     
     while (true) {
       const url = `${baseUrl}?limit=${limit}&offset=${offset}`
@@ -46,10 +51,10 @@ export async function* fetchHimalayasJobs() {
       
       if (!response.ok) {
         if (response.status === 429) {
-          console.log('   ⚠️  Rate limited, stopping pagination')
+          log('   ⚠️  Rate limited, stopping pagination')
           break
         }
-        console.error(`❌ Himalayas API error: ${response.status}`)
+        log(`❌ Himalayas API error: ${response.status}`)
         break
       }
       
@@ -96,7 +101,7 @@ export async function* fetchHimalayasJobs() {
       yield processedJobs
       
       totalJobs += processedJobs.length
-      console.log(`   Fetched ${processedJobs.length} jobs (total: ${totalJobs})`)
+      log(`   Fetched ${processedJobs.length} jobs (total: ${totalJobs})`)
       
       
       // If we got fewer jobs than the limit, we've reached the end
@@ -109,10 +114,10 @@ export async function* fetchHimalayasJobs() {
       // Throttling handled by throttledFetch
     }
     
-    console.log(`✅ Himalayas: ${totalJobs} remote jobs\n`)
+    log(`✅ Himalayas: ${totalJobs} remote jobs\n`)
     
   } catch (error) {
-    console.error('❌ Error fetching from Himalayas:', error)
+    log(`❌ Error fetching from Himalayas: ${error}`)
   }
 }
 

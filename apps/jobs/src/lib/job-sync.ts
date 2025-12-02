@@ -181,7 +181,7 @@ export async function syncJobs(
     try {
       log(`\n📡 Fetching from ${source.name}...`);
 
-      for await (const rawJobs of source.fetch()) {
+      for await (const rawJobs of source.fetch(undefined, log)) {
         log(`Processing batch of ${rawJobs.length} jobs from ${source.name}`);
 
         for (const rawJob of rawJobs) {
@@ -244,7 +244,7 @@ export async function syncJobs(
               });
               
               // Log queued instead of added (added is logged on flush)
-              // log(`  queued: ${rawJob.title}`); 
+              log(`  queued: ${rawJob.title}`); 
             }
           } catch (jobError) {
             const errorMsg =
