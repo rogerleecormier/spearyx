@@ -21,11 +21,12 @@ const config = defineConfig({
     viteReact(),
   ],
   optimizeDeps: {
-    exclude: ["wrangler"],
+    exclude: ["wrangler", "blake3-wasm"],
   },
   ssr: {
     // Don't externalize D1 and Cloudflare packages
     noExternal: ["drizzle-orm"],
+    external: ["node:sqlite", "blake3-wasm", "miniflare"],
   },
 });
 

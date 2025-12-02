@@ -49,8 +49,10 @@ function decodeHTMLEntities(text: string): string {
 }
 
 // Helper to sanitize strings for D1
-function sanitizeString(str: string | null | undefined): string | null {
-  if (!str) return null;
+function sanitizeString(str: string | null | undefined, required: true): string;
+function sanitizeString(str: string | null | undefined, required?: false): string | null;
+function sanitizeString(str: string | null | undefined, required: boolean = false): string | null {
+  if (!str) return required ? "" : null;
 
   // Decode HTML entities and fix UTF-8 encoding issues
   let sanitized = decodeHTMLEntities(str);
@@ -63,12 +65,17 @@ function sanitizeString(str: string | null | undefined): string | null {
   // Normalize whitespace
   sanitized = sanitized.trim();
 
+  // If after sanitization the string is empty and it's required, return empty string
+  if (!sanitized && required) {
+    return "";
+  }
+
   // D1 has practical limits on query size, limit description to reasonable size
   if (sanitized.length > 10000) {
     return sanitized.substring(0, 10000);
   }
 
-  return sanitized;
+  return sanitized || (required ? "" : null);
 }
 
 export async function syncJobs(
@@ -132,7 +139,7 @@ export async function syncJobs(
                 await db
                   .update(schema.jobs)
                   .set({
-                    title: sanitizeString(rawJob.title),
+                    title: sanitizeString(rawJob.title, true),
                     company: sanitizeString(rawJob.company),
                     description: sanitizeString(rawJob.description),
                     payRange: sanitizeString(rawJob.salary),
@@ -152,13 +159,13 @@ export async function syncJobs(
               // Insert new job
               try {
                 await db.insert(schema.jobs).values({
-                  title: sanitizeString(rawJob.title),
+                  title: sanitizeString(rawJob.title, true),
                   company: sanitizeString(rawJob.company),
                   description: sanitizeString(rawJob.description),
                   payRange: sanitizeString(rawJob.salary),
                   postDate: rawJob.postedDate,
-                  sourceUrl: sanitizeString(rawJob.sourceUrl),
-                  sourceName: sanitizeString(rawJob.sourceName),
+                  sourceUrl: sanitizeString(rawJob.sourceUrl, true),
+                  sourceName: sanitizeString(rawJob.sourceName, true),
                   categoryId,
                   remoteType: "fully_remote",
                 });
