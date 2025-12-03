@@ -30,6 +30,12 @@ export const Route = createFileRoute('/api/v2/stats')({
           .where(sql`status = 'pending'`)
           const pendingCompanies = pendingCompaniesResult[0]?.count || 0
 
+          // Get total active companies (companies with jobs)
+          const activeCompaniesResult = await db.select({
+            count: sql<number>`count(distinct company)`
+          }).from(schema.jobs)
+          const totalActiveCompanies = activeCompaniesResult[0]?.count || 0
+
           // Get last sync timestamp
           const lastSyncResult = await db.select({
             completedAt: schema.syncHistory.completedAt
@@ -45,6 +51,7 @@ export const Route = createFileRoute('/api/v2/stats')({
             success: true,
             stats: {
               totalDiscoveredCompanies,
+              totalActiveCompanies,
               totalJobs,
               pendingCompanies,
               lastSyncAt: lastSyncAt ? new Date(lastSyncAt).toISOString() : null

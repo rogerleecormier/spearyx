@@ -253,6 +253,21 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                   updatedAt: new Date()
                 });
               }
+
+              // Ensure company is in discovered_companies table so it shows up in dashboard
+              try {
+                await db.insert(schema.discoveredCompanies).values({
+                  slug: company,
+                  name: company, // Use slug as name initially
+                  source: 'greenhouse',
+                  status: 'added',
+                  jobCount: 0,
+                  remoteJobCount: 0
+                }).onConflictDoNothing();
+              } catch (err) {
+                // Ignore error if insert fails, it's not critical
+                console.error(`Failed to add ${company} to discovered_companies:`, err);
+              }
               
               if (nextOffset === 0 && currentOffset > 0) {
                 logs.push({

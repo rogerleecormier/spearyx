@@ -127,7 +127,6 @@ export const Route = createFileRoute('/api/v2/discover-companies')({
             
             if (result.found && result.company) {
               // Company found! Add to discovered companies
-              try {
                 await db.insert(schema.discoveredCompanies).values({
                   slug: company.slug,
                   name: result.company.name,
@@ -137,6 +136,15 @@ export const Route = createFileRoute('/api/v2/discover-companies')({
                   status: 'new',
                   departments: [],
                   sampleJobs: result.jobs?.slice(0, 3).map(j => j.title) || []
+                }).onConflictDoUpdate({
+                  target: schema.discoveredCompanies.slug,
+                  set: {
+                    name: result.company.name,
+                    jobCount: result.company.jobCount,
+                    remoteJobCount: result.company.remoteJobCount,
+                    source: result.company.slug.includes('-') ? 'greenhouse' : 'lever',
+                    updatedAt: new Date()
+                  }
                 });
                 
                 // Update potential company status
@@ -156,22 +164,6 @@ export const Route = createFileRoute('/api/v2/discover-companies')({
                   type: 'success',
                   message: `✅ Discovered: ${company.slug} (${result.company.remoteJobCount} remote jobs)`
                 });
-              } catch (error: any) {
-                if (error.message?.includes('UNIQUE constraint')) {
-                  // Already exists, just update status
-                  await db.update(schema.potentialCompanies).set({
-                    status: 'discovered'
-                  }).where(sql`id = ${company.id}`);
-                  
-                  logs.push({
-                    timestamp: new Date().toISOString(),
-                    type: 'info',
-                    message: `ℹ️  ${company.slug} already in discovered companies`
-                  });
-                } else {
-                  throw error;
-                }
-              }
             } else {
               // Not found
               await db.update(schema.potentialCompanies).set({

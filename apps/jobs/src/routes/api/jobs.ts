@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { getDbFromContext, schema } from "../../db/db";
 import { searchJobs } from "../../lib/search-utils";
-import { eq } from "drizzle-orm";
+
 import type { JobWithCategory } from "../../lib/search-utils";
 
 export const Route = createFileRoute("/api/jobs")({
@@ -33,23 +33,29 @@ export const Route = createFileRoute("/api/jobs")({
           const limit = parseInt(url.searchParams.get("limit") || "20");
           const offset = (page - 1) * limit;
 
-          // Fetch all jobs with their categories
+          // Fetch all jobs
           const jobsData = await db.select().from(schema.jobs);
 
+          // Fetch all categories once
+          const categoriesData = await db.select().from(schema.categories);
+          const categoriesMap = new Map(categoriesData.map((c) => [c.id, c]));
+
           // Transform to include category data
-          const jobsWithCategories: JobWithCategory[] = await Promise.all(
-            jobsData.map(async (job) => {
-              const categoryResults = await db
-                .select()
-                .from(schema.categories)
-                .where(eq(schema.categories.id, job.categoryId));
-              const category = categoryResults[0];
-              return {
-                ...job,
-                category: category!,
-              };
-            })
-          );
+          const jobsWithCategories: JobWithCategory[] = jobsData.map((job) => {
+            const category = categoriesMap.get(job.categoryId);
+            // Fallback for orphaned jobs (shouldn't happen given our check, but safe)
+            const defaultCategory = categoriesData[0] || {
+              id: 0,
+              name: "Unknown",
+              slug: "unknown",
+              jobCount: 0,
+            };
+
+            return {
+              ...job,
+              category: category || defaultCategory,
+            };
+          });
 
           // Apply search, filtering, and sorting
           const results = searchJobs(jobsWithCategories, {

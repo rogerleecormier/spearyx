@@ -8,6 +8,7 @@ export const Route = createFileRoute('/sync')({
 
 interface DashboardStats {
   totalDiscoveredCompanies: number
+  totalActiveCompanies: number
   totalJobs: number
   pendingCompanies: number
   lastSyncAt: string | null
@@ -213,16 +214,38 @@ function SyncDashboard() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Building2 className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Discovered Companies</h3>
+              <h3 className="text-sm font-medium text-slate-600">Discovered ATS Companies</h3>
             </div>
             <p className="text-3xl font-bold text-slate-900">{stats?.totalDiscoveredCompanies || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Companies we're tracking jobs from</p>
+            <p className="text-xs text-slate-500 mt-1">Directly tracked via ATS platforms</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Building2 className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-sm font-medium text-slate-600">Companies with Jobs</h3>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{stats?.totalActiveCompanies || 0}</p>
+            <p className="text-xs text-slate-500 mt-1">Total companies with active jobs</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Search className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="text-sm font-medium text-slate-600">Companies Remaining</h3>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{stats?.pendingCompanies || 0}</p>
+            <p className="text-xs text-slate-500 mt-1">Pending discovery check</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
@@ -230,21 +253,10 @@ function SyncDashboard() {
               <div className="p-2 bg-green-100 rounded-lg">
                 <Briefcase className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Total Jobs</h3>
+              <h3 className="text-sm font-medium text-slate-600">Jobs Found</h3>
             </div>
             <p className="text-3xl font-bold text-slate-900">{stats?.totalJobs || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Jobs found across all companies</p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Database className="w-6 h-6 text-orange-600" />
-              </div>
-              <h3 className="text-sm font-medium text-slate-600">Pending Discovery</h3>
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats?.pendingCompanies || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Companies not yet discovered</p>
+            <p className="text-xs text-slate-500 mt-1">Total active job listings</p>
           </div>
         </div>
 
