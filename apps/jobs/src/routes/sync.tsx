@@ -188,7 +188,7 @@ function SyncDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
             <p className="text-slate-600">
-              Job sync runs every 15 minutes, discovery runs every 15 minutes (offset by 7 min), processing 5 items per batch
+              Runs every 10 minutes, alternating between job sync and discovery. Processes 5 companies per batch, up to 20 jobs per company.
               <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
             </p>
           </div>
