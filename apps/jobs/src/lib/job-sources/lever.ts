@@ -48,8 +48,13 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchLeverJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
-  const companies = getCompanyList()
+export async function* fetchLeverJobs(onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
+  let companies = getCompanyList()
+  
+  // Filter to specific companies if provided
+  if (companyFilter && companyFilter.length > 0) {
+    companies = companies.filter(c => companyFilter.includes(c))
+  }
   
   const log = (msg: string) => {
     console.log(msg)
@@ -60,6 +65,9 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
   log('🏢 Fetching jobs from Lever job boards')
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   log(`📊 Total companies to check: ${companies.length}`)
+  if (jobOffset !== undefined && jobOffset > 0) {
+    log(`🔢 Starting from job offset: ${jobOffset}`)
+  }
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   
   let successCount = 0
@@ -94,7 +102,7 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
       }
       
       // Filter for remote positions
-      const remoteJobs = jobs
+      let remoteJobs = jobs
         .filter((job: any) => {
           // Check categories.location and categories.commitment
           const location = job.categories?.location?.toLowerCase() || ''
@@ -105,7 +113,13 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
                  commitment.includes('remote') ||
                  description.includes('remote')
         })
-        .map((job: any) => {
+      
+      // Apply offset if provided
+      if (jobOffset !== undefined && jobOffset > 0) {
+        remoteJobs = remoteJobs.slice(jobOffset);
+      }
+      
+      remoteJobs = remoteJobs.map((job: any) => {
           // Sanitize HTML from description
           const cleanDescription = job.description 
             ? sanitizeHtml(job.description)

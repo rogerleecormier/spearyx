@@ -168,6 +168,21 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               }).where(sql`id = ${syncId}`);
 
               let lastLogSave = Date.now();
+              
+              // Get current job offset for this company
+              const companyProgress = await db.select().from(schema.companyJobProgress)
+                .where(sql`company_slug = ${company}`)
+                .limit(1);
+              
+              const currentOffset = companyProgress.length > 0 ? (companyProgress[0].lastJobOffset || 0) : 0;
+              
+              if (currentOffset > 0) {
+                logs.push({
+                  timestamp: new Date().toISOString(),
+                  type: 'info',
+                  message: `  📍 Resuming from job offset ${currentOffset}`
+                });
+              }
 
               const result = await syncJobs({
                 updateExisting: true,
@@ -175,6 +190,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 sources: ['Greenhouse'],
                 companyFilter: [company], // Process one company at a time
                 maxJobsPerCompany: MAX_JOBS_PER_BATCH, // Limit jobs to prevent timeout
+                jobOffset: currentOffset, // Start from saved offset
                 db,
                 onLog: (message, level = 'info') => {
                   console.log(`[${level}] ${message}`);
@@ -205,6 +221,52 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               totalUpdated += result.updated;
               totalSkipped += result.skipped;
               companiesProcessedCount++;
+              
+              // Calculate next job offset for this company
+              // Extract total jobs from result (we'll need to modify syncJobs to return this)
+              const jobsProcessed = result.added + result.updated + result.skipped;
+              const newOffset = currentOffset + jobsProcessed;
+              
+              // Determine if we've processed all jobs (need total jobs count)
+              // For now, if we processed fewer than MAX_JOBS_PER_BATCH, we're done
+              const allJobsProcessed = jobsProcessed < MAX_JOBS_PER_BATCH;
+              const nextOffset = allJobsProcessed ? 0 : newOffset;
+              
+              // Update or insert company job progress
+              const existingProgress = await db.select().from(schema.companyJobProgress)
+                .where(sql`company_slug = ${company}`)
+                .limit(1);
+              
+              if (existingProgress.length > 0) {
+                await db.update(schema.companyJobProgress).set({
+                  lastJobOffset: nextOffset,
+                  lastSyncedAt: new Date(),
+                  updatedAt: new Date()
+                }).where(sql`company_slug = ${company}`);
+              } else {
+                await db.insert(schema.companyJobProgress).values({
+                  companySlug: company,
+                  source: 'Greenhouse',
+                  lastJobOffset: nextOffset,
+                  totalJobsDiscovered: 0, // We'll update this when we have the info
+                  lastSyncedAt: new Date(),
+                  updatedAt: new Date()
+                });
+              }
+              
+              if (nextOffset === 0 && currentOffset > 0) {
+                logs.push({
+                  timestamp: new Date().toISOString(),
+                  type: 'success',
+                  message: `  ✅ ${company}: All jobs processed, offset reset to 0`
+                });
+              } else if (nextOffset > 0) {
+                logs.push({
+                  timestamp: new Date().toISOString(),
+                  type: 'info',
+                  message: `  💾 ${company}: Next offset saved as ${nextOffset}`
+                });
+              }
               
               // Update DB with progress after EACH company
               // This ensures that if the worker crashes/times out, we still have the logs for processed companies

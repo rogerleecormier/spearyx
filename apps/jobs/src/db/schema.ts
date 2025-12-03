@@ -97,6 +97,18 @@ export const discoveryState = sqliteTable('discovery_state', {
   status: text('status').default('active'),
 })
 
+// Track job-level progress per company to handle pagination
+export const companyJobProgress = sqliteTable('company_job_progress', {
+  companySlug: text('company_slug').primaryKey(),
+  source: text('source').notNull(), // 'greenhouse', 'lever', etc.
+  lastJobOffset: integer('last_job_offset').default(0),
+  totalJobsDiscovered: integer('total_jobs_discovered').default(0),
+  lastSyncedAt: integer('last_synced_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+})
+
 export const duplicateJobs = sqliteTable('duplicate_jobs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   jobId1: integer('job_id_1').notNull().references(() => jobs.id),
@@ -117,3 +129,5 @@ export type SyncHistory = typeof syncHistory.$inferSelect
 export type NewSyncHistory = typeof syncHistory.$inferInsert
 export type DuplicateJob = typeof duplicateJobs.$inferSelect
 export type NewDuplicateJob = typeof duplicateJobs.$inferInsert
+export type CompanyJobProgress = typeof companyJobProgress.$inferSelect
+export type NewCompanyJobProgress = typeof companyJobProgress.$inferInsert

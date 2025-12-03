@@ -13,7 +13,7 @@ export interface RawJobListing {
 
 export interface JobSource {
   name: string
-  fetch: (query?: string, onLog?: (message: string) => void, companyFilter?: string[]) => AsyncGenerator<RawJobListing[]>
+  fetch: (query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number) => AsyncGenerator<RawJobListing[]>
 }
 
 export interface CategoryKeywords {

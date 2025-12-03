@@ -16,7 +16,6 @@ import { Route as ApiTestJobsRouteImport } from './routes/api/test-jobs'
 import { Route as ApiTestInsertRouteImport } from './routes/api/test-insert'
 import { Route as ApiTestEncodingRouteImport } from './routes/api/test-encoding'
 import { Route as ApiTestDbRouteImport } from './routes/api/test-db'
-import { Route as ApiSyncStreamRouteImport } from './routes/api/sync-stream'
 import { Route as ApiSyncRouteImport } from './routes/api/sync'
 import { Route as ApiJobsRouteImport } from './routes/api/jobs'
 import { Route as ApiDebugDbRouteImport } from './routes/api/debug-db'
@@ -65,11 +64,6 @@ const ApiTestEncodingRoute = ApiTestEncodingRouteImport.update({
 const ApiTestDbRoute = ApiTestDbRouteImport.update({
   id: '/api/test-db',
   path: '/api/test-db',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSyncStreamRoute = ApiSyncStreamRouteImport.update({
-  id: '/api/sync-stream',
-  path: '/api/sync-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSyncRoute = ApiSyncRouteImport.update({
@@ -151,7 +145,6 @@ export interface FileRoutesByFullPath {
   '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
-  '/api/sync-stream': typeof ApiSyncStreamRoute
   '/api/test-db': typeof ApiTestDbRoute
   '/api/test-encoding': typeof ApiTestEncodingRoute
   '/api/test-insert': typeof ApiTestInsertRoute
@@ -175,7 +168,6 @@ export interface FileRoutesByTo {
   '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
-  '/api/sync-stream': typeof ApiSyncStreamRoute
   '/api/test-db': typeof ApiTestDbRoute
   '/api/test-encoding': typeof ApiTestEncodingRoute
   '/api/test-insert': typeof ApiTestInsertRoute
@@ -200,7 +192,6 @@ export interface FileRoutesById {
   '/api/debug-db': typeof ApiDebugDbRoute
   '/api/jobs': typeof ApiJobsRoute
   '/api/sync': typeof ApiSyncRoute
-  '/api/sync-stream': typeof ApiSyncStreamRoute
   '/api/test-db': typeof ApiTestDbRoute
   '/api/test-encoding': typeof ApiTestEncodingRoute
   '/api/test-insert': typeof ApiTestInsertRoute
@@ -226,7 +217,6 @@ export interface FileRouteTypes {
     | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
-    | '/api/sync-stream'
     | '/api/test-db'
     | '/api/test-encoding'
     | '/api/test-insert'
@@ -250,7 +240,6 @@ export interface FileRouteTypes {
     | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
-    | '/api/sync-stream'
     | '/api/test-db'
     | '/api/test-encoding'
     | '/api/test-insert'
@@ -274,7 +263,6 @@ export interface FileRouteTypes {
     | '/api/debug-db'
     | '/api/jobs'
     | '/api/sync'
-    | '/api/sync-stream'
     | '/api/test-db'
     | '/api/test-encoding'
     | '/api/test-insert'
@@ -299,7 +287,6 @@ export interface RootRouteChildren {
   ApiDebugDbRoute: typeof ApiDebugDbRoute
   ApiJobsRoute: typeof ApiJobsRoute
   ApiSyncRoute: typeof ApiSyncRoute
-  ApiSyncStreamRoute: typeof ApiSyncStreamRoute
   ApiTestDbRoute: typeof ApiTestDbRoute
   ApiTestEncodingRoute: typeof ApiTestEncodingRoute
   ApiTestInsertRoute: typeof ApiTestInsertRoute
@@ -366,13 +353,6 @@ declare module '@tanstack/react-router' {
       path: '/api/test-db'
       fullPath: '/api/test-db'
       preLoaderRoute: typeof ApiTestDbRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sync-stream': {
-      id: '/api/sync-stream'
-      path: '/api/sync-stream'
-      fullPath: '/api/sync-stream'
-      preLoaderRoute: typeof ApiSyncStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sync': {
@@ -483,7 +463,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDebugDbRoute: ApiDebugDbRoute,
   ApiJobsRoute: ApiJobsRoute,
   ApiSyncRoute: ApiSyncRoute,
-  ApiSyncStreamRoute: ApiSyncStreamRoute,
   ApiTestDbRoute: ApiTestDbRoute,
   ApiTestEncodingRoute: ApiTestEncodingRoute,
   ApiTestInsertRoute: ApiTestInsertRoute,

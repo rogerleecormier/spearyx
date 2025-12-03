@@ -52,7 +52,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[]): AsyncGenerator<RawJobListing[]> {
+export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
   let companies = getCompanyList()
   
@@ -71,6 +71,9 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   log(`📊 Total companies to check: ${companies.length}`)
   log(`📅 Database last updated: ${(companiesData as CompanyDatabase).lastUpdated}`)
+  if (jobOffset !== undefined && jobOffset > 0) {
+    log(`🔢 Starting from job offset: ${jobOffset}`)
+  }
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   
   let successCount = 0
@@ -108,13 +111,19 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
       }
       
       // Filter for remote positions
-      const remoteJobs = data.jobs
+      let remoteJobs = data.jobs
         .filter((job: any) => {
           // Check if location name includes 'remote' (case insensitive)
           const locationName = job.location?.name?.toLowerCase() || ''
           return locationName.includes('remote')
         })
-        .map((job: any) => {
+
+      // Apply offset if provided
+      if (jobOffset !== undefined && jobOffset > 0) {
+        remoteJobs = remoteJobs.slice(jobOffset);
+      }
+
+      remoteJobs = remoteJobs.map((job: any) => {
           // Sanitize HTML from description and decode entities from title
           // The content from Greenhouse API is often double-encoded
           const rawContent = job.content ? decodeHtmlEntities(job.content) : ''

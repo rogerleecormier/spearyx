@@ -19,7 +19,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
+export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
   const log = (msg: string) => {
     console.log(msg)
     onLog?.(msg)

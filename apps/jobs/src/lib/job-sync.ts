@@ -101,7 +101,8 @@ export async function syncJobs(
     addNew: boolean;
     sources?: string[];
     companyFilter?: string[]; // Filter to specific companies
-    maxJobsPerCompany?: number; // NEW: Limit jobs per company to prevent timeout
+    maxJobsPerCompany?: number; // Limit jobs per company to prevent timeout
+    jobOffset?: number; // NEW: Offset to start fetching jobs from (for pagination)
     db?: DrizzleD1Database;
     onLog?: (
       message: string,
@@ -119,6 +120,9 @@ export async function syncJobs(
   }
   if (options.companyFilter && options.companyFilter.length > 0) {
     log(`Filtering to ${options.companyFilter.length} companies: ${options.companyFilter.join(", ")}`);
+  }
+  if (options.jobOffset !== undefined && options.jobOffset > 0) {
+    log(`Starting from job offset: ${options.jobOffset}`);
   }
   log("=".repeat(50));
 
@@ -186,10 +190,12 @@ export async function syncJobs(
     try {
       log(`\n📡 Fetching from ${source.name}...`);
 
-      for await (const rawJobs of source.fetch(undefined, log, options.companyFilter)) {
+      for await (const rawJobs of source.fetch(undefined, log, options.companyFilter, options.jobOffset)) {
         // Log total jobs discovered for this company
         const companyName = rawJobs[0]?.company || 'Unknown';
-        log(`📊 Discovered ${rawJobs.length} job(s) from ${companyName}`);
+        const totalJobsDiscovered = rawJobs.length;
+        
+        log(`📊 Discovered ${totalJobsDiscovered} job(s) from ${companyName}`);
         
         // Apply job limit if specified (to prevent timeout on large companies)
         const jobsToProcess = options.maxJobsPerCompany 
@@ -197,7 +203,9 @@ export async function syncJobs(
           : rawJobs;
         
         if (rawJobs.length > jobsToProcess.length) {
-          log(`  ⚙️  Batching: Processing ${jobsToProcess.length} of ${rawJobs.length} jobs (max ${options.maxJobsPerCompany} per company per sync run)`, "warning");
+          const startOffset = options.jobOffset || 0;
+          const endOffset = startOffset + jobsToProcess.length - 1;
+          log(`  ⚙️  Batching: Processing ${jobsToProcess.length} of ${totalJobsDiscovered} jobs (offset ${startOffset}-${endOffset}, max ${options.maxJobsPerCompany} per sync run)`, "warning");
         }
         
         log(`Processing batch of ${jobsToProcess.length} jobs from ${source.name} (Company: ${companyName})`);
