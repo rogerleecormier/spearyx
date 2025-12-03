@@ -3,6 +3,7 @@ import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
 import companiesData from './lever-companies.json'
 
 import { createThrottledRateLimitedFetcher } from '../pacer-utils'
+import { extractSalaryFromDescription } from './salary-utils'
 
 // Type definition for the JSON structure
 interface CompanyDatabase {
@@ -150,9 +151,19 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
           }
           
           // If no explicit range, try to parse from description
-          if (!salaryRange && cleanDescription) {
-             const textOnlyDescription = cleanDescription.replace(/<[^>]*>/g, ' ')
-             salaryRange = extractSalaryFromDescription(textOnlyDescription)
+          if (!salaryRange) {
+             // Combine descriptionPlain and additionalPlain to search for salary
+             const descriptionPlain = job.descriptionPlain || '';
+             const additionalPlain = job.additionalPlain || '';
+             const fullText = `${descriptionPlain}\n${additionalPlain}`;
+             
+             salaryRange = extractSalaryFromDescription(fullText);
+             
+             // Fallback to HTML description if plain text didn't yield results
+             if (!salaryRange && cleanDescription) {
+                const textOnlyDescription = cleanDescription.replace(/<[^>]*>/g, ' ');
+                salaryRange = extractSalaryFromDescription(textOnlyDescription);
+             }
           }
           
           return {
@@ -203,27 +214,4 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 }
 
-function extractSalaryFromDescription(description: string): string | null {
-  // Common salary patterns
-  const patterns = [
-    // $100k - $150k or $100k-$150k
-    /\$(\d{2,3})k\s*-\s*\$(\d{2,3})k/i,
-    // $100,000 - $150,000 (standard)
-    /\$(\d{1,3}(?:,\d{3})+)\s*-\s*\$(\d{1,3}(?:,\d{3})+)/i,
-    // $100,000 — $150,000 (em dash/en dash/hyphen) with optional USD
-    /\$(\d{1,3}(?:,\d{3})+)\s*[—–-]\s*\$(\d{1,3}(?:,\d{3})+)(?:\s*USD)?/i,
-    // USD 100k - 150k
-    /USD\s*(\d{2,3})k\s*-\s*(\d{2,3})k/i,
-    // £50k - £70k
-    /£(\d{2,3})k\s*-\s*£(\d{2,3})k/i
-  ]
 
-  for (const pattern of patterns) {
-    const match = description.match(pattern)
-    if (match) {
-      return match[0]
-    }
-  }
-
-  return null
-}

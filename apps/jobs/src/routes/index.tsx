@@ -4,11 +4,9 @@ import { Briefcase, Loader2 } from "lucide-react";
 import { Overline, Hero, Body } from "@spearyx/ui-kit";
 import JobCard from "../components/JobCard";
 import SearchBar from "../components/SearchBar";
-import CategoryFilter from "../components/CategoryFilter";
-import SourceFilter from "../components/SourceFilter";
-import SalaryFilter from "../components/SalaryFilter";
+import FilterDropdown from "../components/FilterDropdown";
 import SortControls from "../components/SortControls";
-import type { JobWithCategory } from "../lib/jobs/search-utils";
+import type { JobWithCategory } from "../lib/search-utils";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
@@ -49,7 +47,7 @@ function HomePage() {
   );
   const [includeNoSalary, setIncludeNoSalary] = useState(false);
   const [sortBy, setSortBy] = useState<
-    "newest" | "oldest" | "title-asc" | "title-desc"
+    "newest" | "oldest" | "title-asc" | "title-desc" | "recently-added"
   >("newest");
   const [totalJobs, setTotalJobs] = useState(0);
 
@@ -153,38 +151,74 @@ function HomePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Search and Filters */}
-        <div className="mb-8 space-y-6">
-          <SearchBar onSearch={handleSearch} />
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+            {/* Search Bar - Grows to fill space */}
+            <div className="w-full lg:flex-1">
+              <SearchBar onSearch={handleSearch} />
+            </div>
 
-          <div className="space-y-4">
-            <CategoryFilter
-              categories={categories}
-              selectedCategoryId={selectedCategoryId}
-              onSelectCategory={handleCategorySelect}
-            />
+            {/* Filters - Wrap on mobile, single row on desktop */}
+            <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+              <FilterDropdown
+                label="Categories"
+                value={selectedCategoryId}
+                options={categories.map((c) => ({
+                  id: c.id,
+                  label: c.name,
+                  count: c.jobCount,
+                }))}
+                onChange={handleCategorySelect}
+              />
 
-            <SourceFilter
-              selectedSource={selectedSource}
-              onSelectSource={handleSourceSelect}
-            />
+              <FilterDropdown
+                label="Source"
+                value={selectedSource}
+                options={[
+                  { id: "RemoteOK", label: "RemoteOK" },
+                  { id: "Greenhouse", label: "Greenhouse" },
+                  { id: "Lever", label: "Lever" },
+                  { id: "Himalayas", label: "Himalayas" },
+                ]}
+                onChange={handleSourceSelect}
+              />
 
-            <SalaryFilter
-              selectedRange={selectedSalaryRange}
-              onSelectRange={handleSalaryRangeSelect}
-              includeNoSalary={includeNoSalary}
-              onIncludeNoSalaryChange={handleIncludeNoSalaryChange}
-            />
+              <FilterDropdown
+                label="Salary"
+                value={selectedSalaryRange}
+                options={[
+                  { id: "0-50000", label: "Under $50k" },
+                  { id: "50000-100000", label: "$50k - $100k" },
+                  { id: "100000-150000", label: "$100k - $150k" },
+                  { id: "150000-200000", label: "$150k - $200k" },
+                  { id: "200000+", label: "Over $200k" },
+                ]}
+                onChange={handleSalaryRangeSelect}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-            <div className="text-sm text-slate-600">
-              {loading ? (
-                <span>Loading...</span>
-              ) : (
-                <span>
-                  <strong>{totalJobs}</strong> remote jobs found
-                </span>
-              )}
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-200">
+            <div className="flex items-center gap-6">
+              <div className="text-sm text-slate-600">
+                {loading ? (
+                  <span>Loading...</span>
+                ) : (
+                  <span>
+                    <strong>{totalJobs}</strong> remote jobs found
+                  </span>
+                )}
+              </div>
+              
+              <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none hidden md:flex">
+                <input
+                  type="checkbox"
+                  checked={includeNoSalary}
+                  onChange={(e) => handleIncludeNoSalaryChange(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500 accent-primary-600"
+                />
+                <span>Include jobs with no salary info</span>
+              </label>
             </div>
             <SortControls sortBy={sortBy} onSortChange={handleSortChange} />
           </div>

@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import type { Job, Category } from '../../db/schema'
+import type { Job, Category } from '../db/schema'
 
 export interface JobWithCategory extends Job {
   category: Category
@@ -11,7 +11,7 @@ export interface SearchOptions {
   source?: string
   salaryRange?: string
   includeNoSalary?: boolean
-  sortBy?: 'newest' | 'oldest' | 'title-asc' | 'title-desc'
+  sortBy?: 'newest' | 'oldest' | 'title-asc' | 'title-desc' | 'recently-added'
   limit?: number
   offset?: number
 }
@@ -107,6 +107,13 @@ export function searchJobs(jobs: JobWithCategory[], options: SearchOptions) {
       break
     case 'title-desc':
       results.sort((a, b) => b.title.localeCompare(a.title))
+      break
+    case 'recently-added':
+      results.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return dateB - dateA
+      })
       break
     default:
       // Default to newest

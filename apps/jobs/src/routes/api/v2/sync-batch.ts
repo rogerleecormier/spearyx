@@ -51,13 +51,45 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           // Removed aggressive stale sync cleanup that was killing active syncs
           // Syncs will clean themselves up when they complete or timeout naturally
 
-          // Get list of all companies
-          const { default: companiesData } = await import('../../../lib/job-sources/greenhouse-companies.json');
-          const allCompanies: string[] = [];
-          Object.values((companiesData as any).categories).forEach((category: any) => {
-            allCompanies.push(...category.companies);
+          // Get list of all companies/sources to sync
+          // We unify everything into a single list of "SyncItems" to ensure fair scheduling
+          
+          interface SyncItem {
+            name: string;      // Company slug or Source name
+            source: string;    // 'Greenhouse', 'Lever', 'RemoteOK', 'Himalayas'
+            isPseudo: boolean; // True for aggregators like RemoteOK
+          }
+          
+          const allItems: SyncItem[] = [];
+
+          // 1. Add Greenhouse Companies
+          const { default: ghData } = await import('../../../lib/job-sources/greenhouse-companies.json');
+          Object.values((ghData as any).categories).forEach((category: any) => {
+            category.companies.forEach((slug: string) => {
+              allItems.push({ name: slug, source: 'Greenhouse', isPseudo: false });
+            });
           });
-          const companies = [...new Set(allCompanies)]; // 151 companies
+
+          // 2. Add Lever Companies
+          const { default: leverData } = await import('../../../lib/job-sources/lever-companies.json');
+          Object.values((leverData as any).categories).forEach((category: any) => {
+            category.companies.forEach((slug: string) => {
+              allItems.push({ name: slug, source: 'Lever', isPseudo: false });
+            });
+          });
+
+          // 3. Add Aggregators (Pseudo-companies)
+          // We treat them as single items in the batch loop
+          allItems.push({ name: 'remoteok', source: 'RemoteOK', isPseudo: true });
+          allItems.push({ name: 'himalayas', source: 'Himalayas', isPseudo: true });
+          
+          // Deduplicate based on name+source (though unlikely to collide)
+          const uniqueItems = Array.from(new Map(allItems.map(item => [`${item.source}:${item.name}`, item])).values());
+          
+          // Sort for consistent ordering (optional, but good for debugging)
+          uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
+          
+          const companies = uniqueItems; // Renaming for compatibility with existing code structure, though it's now "items"
           
           const COMPANIES_PER_BATCH = 5; // Reduced from 10 to avoid CPU timeout
           
@@ -108,7 +140,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           logs.push({
             timestamp: new Date().toISOString(),
             type: 'info',
-            message: `📋 Companies: ${companiesToProcess.join(', ')}`
+            message: `📋 Items: ${companiesToProcess.map(c => `${c.name} (${c.source})`).join(', ')}`
           });
           
           // Process companies one by one to ensure progress is saved
@@ -130,7 +162,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
             message: `⚙️  Job batching enabled: Max ${MAX_JOBS_PER_BATCH} jobs per company per sync run`
           });
           
-          for (const company of companiesToProcess) {
+          for (const item of companiesToProcess) {
             // Check if we're running out of time
             if (new Date().getTime() - syncStartTime.getTime() > MAX_EXECUTION_TIME_MS) {
               logs.push({
@@ -159,19 +191,22 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               logs.push({
                 timestamp: new Date().toISOString(),
                 type: 'info',
-                message: `Processing ${company}...`
+                message: `Processing ${item.name} (${item.source})...`
               });
 
-              // Force save logs immediately to ensure we know which company is being processed
+              // Force save logs immediately
               await db.update(schema.syncHistory).set({
                 logs: logs
               }).where(sql`id = ${syncId}`);
 
               let lastLogSave = Date.now();
               
-              // Get current job offset for this company
+              // Get current job offset for this item
+              // For aggregators, we use their name as the slug
+              const companySlug = item.name;
+              
               const companyProgress = await db.select().from(schema.companyJobProgress)
-                .where(sql`company_slug = ${company}`)
+                .where(sql`company_slug = ${companySlug}`)
                 .limit(1);
               
               const currentOffset = companyProgress.length > 0 ? (companyProgress[0].lastJobOffset || 0) : 0;
@@ -184,15 +219,15 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 });
               }
 
-              const result = await syncJobs({
+              // Configure sync options based on item type
+              const syncOptions: any = {
                 updateExisting: true,
                 addNew: true,
-                sources: ['Greenhouse'],
-                companyFilter: [company], // Process one company at a time
-                maxJobsPerCompany: MAX_JOBS_PER_BATCH, // Limit jobs to prevent timeout
-                jobOffset: currentOffset, // Start from saved offset
+                sources: [item.source],
+                maxJobsPerCompany: MAX_JOBS_PER_BATCH,
+                jobOffset: currentOffset,
                 db,
-                onLog: (message, level = 'info') => {
+                onLog: (message: string, level: string = 'info') => {
                   console.log(`[${level}] ${message}`);
                   logs.push({
                     timestamp: new Date().toISOString(),
@@ -200,7 +235,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                     message
                   });
 
-                  // Periodically save logs to DB (every 2 seconds) to ensure visibility if it crashes
+                  // Periodically save logs
                   if (Date.now() - lastLogSave > 2000) {
                     lastLogSave = Date.now();
                     const savePromise = db.update(schema.syncHistory).set({
@@ -210,31 +245,36 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                     if (ctx.executionCtx && ctx.executionCtx.waitUntil) {
                       ctx.executionCtx.waitUntil(savePromise);
                     } else {
-                      // Fire and forget if no waitUntil
                       savePromise.catch(e => console.error('Failed to save logs:', e));
                     }
                   }
                 }
-              });
+              };
+
+              // Only apply company filter for non-pseudo companies (Greenhouse/Lever)
+              // Aggregators (RemoteOK/Himalayas) fetch everything, so no company filter
+              if (!item.isPseudo) {
+                syncOptions.companyFilter = [item.name];
+              }
+
+              const result = await syncJobs(syncOptions);
               
               totalAdded += result.added;
               totalUpdated += result.updated;
               totalSkipped += result.skipped;
               companiesProcessedCount++;
               
-              // Calculate next job offset for this company
-              // Extract total jobs from result (we'll need to modify syncJobs to return this)
+              // Calculate next job offset
               const jobsProcessed = result.added + result.updated + result.skipped;
               const newOffset = currentOffset + jobsProcessed;
               
-              // Determine if we've processed all jobs (need total jobs count)
-              // For now, if we processed fewer than MAX_JOBS_PER_BATCH, we're done
+              // Determine if we've processed all jobs
               const allJobsProcessed = jobsProcessed < MAX_JOBS_PER_BATCH;
               const nextOffset = allJobsProcessed ? 0 : newOffset;
               
-              // Update or insert company job progress
+              // Update or insert progress
               const existingProgress = await db.select().from(schema.companyJobProgress)
-                .where(sql`company_slug = ${company}`)
+                .where(sql`company_slug = ${companySlug}`)
                 .limit(1);
               
               if (existingProgress.length > 0) {
@@ -242,49 +282,49 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                   lastJobOffset: nextOffset,
                   lastSyncedAt: new Date(),
                   updatedAt: new Date()
-                }).where(sql`company_slug = ${company}`);
+                }).where(sql`company_slug = ${companySlug}`);
               } else {
                 await db.insert(schema.companyJobProgress).values({
-                  companySlug: company,
-                  source: 'Greenhouse',
+                  companySlug: companySlug,
+                  source: item.source,
                   lastJobOffset: nextOffset,
-                  totalJobsDiscovered: 0, // We'll update this when we have the info
+                  totalJobsDiscovered: 0,
                   lastSyncedAt: new Date(),
                   updatedAt: new Date()
                 });
               }
 
-              // Ensure company is in discovered_companies table so it shows up in dashboard
-              try {
-                await db.insert(schema.discoveredCompanies).values({
-                  slug: company,
-                  name: company, // Use slug as name initially
-                  source: 'greenhouse',
-                  status: 'added',
-                  jobCount: 0,
-                  remoteJobCount: 0
-                }).onConflictDoNothing();
-              } catch (err) {
-                // Ignore error if insert fails, it's not critical
-                console.error(`Failed to add ${company} to discovered_companies:`, err);
+              // Ensure company is in discovered_companies table (only for real companies)
+              if (!item.isPseudo) {
+                try {
+                  await db.insert(schema.discoveredCompanies).values({
+                    slug: item.name,
+                    name: item.name,
+                    source: item.source.toLowerCase(),
+                    status: 'added',
+                    jobCount: 0,
+                    remoteJobCount: 0
+                  }).onConflictDoNothing();
+                } catch (err) {
+                  console.error(`Failed to add ${item.name} to discovered_companies:`, err);
+                }
               }
               
               if (nextOffset === 0 && currentOffset > 0) {
                 logs.push({
                   timestamp: new Date().toISOString(),
                   type: 'success',
-                  message: `  ✅ ${company}: All jobs processed, offset reset to 0`
+                  message: `  ✅ ${item.name}: All jobs processed, offset reset to 0`
                 });
               } else if (nextOffset > 0) {
                 logs.push({
                   timestamp: new Date().toISOString(),
                   type: 'info',
-                  message: `  💾 ${company}: Next offset saved as ${nextOffset}`
+                  message: `  💾 ${item.name}: Next offset saved as ${nextOffset}`
                 });
               }
               
-              // Update DB with progress after EACH company
-              // This ensures that if the worker crashes/times out, we still have the logs for processed companies
+              // Update DB with progress after EACH item
               await db.update(schema.syncHistory).set({
                 logs: logs,
                 stats: {
@@ -297,8 +337,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 processedCompanies: companiesProcessedCount
               }).where(sql`id = ${syncId}`);
 
-              // Update batch state incrementally!
-              // This ensures we don't repeat companies if the worker crashes
+              // Update batch state incrementally
               let newIndex = startIndex + companiesProcessedCount;
               if (newIndex >= companies.length) newIndex = 0; // Wrap around
 
@@ -309,14 +348,13 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
 
             } catch (error) {
               hasError = true;
-              console.error(`Error processing ${company}:`, error);
+              console.error(`Error processing ${item.name}:`, error);
               logs.push({
                 timestamp: new Date().toISOString(),
                 type: 'error',
-                message: `❌ Error processing ${company}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: `❌ Error processing ${item.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
               });
               
-              // Save error state
               await db.update(schema.syncHistory).set({
                 logs: logs
               }).where(sql`id = ${syncId}`);

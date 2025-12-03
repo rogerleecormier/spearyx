@@ -6,7 +6,7 @@ import {
   Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { JobWithCategory } from "../../lib/jobs/search-utils";
+import type { JobWithCategory } from "../lib/search-utils";
 import { useState } from "react";
 import JobDetailModal from "./JobDetailModal";
 
@@ -66,53 +66,52 @@ export default function JobCard({ job }: JobCardProps) {
 
   return (
     <>
-      <div className="jobs-job-card">
-        <div className="jobs-job-card-header">
+      <div className="flex flex-col h-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+        <div className="p-5 flex-1 flex flex-col">
           {/* Category badge at top */}
-          <span className="jobs-category-badge">{job.category.name}</span>
+          <div className="mb-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              {job.category.name}
+            </span>
+          </div>
 
-          {/* Title - full width now */}
-          <h3 className="jobs-job-title">{job.title}</h3>
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
+            {job.title}
+          </h3>
 
           {/* Company */}
           {job.company && (
-            <div className="jobs-job-company">
-              <Building2 size={16} />
+            <div className="flex items-center gap-2 text-slate-600 mb-4 text-sm font-medium">
+              <Building2 size={16} className="text-slate-400" />
               <span>{job.company}</span>
             </div>
           )}
 
           {/* Meta info */}
-          <div className="jobs-job-meta">
+          <div className="mt-auto flex flex-wrap gap-y-2 gap-x-4 text-sm text-slate-500">
             {job.payRange && (
-              <div className="jobs-meta-item">
-                <DollarSign size={16} />
+              <div className="flex items-center gap-1.5">
+                <DollarSign size={16} className="text-slate-400" />
                 <span>{job.payRange}</span>
               </div>
             )}
-            <div className="jobs-meta-item">
-              <Calendar size={16} />
+            <div className="flex items-center gap-1.5">
+              <Calendar size={16} className="text-slate-400" />
               <span>{formattedDate}</span>
             </div>
           </div>
         </div>
 
-        {/* Description preview */}
-        {/* Description Preview - HIDDEN per user request for consistency */}
-      {/* 
-      <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-        {getTruncatedDescription(job.description)}
-      </div> 
-      */}
-        
-
         {/* Footer with actions */}
-        <div className="jobs-job-card-footer">
-          <span className="jobs-source-name">via {job.sourceName}</span>
-          <div className="jobs-job-actions">
+        <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <span className="text-xs font-medium text-slate-500">
+            via {job.sourceName}
+          </span>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="jobs-quick-view-btn"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm"
             >
               <Eye size={16} />
               Quick View
@@ -121,7 +120,7 @@ export default function JobCard({ job }: JobCardProps) {
               href={job.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="jobs-view-job-btn"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow"
             >
               View Job <ExternalLink size={16} />
             </a>

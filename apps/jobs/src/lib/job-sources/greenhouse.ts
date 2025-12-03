@@ -2,6 +2,7 @@ import type { RawJobListing } from './types'
 import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
 import companiesData from './greenhouse-companies.json'
 import { createThrottledRateLimitedFetcher } from '../pacer-utils'
+import { extractSalaryFromDescription } from './salary-utils'
 
 // Type definition for the JSON structure
 interface CompanyDatabase {
@@ -208,28 +209,5 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
   // return allJobs // No longer needed
 }
 
-function extractSalaryFromDescription(description: string): string | null {
-  // Common salary patterns
-  const patterns = [
-    // $100k - $150k or $100k-$150k
-    /\$(\d{2,3})k\s*-\s*\$(\d{2,3})k/i,
-    // $100,000 - $150,000 (standard)
-    /\$(\d{1,3}(?:,\d{3})+)\s*-\s*\$(\d{1,3}(?:,\d{3})+)/i,
-    // $100,000 — $150,000 (em dash/en dash/hyphen) with optional USD
-    /\$(\d{1,3}(?:,\d{3})+)\s*[—–-]\s*\$(\d{1,3}(?:,\d{3})+)(?:\s*USD)?/i,
-    // USD 100k - 150k
-    /USD\s*(\d{2,3})k\s*-\s*(\d{2,3})k/i,
-    // £50k - £70k
-    /£(\d{2,3})k\s*-\s*£(\d{2,3})k/i
-  ]
 
-  for (const pattern of patterns) {
-    const match = description.match(pattern)
-    if (match) {
-      return match[0]
-    }
-  }
-
-  return null
-}
 
