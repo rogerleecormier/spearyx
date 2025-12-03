@@ -71,49 +71,103 @@ function SyncDashboard() {
       })
       setProgress(0)
 
-      // Start sync
-      const response = await fetch('/api/v2/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sources: selectedSources.size > 0 ? Array.from(selectedSources) : undefined,
-          updateExisting: true,
-          addNew: true,
-        }),
-      })
+      let currentSyncId: string | null = null
+      let totalAdded = 0
+      let totalUpdated = 0
+      let batchNumber = 0
 
-      const data = await response.json()
+      // Auto-chain API calls until all companies are processed
+      while (true) {
+        batchNumber++
+        
+        setLogs(prev => [...prev, {
+          timestamp: new Date().toLocaleTimeString(),
+          type: 'info',
+          message: `🚀 Starting batch ${batchNumber}...`
+        }])
 
-      if (!data.success) {
-        throw new Error(data.error || 'Sync failed')
+        // Call sync API
+        const response = await fetch('/api/v2/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            syncId: currentSyncId, // Pass syncId to continue existing sync
+            sources: selectedSources.size > 0 ? Array.from(selectedSources) : undefined,
+            updateExisting: true,
+            addNew: true,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!data.success) {
+          throw new Error(data.error || 'Sync failed')
+        }
+
+        // Update syncId for next iteration
+        currentSyncId = data.syncId
+        setSyncId(data.syncId)
+
+        // Update progress
+        if (data.progress) {
+          setProgress(data.progress.percentage)
+          
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            type: 'success',
+            message: `✅ Batch ${batchNumber} complete: ${data.batch.companiesProcessed} companies processed (${data.progress.processed}/${data.progress.total} total)`
+          }])
+
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            type: 'info',
+            message: `   📊 Batch stats: +${data.batch.jobsAdded} added, ${data.batch.jobsUpdated} updated`
+          }])
+        }
+
+        // Accumulate stats
+        totalAdded += data.batch?.jobsAdded || 0
+        totalUpdated += data.batch?.jobsUpdated || 0
+        
+        setStats({
+          jobsAdded: totalAdded,
+          jobsUpdated: totalUpdated,
+          jobsDeleted: 0,
+          companiesAdded: 0,
+          companiesDeleted: 0,
+        })
+
+        // Check if we should continue
+        if (!data.continue) {
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            type: 'success',
+            message: `🎉 ${data.message}`
+          }])
+          
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            type: 'success',
+            message: `📈 Total: ${totalAdded} jobs added, ${totalUpdated} jobs updated`
+          }])
+          break
+        }
+
+        // Wait 2 seconds between batches
+        setLogs(prev => [...prev, {
+          timestamp: new Date().toLocaleTimeString(),
+          type: 'info',
+          message: `⏳ Waiting 2 seconds before next batch...`
+        }])
+        
+        await new Promise(r => setTimeout(r, 2000))
       }
 
-      setSyncId(data.syncId)
-
-      // Poll for status
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusResponse = await fetch(`/api/v2/sync-status/${data.syncId}`)
-          const statusData = await statusResponse.json()
-
-          if (statusData.success) {
-            setLogs(statusData.logs || [])
-            setStats(statusData.stats || stats)
-            setProgress(statusData.progress || 0)
-
-            if (statusData.status === 'completed' || statusData.status === 'failed') {
-              clearInterval(pollInterval)
-              setIsRunning(false)
-            }
-          }
-        } catch (error) {
-          console.error('Status poll error:', error)
-        }
-      }, 1000)
+      setIsRunning(false)
     } catch (error) {
       console.error('Sync error:', error)
-      setLogs([
-        ...logs,
+      setLogs(prev => [
+        ...prev,
         {
           timestamp: new Date().toLocaleTimeString(),
           type: 'error',

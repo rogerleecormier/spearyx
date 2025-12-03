@@ -29,6 +29,20 @@
       "when": 1764591588774,
       "tag": "0003_open_crystal",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1764683614046,
+      "tag": "0004_loose_liz_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1764684624903,
+      "tag": "0005_warm_mephistopheles",
+      "breakpoints": true
     }
   ]
 }

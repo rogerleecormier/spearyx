@@ -56,8 +56,12 @@ export const syncHistory = sqliteTable('sync_history', {
     .notNull()
     .default(sql`(unixepoch())`),
   completedAt: integer('completed_at', { mode: 'timestamp' }),
-  status: text('status').notNull().default('running'), // 'running', 'completed', 'failed'
+  status: text('status').notNull().default('running'), // 'queued', 'running', 'processing', 'completed', 'failed'
   sources: text('sources', { mode: 'json' }).$type<string[]>(),
+  totalCompanies: integer('total_companies').default(0),
+  processedCompanies: integer('processed_companies').default(0),
+  lastProcessedIndex: integer('last_processed_index').default(0),
+  failedCompanies: text('failed_companies', { mode: 'json' }).$type<string[]>().default(sql`'[]'`),
   stats: text('stats', { mode: 'json' }).$type<{
     jobsAdded: number
     jobsUpdated: number

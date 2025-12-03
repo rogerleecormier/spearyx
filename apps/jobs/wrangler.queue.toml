@@ -1,0 +1,28 @@
+name = "spearyx-jobs-queue-consumer"
+main = "src/queue-consumer.ts"
+compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+preview_database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+migrations_dir = "drizzle"
+
+[[queues.consumers]]
+queue = "job-sync-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "job-sync-dlq"

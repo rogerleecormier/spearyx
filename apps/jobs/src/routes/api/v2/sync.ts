@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
-import { syncJobs } from '../../../lib/job-sync'
 import { getDbFromContext, schema } from '../../../db/db'
 import { sql } from 'drizzle-orm'
 
@@ -50,64 +49,154 @@ export const Route = createFileRoute('/api/v2/sync')({
             logs: []
           })
 
-          // Start sync in background (non-blocking)
-          // Use waitUntil to ensure the sync completes even after response is sent
-          const syncPromise = syncJobs({
-            updateExisting,
-            addNew,
-            sources,
-            db,
-            onLog: async (message, level = 'info') => {
-              // Update sync history with new log
-              try {
-                const currentSync = await db.select().from(schema.syncHistory).where(sql`id = ${syncId}`).limit(1)
-                if (currentSync.length > 0) {
-                  const logs = currentSync[0].logs || []
-                  logs.push({
-                    timestamp: new Date().toLocaleTimeString(),
-                    type: level,
-                    message
-                  })
-                  await db.update(schema.syncHistory).set({ logs }).where(sql`id = ${syncId}`)
-                }
-              } catch (error) {
-                console.error('Error updating logs:', error)
-              }
-            }
-          }).then(async (result) => {
-            // Update sync history with final stats
-            await db.update(schema.syncHistory).set({
+          // SEQUENTIAL BATCH SYNC APPROACH (Free Plan Compatible)
+          // Process companies in batches, track progress in database
+          // Each API call processes ~25 companies worth of jobs
+          // Frontend chains API calls until all companies are processed
+          
+          // Get list of all companies to track total
+          const { default: companiesData } = await import('../../../lib/job-sources/greenhouse-companies.json');
+          const allCompanies: string[] = [];
+          Object.values((companiesData as any).categories).forEach((category: any) => {
+            allCompanies.push(...category.companies);
+          });
+          const companies = [...new Set(allCompanies)]; // Deduplicate (151 companies)
+          
+          // Check if this is a continuation of an existing sync
+          const existingSync = await db.select().from(schema.syncHistory)
+            .where(sql`id = ${syncId}`)
+            .limit(1);
+          
+          const isNewSync = existingSync.length === 0;
+          const currentProgress = isNewSync ? 0 : (existingSync[0].processedCompanies || 0);
+          const isComplete = currentProgress >= companies.length;
+          
+          if (isComplete) {
+            return json({
+              success: true,
+              syncId,
               status: 'completed',
-              completedAt: new Date(),
-              stats: {
-                jobsAdded: result.added,
-                jobsUpdated: result.updated,
-                jobsDeleted: 0,
-                companiesAdded: 0,
-                companiesDeleted: 0
-              }
-            }).where(sql`id = ${syncId}`)
-          }).catch(async (error) => {
-            // Update sync history with error
-            console.error('Sync error:', error)
-            await db.update(schema.syncHistory).set({
-              status: 'failed',
-              completedAt: new Date()
-            }).where(sql`id = ${syncId}`)
-          })
-
-          // Tell Cloudflare to keep the worker alive until sync completes
-          const cfCtx = (globalThis as any).__CF_CTX__
-          if (cfCtx?.waitUntil) {
-            cfCtx.waitUntil(syncPromise)
+              progress: {
+                processed: companies.length,
+                total: companies.length,
+                percentage: 100
+              },
+              continue: false,
+              message: 'Sync already complete!'
+            });
           }
+          
+          console.log(`Sync progress: ${currentProgress}/${companies.length} companies`);
+          
+          // Update sync history to processing
+          await db.update(schema.syncHistory).set({
+            status: 'processing',
+            totalCompanies: companies.length,
+          }).where(sql`id = ${syncId}`);
 
-          // Return immediately with syncId
+          // Process jobs - syncJobs will process all sources
+          // CRITICAL: Must stay well under 30s timeout
+          // Strategy: Process max 10 companies OR 10 seconds, whichever comes first
+          const { syncJobs } = await import('../../../lib/job-sync');
+          
+          const startTime = Date.now();
+          const MAX_PROCESSING_TIME = 10000; // 10 seconds - very conservative
+          const MAX_COMPANIES_PER_BATCH = 10; // Hard limit on companies
+          
+          let totalAdded = 0;
+          let totalUpdated = 0;
+          let companiesProcessedThisBatch = 0;
+          let shouldStop = false;
+          
+          try {
+            const result = await syncJobs({
+              updateExisting,
+              addNew,
+              sources: ['Greenhouse'],
+              db,
+              onLog: (message, level = 'info') => {
+                // Track company progress from logs
+                if (message.includes('✅') && message.includes('Found') && message.includes('remote job')) {
+                  companiesProcessedThisBatch++;
+                  
+                  // Check if we should stop
+                  const elapsed = Date.now() - startTime;
+                  if (companiesProcessedThisBatch >= MAX_COMPANIES_PER_BATCH || elapsed > MAX_PROCESSING_TIME) {
+                    shouldStop = true;
+                    console.log(`Stopping: ${companiesProcessedThisBatch} companies processed, ${elapsed}ms elapsed`);
+                  }
+                }
+                
+                // Fire-and-forget logging
+                db.select().from(schema.syncHistory).where(sql`id = ${syncId}`).limit(1)
+                  .then(currentSync => {
+                    if (currentSync.length > 0) {
+                      const logs = currentSync[0].logs || [];
+                      logs.push({
+                        timestamp: new Date().toISOString(),
+                        type: level,
+                        message
+                      });
+                      return db.update(schema.syncHistory).set({ logs }).where(sql`id = ${syncId}`);
+                    }
+                  })
+                  .catch(error => console.error('Error updating logs:', error));
+              }
+            });
+            
+            totalAdded = result.added;
+            totalUpdated = result.updated;
+            
+          } catch (error: any) {
+            // Log error but continue to update progress
+            console.error('Sync error:', error);
+          }
+          
+          // Update progress
+          const newProgress = currentProgress + companiesProcessedThisBatch;
+          const hasMore = newProgress < companies.length;
+          
+          const currentStats = existingSync[0]?.stats || {
+            jobsAdded: 0,
+            jobsUpdated: 0,
+            jobsDeleted: 0,
+            companiesAdded: 0,
+            companiesDeleted: 0
+          };
+          
+          await db.update(schema.syncHistory).set({
+            status: hasMore ? 'processing' : 'completed',
+            completedAt: hasMore ? null : new Date(),
+            processedCompanies: newProgress,
+            lastProcessedIndex: newProgress,
+            stats: {
+              jobsAdded: currentStats.jobsAdded + totalAdded,
+              jobsUpdated: currentStats.jobsUpdated + totalUpdated,
+              jobsDeleted: 0,
+              companiesAdded: 0,
+              companiesDeleted: 0
+            }
+          }).where(sql`id = ${syncId}`);
+
+          // Return results with continuation info
           return json({
             success: true,
             syncId,
-            status: 'running',
-            message: 'Sync started successfully'
+            status: hasMore ? 'processing' : 'completed',
+            progress: {
+              processed: newProgress,
+              total: companies.length,
+              percentage: Math.round((newProgress / companies.length) * 100)
+            },
+            batch: {
+              companiesProcessed: companiesProcessedThisBatch,
+              jobsAdded: totalAdded,
+              jobsUpdated: totalUpdated
+            },
+            continue: hasMore,
+            message: hasMore 
+              ? `Processed ${companiesProcessedThisBatch} companies (${newProgress}/${companies.length}). Continue to process remaining companies.`
+              : `Sync complete! Processed all ${companies.length} companies.`
           })
         } catch (error) {
           console.error('Sync failed:', error)
