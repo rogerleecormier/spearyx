@@ -50,9 +50,9 @@ function decodeHTMLEntities(text: string): string {
 }
 
 // Helper to sanitize strings for D1
-function sanitizeString(str: string | null | undefined, required: true): string;
-function sanitizeString(str: string | null | undefined, required?: false): string | null;
-function sanitizeString(str: string | null | undefined, required: boolean = false): string | null {
+function sanitizeString(str: string | null | undefined, required: true, allowHtml?: boolean): string;
+function sanitizeString(str: string | null | undefined, required?: false, allowHtml?: boolean): string | null;
+function sanitizeString(str: string | null | undefined, required: boolean = false, allowHtml: boolean = false): string | null {
   if (!str) return required ? "" : null;
 
   // Decode HTML entities and fix UTF-8 encoding issues
@@ -74,9 +74,11 @@ function sanitizeString(str: string | null | undefined, required: boolean = fals
     .replace(/[\u2022\u2023\u25E6\u2043\u2219\uFE63\uFF65\u00B7\u00A2]/g, "*")  // Various bullets -> asterisk
     .replace(/[\u0080-\uFFFF]/g, ""); // Remove ALL non-ASCII (128-65535)
 
-  // Strip HTML tags to avoid issues with truncated/malformed HTML
-  // This is safer for database storage and prevents SQL injection concerns
-  sanitized = sanitized.replace(/<[^>]*>/g, " ");
+  if (!allowHtml) {
+    // Strip HTML tags to avoid issues with truncated/malformed HTML
+    // This is safer for database storage and prevents SQL injection concerns
+    sanitized = sanitized.replace(/<[^>]*>/g, " ");
+  }
 
   // Normalize whitespace (collapse multiple spaces)
   sanitized = sanitized.replace(/\s+/g, " ").trim();
@@ -87,11 +89,9 @@ function sanitizeString(str: string | null | undefined, required: boolean = fals
   }
 
   // D1 has practical limits on query size, limit description to reasonable size
-  // Reduced from 10000 -> 5000 -> 2000 to avoid hitting D1's 1MB SQL statement size limit
-  if (sanitized.length > 2000) {
-    return sanitized.substring(0, 2000);
-  }
-
+  // User requested to remove the limit, so we allow full length.
+  // D1 statement limit is 1MB, so we should be fine with most job descriptions.
+  
   return sanitized || (required ? "" : null);
 }
 
@@ -261,7 +261,7 @@ export async function syncJobs(
                   .set({
                     title: sanitizeString(rawJob.title, true),
                     company: sanitizeString(rawJob.company),
-                    description: sanitizeString(rawJob.description),
+                    description: sanitizeString(rawJob.description, false, true), // Allow HTML
                     payRange: sanitizeString(rawJob.salary),
                     postDate: rawJob.postedDate,
                     updatedAt: new Date(),
@@ -280,7 +280,7 @@ export async function syncJobs(
               await batchWriter.add({
                 title: sanitizeString(rawJob.title, true),
                 company: sanitizeString(rawJob.company),
-                description: sanitizeString(rawJob.description),
+                description: sanitizeString(rawJob.description, false, true), // Allow HTML
                 payRange: sanitizeString(rawJob.salary),
                 postDate: rawJob.postedDate,
                 sourceUrl: sanitizeString(rawJob.sourceUrl, true),

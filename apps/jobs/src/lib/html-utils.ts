@@ -56,15 +56,7 @@ export function sanitizeHtml(html: string): string {
     }
   })
   
-  // Convert headings to bold paragraphs  
-  $('h1, h2, h3, h4, h5, h6').each((_, el) => {
-    const text = $(el).text().trim()
-    if (text) {
-      $(el).replaceWith(`<p><strong>${text}</strong></p>`)
-    } else {
-      $(el).remove()
-    }
-  })
+  // Headings are now allowed (h1-h6), so we don't convert them
   
   // Convert "fake" lists (paragraphs starting with bullets) to real lists
   // Lever often does: <p><span>•</span> Text</p> or <p>• Text</p>
