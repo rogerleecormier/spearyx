@@ -27,6 +27,7 @@ import { Route as ApiV2StatsRouteImport } from './routes/api/v2/stats'
 import { Route as ApiV2SeedPotentialCompaniesRouteImport } from './routes/api/v2/seed-potential-companies'
 import { Route as ApiV2SearchCompaniesRouteImport } from './routes/api/v2/search-companies'
 import { Route as ApiV2PruneRouteImport } from './routes/api/v2/prune'
+import { Route as ApiV2JobContentRouteImport } from './routes/api/v2/job-content'
 import { Route as ApiV2DiscoverCompaniesRouteImport } from './routes/api/v2/discover-companies'
 import { Route as ApiV2DeduplicateRouteImport } from './routes/api/v2/deduplicate'
 import { Route as ApiV2SyncStatusSyncIdRouteImport } from './routes/api/v2/sync-status.$syncId'
@@ -122,6 +123,11 @@ const ApiV2PruneRoute = ApiV2PruneRouteImport.update({
   path: '/api/v2/prune',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV2JobContentRoute = ApiV2JobContentRouteImport.update({
+  id: '/api/v2/job-content',
+  path: '/api/v2/job-content',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV2DiscoverCompaniesRoute = ApiV2DiscoverCompaniesRouteImport.update({
   id: '/api/v2/discover-companies',
   path: '/api/v2/discover-companies',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
   '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
+  '/api/v2/job-content': typeof ApiV2JobContentRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
   '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
   '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
+  '/api/v2/job-content': typeof ApiV2JobContentRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
   '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
   '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
+  '/api/v2/job-content': typeof ApiV2JobContentRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
   '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
     | '/api/v2/discover-companies'
+    | '/api/v2/job-content'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
     | '/api/v2/seed-potential-companies'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
     | '/api/v2/discover-companies'
+    | '/api/v2/job-content'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
     | '/api/v2/seed-potential-companies'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
     | '/api/v2/discover-companies'
+    | '/api/v2/job-content'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
     | '/api/v2/seed-potential-companies'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   ApiTestSimpleInsertRoute: typeof ApiTestSimpleInsertRoute
   ApiV2DeduplicateRoute: typeof ApiV2DeduplicateRoute
   ApiV2DiscoverCompaniesRoute: typeof ApiV2DiscoverCompaniesRoute
+  ApiV2JobContentRoute: typeof ApiV2JobContentRoute
   ApiV2PruneRoute: typeof ApiV2PruneRoute
   ApiV2SearchCompaniesRoute: typeof ApiV2SearchCompaniesRoute
   ApiV2SeedPotentialCompaniesRoute: typeof ApiV2SeedPotentialCompaniesRoute
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV2PruneRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v2/job-content': {
+      id: '/api/v2/job-content'
+      path: '/api/v2/job-content'
+      fullPath: '/api/v2/job-content'
+      preLoaderRoute: typeof ApiV2JobContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v2/discover-companies': {
       id: '/api/v2/discover-companies'
       path: '/api/v2/discover-companies'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTestSimpleInsertRoute: ApiTestSimpleInsertRoute,
   ApiV2DeduplicateRoute: ApiV2DeduplicateRoute,
   ApiV2DiscoverCompaniesRoute: ApiV2DiscoverCompaniesRoute,
+  ApiV2JobContentRoute: ApiV2JobContentRoute,
   ApiV2PruneRoute: ApiV2PruneRoute,
   ApiV2SearchCompaniesRoute: ApiV2SearchCompaniesRoute,
   ApiV2SeedPotentialCompaniesRoute: ApiV2SeedPotentialCompaniesRoute,

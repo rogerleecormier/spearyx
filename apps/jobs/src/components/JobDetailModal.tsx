@@ -1,5 +1,6 @@
 import { X, ExternalLink, Calendar, DollarSign, Building2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect } from "react";
 import type { JobWithCategory } from "../lib/search-utils";
 
 interface JobDetailModalProps {
@@ -13,6 +14,52 @@ export default function JobDetailModal({
   isOpen,
   onClose,
 }: JobDetailModalProps) {
+  const [fullDescription, setFullDescription] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // If we have the full description in the DB (e.g. Himalayas/RemoteOK), use it immediately
+    if (job.fullDescription) {
+      setFullDescription(job.fullDescription);
+      setIsLoading(false);
+      return;
+    }
+
+    if (isOpen && job.sourceUrl && job.company) {
+      // If we already have a long description (likely full), maybe skip? 
+      // But user wants dynamic fetch. Let's fetch if it looks like a summary or just always to be safe.
+      // For now, let's always fetch to ensure we get the full HTML.
+      
+      const fetchContent = async () => {
+        setIsLoading(true);
+        try {
+          const params = new URLSearchParams({
+            url: job.sourceUrl,
+            company: job.company || ''
+          });
+          
+          const response = await fetch(`/api/v2/job-content?${params.toString()}`);
+          if (response.ok) {
+            const data = await response.json() as { content?: string };
+            if (data.content) {
+              setFullDescription(data.content);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch job content:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchContent();
+    } else {
+      // Reset when closed or invalid
+      setFullDescription(null);
+      setIsLoading(false);
+    }
+  }, [isOpen, job.sourceUrl, job.company]);
+
   if (!isOpen) return null;
 
   const formattedDate = job.postDate
@@ -60,12 +107,22 @@ export default function JobDetailModal({
           </div>
 
           {/* Description */}
-          {job.description && (
-            <div className="modal-description">
-              <h3>Job Description</h3>
-              <div dangerouslySetInnerHTML={{ __html: job.description }} />
-            </div>
-          )}
+          <div className="modal-description">
+            <h3>Job Description</h3>
+            
+            {isLoading ? (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading full description...</p>
+                {/* Show summary while loading if available */}
+                {job.description && (
+                  <div className="description-preview" dangerouslySetInnerHTML={{ __html: job.description }} />
+                )}
+              </div>
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: fullDescription || job.description || 'No description available.' }} />
+            )}
+          </div>
         </div>
 
         {/* Footer */}

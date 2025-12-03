@@ -16,6 +16,7 @@ export const jobs = sqliteTable('jobs', {
   title: text('title').notNull(),
   company: text('company'),
   description: text('description'),
+  fullDescription: text('full_description'),
   payRange: text('pay_range'),
   postDate: integer('post_date', { mode: 'timestamp' }),
   sourceUrl: text('source_url').notNull(),

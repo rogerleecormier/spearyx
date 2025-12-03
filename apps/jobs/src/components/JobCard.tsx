@@ -98,11 +98,13 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
 
         {/* Description preview */}
-        {truncatedDescription && (
-          <div className="jobs-job-description-preview">
-            <p>{truncatedDescription}</p>
-          </div>
-        )}
+        {/* Description Preview - HIDDEN per user request for consistency */}
+      {/* 
+      <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+        {getTruncatedDescription(job.description)}
+      </div> 
+      */}
+        
 
         {/* Footer with actions */}
         <div className="jobs-job-card-footer">

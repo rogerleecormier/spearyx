@@ -90,7 +90,8 @@ export async function* fetchHimalayasJobs(query?: string, onLog?: (message: stri
           title: job.title,
           company: job.companyName,
           location: 'Remote',
-          description: sanitizeHtml(job.description || job.excerpt || ''),
+          description: sanitizeHtml(job.description || job.excerpt || ''), // Summary/Searchable text
+          fullDescription: sanitizeHtml(job.description || ''), // Full HTML content
           sourceUrl: job.applicationLink,
           salary,
           postedDate: job.pubDate ? new Date(job.pubDate * 1000) : new Date(), // Unix timestamp in seconds

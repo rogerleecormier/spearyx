@@ -87,7 +87,7 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
     onLog?.(`Checking ${company}...`)
     
     try {
-      const url = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`
+      const url = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs`
       const response = await throttledFetch(url)
       
       if (!response.ok) {

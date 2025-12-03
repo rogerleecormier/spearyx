@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { Briefcase, Loader2 } from "lucide-react";
+import { Overline, Hero, Body } from "@spearyx/ui-kit";
 import JobCard from "../components/JobCard";
 import SearchBar from "../components/SearchBar";
 import CategoryFilter from "../components/CategoryFilter";
@@ -129,33 +130,54 @@ function HomePage() {
   );
 
   return (
-    <div className="jobs-container">
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-slate-200 bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <Overline className="text-primary-600 mb-2">
+                Remote Opportunities
+              </Overline>
+              <Hero className="text-2xl md:text-3xl lg:text-4xl text-slate-950 mb-2">
+                Find Your Next Role
+              </Hero>
+              <Body size="sm" className="text-slate-600">
+                Curated remote jobs from top tech companies
+              </Body>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Main Content */}
-      <main className="jobs-main-content">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Search and Filters */}
-        <div className="jobs-controls-section">
+        <div className="mb-8 space-y-6">
           <SearchBar onSearch={handleSearch} />
 
-          <CategoryFilter
-            categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            onSelectCategory={handleCategorySelect}
-          />
+          <div className="space-y-4">
+            <CategoryFilter
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              onSelectCategory={handleCategorySelect}
+            />
 
-          <SourceFilter
-            selectedSource={selectedSource}
-            onSelectSource={handleSourceSelect}
-          />
+            <SourceFilter
+              selectedSource={selectedSource}
+              onSelectSource={handleSourceSelect}
+            />
 
-          <SalaryFilter
-            selectedRange={selectedSalaryRange}
-            onSelectRange={handleSalaryRangeSelect}
-            includeNoSalary={includeNoSalary}
-            onIncludeNoSalaryChange={handleIncludeNoSalaryChange}
-          />
+            <SalaryFilter
+              selectedRange={selectedSalaryRange}
+              onSelectRange={handleSalaryRangeSelect}
+              includeNoSalary={includeNoSalary}
+              onIncludeNoSalaryChange={handleIncludeNoSalaryChange}
+            />
+          </div>
 
-          <div className="jobs-results-bar">
-            <div className="jobs-results-count">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+            <div className="text-sm text-slate-600">
               {loading ? (
                 <span>Loading...</span>
               ) : (
@@ -169,22 +191,22 @@ function HomePage() {
         </div>
 
         {/* Job Listings */}
-        <div className="jobs-section">
+        <div className="min-h-[400px]">
           {loading ? (
-            <div className="jobs-loading-state">
-              <Loader2 className="jobs-spinner" size={48} />
+            <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500">
+              <Loader2 className="animate-spin text-primary-600 mb-4" size={48} />
               <p>Finding the best remote jobs for you...</p>
             </div>
           ) : jobs.length === 0 ? (
-            <div className="jobs-empty-state">
-              <Briefcase size={64} className="jobs-empty-icon" />
-              <h2>No jobs found</h2>
-              <p>
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-2xl border border-slate-200">
+              <Briefcase size={64} className="text-slate-300 mb-4" />
+              <h2 className="text-xl font-bold text-slate-900 mb-2">No jobs found</h2>
+              <p className="text-slate-600">
                 Try adjusting your search or filters to find more opportunities.
               </p>
             </div>
           ) : (
-            <div className="jobs-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}

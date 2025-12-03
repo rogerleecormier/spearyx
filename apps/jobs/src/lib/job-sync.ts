@@ -262,6 +262,7 @@ export async function syncJobs(
                     title: sanitizeString(rawJob.title, true),
                     company: sanitizeString(rawJob.company),
                     description: sanitizeString(rawJob.description, false, true), // Allow HTML
+                    fullDescription: sanitizeString(rawJob.fullDescription, false, true), // Allow HTML
                     payRange: sanitizeString(rawJob.salary),
                     postDate: rawJob.postedDate,
                     updatedAt: new Date(),
@@ -281,6 +282,7 @@ export async function syncJobs(
                 title: sanitizeString(rawJob.title, true),
                 company: sanitizeString(rawJob.company),
                 description: sanitizeString(rawJob.description, false, true), // Allow HTML
+                fullDescription: sanitizeString(rawJob.fullDescription, false, true), // Allow HTML
                 payRange: sanitizeString(rawJob.salary),
                 postDate: rawJob.postedDate,
                 sourceUrl: sanitizeString(rawJob.sourceUrl, true),

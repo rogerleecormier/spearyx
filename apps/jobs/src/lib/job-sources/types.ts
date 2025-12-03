@@ -3,6 +3,7 @@ export interface RawJobListing {
   title: string
   company?: string
   description: string
+  fullDescription?: string
   location: string
   salary?: string
   postedDate: Date

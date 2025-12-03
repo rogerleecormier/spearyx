@@ -149,11 +149,41 @@ export function sanitizeHtml(html: string): string {
 export function decodeHtmlEntities(text: string): string {
   if (!text) return ''
   
-  // Create a textarea element to leverage browser's HTML decoding
-  const $ = cheerio.load('<div></div>')
-  let decoded = $('<textarea/>').html(text).text()
+  // 1. Basic named entities lookup
+  const entities: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&apos;': "'",
+    '&nbsp;': ' ',
+    '&copy;': '©',
+    '&reg;': '®',
+    '&trade;': '™',
+    '&ndash;': '–',
+    '&mdash;': '—',
+    '&bull;': '•',
+    '&middot;': '·',
+    '&lsquo;': "'",
+    '&rsquo;': "'",
+    '&ldquo;': '"',
+    '&rdquo;': '"',
+    '&euro;': '€',
+    '&pound;': '£',
+    '&cent;': '¢',
+    '&yen;': '¥',
+  }
+
+  // 2. Replace named entities
+  let decoded = text.replace(/&[a-zA-Z0-9]+;/g, (match) => {
+    return entities[match] || match
+  })
+
+  // 3. Replace numeric entities (decimal and hex)
+  decoded = decoded.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
   
-  // Fix common UTF-8 mojibake (text that was UTF-8 but decoded as Latin-1)
+  // 4. Fix common UTF-8 mojibake (text that was UTF-8 but decoded as Latin-1)
   decoded = decoded
     // Quotes
     .replace(/â€™/g, "'")   // Right single quote (')
@@ -176,7 +206,6 @@ export function decodeHtmlEntities(text: string): string {
     // Spaces and formatting
     .replace(/Â/g, '')      // Non-breaking space artifacts
     .replace(/\u00A0/g, ' ') // Non-breaking space to regular space
-    .replace(/&nbsp;/g, ' ') // HTML entity nbsp to space
     
     // Other common mojibake patterns
     .replace(/Ã©/g, 'é')    // e with acute

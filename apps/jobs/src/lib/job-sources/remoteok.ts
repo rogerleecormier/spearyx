@@ -63,7 +63,8 @@ export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: strin
           externalId: `remoteok-${job.id}`,
           title: cleanTitle,
           company: cleanCompany,
-          description: cleanDescription,
+          description: cleanDescription, // Summary/Searchable text
+          fullDescription: cleanDescription, // Full HTML content (RemoteOK description is full)
           location: 'Remote',
           salary: job.salary_max 
             ? `$${job.salary_min?.toLocaleString() || '?'} - $${job.salary_max.toLocaleString()}`

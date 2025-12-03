@@ -126,9 +126,13 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
       
       remoteJobs = remoteJobs.map((job: any) => {
           // Sanitize HTML from description
-          const cleanDescription = job.description 
-            ? sanitizeHtml(job.description)
-            : ''
+          const rawDescription = job.description ? sanitizeHtml(job.description) : ''
+          
+          // Create 200-word summary for DB storage
+          // This matches the "lazy load" pattern used for Greenhouse
+          const textOnly = rawDescription.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+          const words = textOnly.split(' ')
+          const cleanDescription = words.slice(0, 200).join(' ') + (words.length > 200 ? '...' : '')
             
           const cleanTitle = decodeHtmlEntities(job.text || '')
           

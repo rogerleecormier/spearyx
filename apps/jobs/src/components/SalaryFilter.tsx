@@ -24,43 +24,34 @@ export default function SalaryFilter({
   onIncludeNoSalaryChange,
 }: SalaryFilterProps) {
   return (
-    <div className="jobs-filter-section">
-      <div className="jobs-filter-header">
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
         <DollarSign size={16} />
         <h3>Salary Range</h3>
       </div>
-      <div className="jobs-filter-chips">
+      <div className="flex flex-wrap gap-3">
         {salaryRanges.map((range) => (
           <button
             key={range.value || "all"}
             onClick={() => onSelectRange(range.value)}
-            className={`jobs-filter-chip ${selectedRange === range.value ? "active" : ""}`}
+            className={`inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-medium transition-all hover:border-slate-300 hover:shadow-sm ${
+              selectedRange === range.value
+                ? "bg-primary-600 text-white border-transparent hover:bg-primary-700 hover:border-transparent shadow-md"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
           >
             {range.label}
           </button>
         ))}
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            fontSize: "0.875rem",
-            color: "var(--jobs-text-secondary)",
-            cursor: "pointer",
-          }}
-        >
+      <div className="mt-4">
+        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={includeNoSalary}
             onChange={(e) => onIncludeNoSalaryChange(e.target.checked)}
-            style={{
-              accentColor: "var(--jobs-primary)",
-              width: "1rem",
-              height: "1rem",
-            }}
+            className="w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500 accent-primary-600"
           />
           <span>Include jobs with no salary info</span>
         </label>
