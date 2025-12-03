@@ -100,6 +100,7 @@ export async function syncJobs(
     updateExisting: boolean;
     addNew: boolean;
     sources?: string[];
+    companyFilter?: string[]; // NEW: Filter to specific companies
     db?: DrizzleD1Database;
     onLog?: (
       message: string,
@@ -114,6 +115,9 @@ export async function syncJobs(
   log("Starting job sync...");
   if (options.sources && options.sources.length > 0) {
     log(`Syncing sources: ${options.sources.join(", ")}`);
+  }
+  if (options.companyFilter && options.companyFilter.length > 0) {
+    log(`Filtering to ${options.companyFilter.length} companies: ${options.companyFilter.join(", ")}`);
   }
   log("=".repeat(50));
 
@@ -181,7 +185,7 @@ export async function syncJobs(
     try {
       log(`\n📡 Fetching from ${source.name}...`);
 
-      for await (const rawJobs of source.fetch(undefined, log)) {
+      for await (const rawJobs of source.fetch(undefined, log, options.companyFilter)) {
         log(`Processing batch of ${rawJobs.length} jobs from ${source.name} (Company: ${rawJobs[0]?.company})`);
 
         // OPTIMIZATION: Pre-load all existing jobs for this batch in a single query

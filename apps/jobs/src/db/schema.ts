@@ -56,7 +56,7 @@ export const syncHistory = sqliteTable('sync_history', {
     .notNull()
     .default(sql`(unixepoch())`),
   completedAt: integer('completed_at', { mode: 'timestamp' }),
-  status: text('status').notNull().default('running'), // 'queued', 'running', 'processing', 'completed', 'failed'
+  status: text('status').notNull().default('running'), // 'queued', 'running', 'processing', 'completed', 'failed', 'batch_state'
   sources: text('sources', { mode: 'json' }).$type<string[]>(),
   totalCompanies: integer('total_companies').default(0),
   processedCompanies: integer('processed_companies').default(0),
@@ -74,6 +74,26 @@ export const syncHistory = sqliteTable('sync_history', {
     type: 'info' | 'success' | 'error' | 'warning'
     message: string
   }>>(),
+})
+
+// Potential companies to discover
+export const potentialCompanies = sqliteTable('potential_companies', {
+  id: text('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  addedAt: integer('added_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  lastCheckedAt: integer('last_checked_at', { mode: 'timestamp' }),
+  checkCount: integer('check_count').default(0),
+  status: text('status').default('pending'), // 'pending', 'checking', 'not_found', 'discovered'
+})
+
+// Discovery state for rotation
+export const discoveryState = sqliteTable('discovery_state', {
+  id: text('id').primaryKey(),
+  lastProcessedIndex: integer('last_processed_index').default(0),
+  totalPotential: integer('total_potential').default(0),
+  status: text('status').default('active'),
 })
 
 export const duplicateJobs = sqliteTable('duplicate_jobs', {

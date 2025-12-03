@@ -20,8 +20,13 @@ const config = defineConfig({
     tailwindcss(),
     viteReact(),
   ],
+  resolve: {
+    alias: {
+      'node:sqlite': new URL('./src/stubs/node-sqlite.js', import.meta.url).pathname,
+    },
+  },
   optimizeDeps: {
-    exclude: ["wrangler", "blake3-wasm"],
+    exclude: ["wrangler", "blake3-wasm", "miniflare", "undici"],
   },
   ssr: {
     // Don't externalize D1 and Cloudflare packages

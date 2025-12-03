@@ -124,6 +124,96 @@ async function searchLeverCompany(query: string): Promise<CompanySearchResult> {
 }
 
 /**
+ * Search for a company on RemoteOK
+ */
+async function searchRemoteOKCompany(query: string): Promise<CompanySearchResult> {
+  // RemoteOK doesn't have a company-specific API, so we'll search for jobs with the company name
+  try {
+    const url = `https://remoteok.com/api`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      return { found: false, error: `HTTP ${response.status}` }
+    }
+
+    const jobs = await response.json()
+    
+    if (!Array.isArray(jobs)) {
+      return { found: false, error: 'Invalid response format' }
+    }
+
+    // Filter jobs by company name (case-insensitive)
+    const companyJobs = jobs.filter((job: any) => 
+      job.company?.toLowerCase().includes(query.toLowerCase())
+    )
+
+    if (companyJobs.length === 0) {
+      return { found: false, error: 'Company not found on RemoteOK' }
+    }
+
+    return {
+      found: true,
+      company: {
+        slug: query.toLowerCase().replace(/\s+/g, '-'),
+        name: companyJobs[0].company || query,
+        jobCount: companyJobs.length,
+        remoteJobCount: companyJobs.length
+      },
+      jobs: companyJobs.slice(0, 10).map((job: any) => ({
+        id: `remoteok-${job.id}`,
+        title: job.position,
+        location: job.location || 'Remote',
+        departments: job.tags || [],
+        url: job.url
+      }))
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Search for a company on Himalayas
+ */
+async function searchHimalayasCompany(query: string): Promise<CompanySearchResult> {
+  // Himalayas uses a similar structure to other job boards
+  const slug = query.toLowerCase().trim().replace(/\s+/g, '-')
+  
+  try {
+    const url = `https://himalayas.app/companies/${slug}/jobs`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return { found: false, error: 'Company not found on Himalayas' }
+      }
+      return { found: false, error: `HTTP ${response.status}` }
+    }
+
+    // Himalayas returns HTML, so we'll just check if the page exists
+    // If it exists, we consider the company found
+    return {
+      found: true,
+      company: {
+        slug,
+        name: query,
+        jobCount: 0, // Can't determine from HTML
+        remoteJobCount: 0
+      },
+      jobs: []
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
  * Search for a company across all supported sources
  */
 export async function searchCompany(
@@ -136,10 +226,27 @@ export async function searchCompany(
     return searchGreenhouseCompany(query)
   } else if (sourceLower === 'lever') {
     return searchLeverCompany(query)
+  } else if (sourceLower === 'remoteok') {
+    return searchRemoteOKCompany(query)
+  } else if (sourceLower === 'himalayas') {
+    return searchHimalayasCompany(query)
+  } else if (sourceLower === 'all') {
+    // Try all sources in order
+    const sources = ['greenhouse', 'lever', 'remoteok', 'himalayas']
+    for (const src of sources) {
+      const result = await searchCompany(src, query)
+      if (result.found) {
+        return result
+      }
+    }
+    return {
+      found: false,
+      error: 'Company not found on any source'
+    }
   } else {
     return {
       found: false,
-      error: `Unsupported source: ${source}. Supported sources: Greenhouse, Lever`
+      error: `Unsupported source: ${source}. Supported sources: Greenhouse, Lever, RemoteOK, Himalayas, All`
     }
   }
 }

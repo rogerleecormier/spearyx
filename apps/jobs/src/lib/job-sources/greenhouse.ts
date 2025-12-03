@@ -52,9 +52,14 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void): AsyncGenerator<RawJobListing[]> {
+export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[]): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
-  const companies = getCompanyList()
+  let companies = getCompanyList()
+  
+  // Filter to specific companies if provided
+  if (companyFilter && companyFilter.length > 0) {
+    companies = companies.filter(c => companyFilter.includes(c))
+  }
   
   const log = (msg: string) => {
     console.log(msg)

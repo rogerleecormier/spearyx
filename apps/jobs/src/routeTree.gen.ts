@@ -21,9 +21,14 @@ import { Route as ApiSyncRouteImport } from './routes/api/sync'
 import { Route as ApiJobsRouteImport } from './routes/api/jobs'
 import { Route as ApiDebugDbRouteImport } from './routes/api/debug-db'
 import { Route as ApiCategoriesRouteImport } from './routes/api/categories'
+import { Route as ApiV2SyncLogsRouteImport } from './routes/api/v2/sync-logs'
+import { Route as ApiV2SyncBatchRouteImport } from './routes/api/v2/sync-batch'
 import { Route as ApiV2SyncRouteImport } from './routes/api/v2/sync'
+import { Route as ApiV2StatsRouteImport } from './routes/api/v2/stats'
+import { Route as ApiV2SeedPotentialCompaniesRouteImport } from './routes/api/v2/seed-potential-companies'
 import { Route as ApiV2SearchCompaniesRouteImport } from './routes/api/v2/search-companies'
 import { Route as ApiV2PruneRouteImport } from './routes/api/v2/prune'
+import { Route as ApiV2DiscoverCompaniesRouteImport } from './routes/api/v2/discover-companies'
 import { Route as ApiV2DeduplicateRouteImport } from './routes/api/v2/deduplicate'
 import { Route as ApiV2SyncStatusSyncIdRouteImport } from './routes/api/v2/sync-status.$syncId'
 
@@ -87,11 +92,32 @@ const ApiCategoriesRoute = ApiCategoriesRouteImport.update({
   path: '/api/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV2SyncLogsRoute = ApiV2SyncLogsRouteImport.update({
+  id: '/api/v2/sync-logs',
+  path: '/api/v2/sync-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV2SyncBatchRoute = ApiV2SyncBatchRouteImport.update({
+  id: '/api/v2/sync-batch',
+  path: '/api/v2/sync-batch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV2SyncRoute = ApiV2SyncRouteImport.update({
   id: '/api/v2/sync',
   path: '/api/v2/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV2StatsRoute = ApiV2StatsRouteImport.update({
+  id: '/api/v2/stats',
+  path: '/api/v2/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV2SeedPotentialCompaniesRoute =
+  ApiV2SeedPotentialCompaniesRouteImport.update({
+    id: '/api/v2/seed-potential-companies',
+    path: '/api/v2/seed-potential-companies',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiV2SearchCompaniesRoute = ApiV2SearchCompaniesRouteImport.update({
   id: '/api/v2/search-companies',
   path: '/api/v2/search-companies',
@@ -100,6 +126,11 @@ const ApiV2SearchCompaniesRoute = ApiV2SearchCompaniesRouteImport.update({
 const ApiV2PruneRoute = ApiV2PruneRouteImport.update({
   id: '/api/v2/prune',
   path: '/api/v2/prune',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV2DiscoverCompaniesRoute = ApiV2DiscoverCompaniesRouteImport.update({
+  id: '/api/v2/discover-companies',
+  path: '/api/v2/discover-companies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV2DeduplicateRoute = ApiV2DeduplicateRouteImport.update({
@@ -127,9 +158,14 @@ export interface FileRoutesByFullPath {
   '/api/test-jobs': typeof ApiTestJobsRoute
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
+  '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
+  '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
+  '/api/v2/stats': typeof ApiV2StatsRoute
   '/api/v2/sync': typeof ApiV2SyncRoute
+  '/api/v2/sync-batch': typeof ApiV2SyncBatchRoute
+  '/api/v2/sync-logs': typeof ApiV2SyncLogsRoute
   '/api/v2/sync-status/$syncId': typeof ApiV2SyncStatusSyncIdRoute
 }
 export interface FileRoutesByTo {
@@ -146,9 +182,14 @@ export interface FileRoutesByTo {
   '/api/test-jobs': typeof ApiTestJobsRoute
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
+  '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
+  '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
+  '/api/v2/stats': typeof ApiV2StatsRoute
   '/api/v2/sync': typeof ApiV2SyncRoute
+  '/api/v2/sync-batch': typeof ApiV2SyncBatchRoute
+  '/api/v2/sync-logs': typeof ApiV2SyncLogsRoute
   '/api/v2/sync-status/$syncId': typeof ApiV2SyncStatusSyncIdRoute
 }
 export interface FileRoutesById {
@@ -166,9 +207,14 @@ export interface FileRoutesById {
   '/api/test-jobs': typeof ApiTestJobsRoute
   '/api/test-simple-insert': typeof ApiTestSimpleInsertRoute
   '/api/v2/deduplicate': typeof ApiV2DeduplicateRoute
+  '/api/v2/discover-companies': typeof ApiV2DiscoverCompaniesRoute
   '/api/v2/prune': typeof ApiV2PruneRoute
   '/api/v2/search-companies': typeof ApiV2SearchCompaniesRoute
+  '/api/v2/seed-potential-companies': typeof ApiV2SeedPotentialCompaniesRoute
+  '/api/v2/stats': typeof ApiV2StatsRoute
   '/api/v2/sync': typeof ApiV2SyncRoute
+  '/api/v2/sync-batch': typeof ApiV2SyncBatchRoute
+  '/api/v2/sync-logs': typeof ApiV2SyncLogsRoute
   '/api/v2/sync-status/$syncId': typeof ApiV2SyncStatusSyncIdRoute
 }
 export interface FileRouteTypes {
@@ -187,9 +233,14 @@ export interface FileRouteTypes {
     | '/api/test-jobs'
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
+    | '/api/v2/discover-companies'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
+    | '/api/v2/seed-potential-companies'
+    | '/api/v2/stats'
     | '/api/v2/sync'
+    | '/api/v2/sync-batch'
+    | '/api/v2/sync-logs'
     | '/api/v2/sync-status/$syncId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -206,9 +257,14 @@ export interface FileRouteTypes {
     | '/api/test-jobs'
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
+    | '/api/v2/discover-companies'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
+    | '/api/v2/seed-potential-companies'
+    | '/api/v2/stats'
     | '/api/v2/sync'
+    | '/api/v2/sync-batch'
+    | '/api/v2/sync-logs'
     | '/api/v2/sync-status/$syncId'
   id:
     | '__root__'
@@ -225,9 +281,14 @@ export interface FileRouteTypes {
     | '/api/test-jobs'
     | '/api/test-simple-insert'
     | '/api/v2/deduplicate'
+    | '/api/v2/discover-companies'
     | '/api/v2/prune'
     | '/api/v2/search-companies'
+    | '/api/v2/seed-potential-companies'
+    | '/api/v2/stats'
     | '/api/v2/sync'
+    | '/api/v2/sync-batch'
+    | '/api/v2/sync-logs'
     | '/api/v2/sync-status/$syncId'
   fileRoutesById: FileRoutesById
 }
@@ -245,9 +306,14 @@ export interface RootRouteChildren {
   ApiTestJobsRoute: typeof ApiTestJobsRoute
   ApiTestSimpleInsertRoute: typeof ApiTestSimpleInsertRoute
   ApiV2DeduplicateRoute: typeof ApiV2DeduplicateRoute
+  ApiV2DiscoverCompaniesRoute: typeof ApiV2DiscoverCompaniesRoute
   ApiV2PruneRoute: typeof ApiV2PruneRoute
   ApiV2SearchCompaniesRoute: typeof ApiV2SearchCompaniesRoute
+  ApiV2SeedPotentialCompaniesRoute: typeof ApiV2SeedPotentialCompaniesRoute
+  ApiV2StatsRoute: typeof ApiV2StatsRoute
   ApiV2SyncRoute: typeof ApiV2SyncRoute
+  ApiV2SyncBatchRoute: typeof ApiV2SyncBatchRoute
+  ApiV2SyncLogsRoute: typeof ApiV2SyncLogsRoute
   ApiV2SyncStatusSyncIdRoute: typeof ApiV2SyncStatusSyncIdRoute
 }
 
@@ -337,11 +403,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v2/sync-logs': {
+      id: '/api/v2/sync-logs'
+      path: '/api/v2/sync-logs'
+      fullPath: '/api/v2/sync-logs'
+      preLoaderRoute: typeof ApiV2SyncLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v2/sync-batch': {
+      id: '/api/v2/sync-batch'
+      path: '/api/v2/sync-batch'
+      fullPath: '/api/v2/sync-batch'
+      preLoaderRoute: typeof ApiV2SyncBatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v2/sync': {
       id: '/api/v2/sync'
       path: '/api/v2/sync'
       fullPath: '/api/v2/sync'
       preLoaderRoute: typeof ApiV2SyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v2/stats': {
+      id: '/api/v2/stats'
+      path: '/api/v2/stats'
+      fullPath: '/api/v2/stats'
+      preLoaderRoute: typeof ApiV2StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v2/seed-potential-companies': {
+      id: '/api/v2/seed-potential-companies'
+      path: '/api/v2/seed-potential-companies'
+      fullPath: '/api/v2/seed-potential-companies'
+      preLoaderRoute: typeof ApiV2SeedPotentialCompaniesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v2/search-companies': {
@@ -356,6 +450,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v2/prune'
       fullPath: '/api/v2/prune'
       preLoaderRoute: typeof ApiV2PruneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v2/discover-companies': {
+      id: '/api/v2/discover-companies'
+      path: '/api/v2/discover-companies'
+      fullPath: '/api/v2/discover-companies'
+      preLoaderRoute: typeof ApiV2DiscoverCompaniesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v2/deduplicate': {
@@ -389,9 +490,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTestJobsRoute: ApiTestJobsRoute,
   ApiTestSimpleInsertRoute: ApiTestSimpleInsertRoute,
   ApiV2DeduplicateRoute: ApiV2DeduplicateRoute,
+  ApiV2DiscoverCompaniesRoute: ApiV2DiscoverCompaniesRoute,
   ApiV2PruneRoute: ApiV2PruneRoute,
   ApiV2SearchCompaniesRoute: ApiV2SearchCompaniesRoute,
+  ApiV2SeedPotentialCompaniesRoute: ApiV2SeedPotentialCompaniesRoute,
+  ApiV2StatsRoute: ApiV2StatsRoute,
   ApiV2SyncRoute: ApiV2SyncRoute,
+  ApiV2SyncBatchRoute: ApiV2SyncBatchRoute,
+  ApiV2SyncLogsRoute: ApiV2SyncLogsRoute,
   ApiV2SyncStatusSyncIdRoute: ApiV2SyncStatusSyncIdRoute,
 }
 export const routeTree = rootRouteImport
