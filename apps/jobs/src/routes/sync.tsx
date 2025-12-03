@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { RefreshCw, AlertCircle, CheckCircle, Clock, Database, Briefcase, Building2 } from 'lucide-react'
+import { RefreshCw, AlertCircle, CheckCircle, Clock, Database, Briefcase, Building2, Search } from 'lucide-react'
 
 export const Route = createFileRoute('/sync')({
   component: SyncDashboard,
@@ -21,6 +21,7 @@ interface SyncLog {
 
 interface SyncRun {
   id: string
+  syncType?: string
   startedAt: string | null
   completedAt: string | null
   status: string
@@ -89,13 +90,27 @@ function SyncDashboard() {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never'
     const date = new Date(dateString)
-    return date.toLocaleString()
+    return date.toLocaleString('en-US', { 
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
   }
 
   const formatTime = (dateString: string | null) => {
     if (!dateString) return ''
     const date = new Date(dateString)
-    return date.toLocaleTimeString()
+    return date.toLocaleTimeString('en-US', { 
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    })
   }
 
   const getStatusIcon = (status: string) => {
@@ -137,6 +152,20 @@ function SyncDashboard() {
     }
   }
 
+  const getSyncTypeIcon = (syncType?: string) => {
+    if (syncType === 'discovery') {
+      return <Search className="w-5 h-5 text-purple-600" />
+    }
+    return <Briefcase className="w-5 h-5 text-blue-600" />
+  }
+
+  const getSyncTypeLabel = (syncType?: string) => {
+    if (syncType === 'discovery') {
+      return 'Discovery'
+    }
+    return 'Job Sync'
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -158,7 +187,8 @@ function SyncDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
             <p className="text-slate-600">
-              Automated job sync runs every 5 minutes, processing 10 companies per batch
+              Automated job sync runs every 5 minutes, processing 5 companies per batch
+              <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -249,15 +279,35 @@ function SyncDashboard() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {getStatusIcon(run.status)}
+                        <div className="flex flex-col items-center gap-1">
+                          {getStatusIcon(run.status)}
+                          {getSyncTypeIcon(run.syncType)}
+                        </div>
                         <div>
                           <div className="font-medium text-slate-900">
-                            {formatTime(run.startedAt)} - {run.status === 'completed' ? 'Completed' : run.status === 'failed' ? 'Failed' : 'Running'}
+                            {formatTime(run.startedAt)} - {getSyncTypeLabel(run.syncType)} - {run.status === 'completed' ? 'Completed' : run.status === 'failed' ? 'Failed' : 'Running'}
                           </div>
                           <div className="text-sm text-slate-600">
-                            {run.processedCompanies} companies processed
-                            {run.stats.jobsAdded > 0 && ` • +${run.stats.jobsAdded} jobs added`}
-                            {run.stats.jobsUpdated > 0 && ` • ${run.stats.jobsUpdated} updated`}
+                            {run.syncType === 'discovery' ? (
+                              <>
+                                {run.processedCompanies > 0 && `${run.processedCompanies} companies checked`}
+                                {run.stats.companiesAdded > 0 && (run.processedCompanies > 0 ? ' • ' : '') + `+${run.stats.companiesAdded} discovered`}
+                                {run.processedCompanies === 0 && run.stats.companiesAdded === 0 && 'No changes'}
+                              </>
+                            ) : (
+                              <>
+                                {run.processedCompanies > 0 && (
+                                  <>
+                                    {`${run.processedCompanies} companies processed`}
+                                    {' • '}
+                                    {`${run.stats.jobsAdded} added`}
+                                    {' • '}
+                                    {`${run.stats.jobsUpdated} updated`}
+                                  </>
+                                )}
+                                {run.processedCompanies === 0 && run.stats.jobsAdded === 0 && run.stats.jobsUpdated === 0 && 'No changes'}
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>

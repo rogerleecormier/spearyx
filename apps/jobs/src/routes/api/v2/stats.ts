@@ -11,11 +11,11 @@ export const Route = createFileRoute('/api/v2/stats')({
           const ctx = context as any
           const db = await getDbFromContext(ctx)
 
-          // Get total discovered companies
-          const discoveredCompaniesResult = await db.select({
-            count: sql<number>`count(*)`
-          }).from(schema.discoveredCompanies)
-          const totalDiscoveredCompanies = discoveredCompaniesResult[0]?.count || 0
+          // Get total unique companies from jobs table (more accurate than discoveredCompanies)
+          const companiesResult = await db.select({
+            count: sql<number>`count(DISTINCT company)`
+          }).from(schema.jobs)
+          const totalDiscoveredCompanies = companiesResult[0]?.count || 0
 
           // Get total jobs
           const jobsResult = await db.select({

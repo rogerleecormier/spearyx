@@ -22,6 +22,7 @@ export const Route = createFileRoute('/api/v2/sync-logs')({
             success: true,
             syncs: syncHistory.map(sync => ({
               id: sync.id,
+              syncType: sync.syncType,
               startedAt: sync.startedAt ? new Date(sync.startedAt).toISOString() : null,
               completedAt: sync.completedAt ? new Date(sync.completedAt).toISOString() : null,
               status: sync.status,

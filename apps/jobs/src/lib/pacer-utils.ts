@@ -219,6 +219,11 @@ export function createBatchedDbWriter<T>(config: BatchedDbWriterConfig<T>) {
         flushTimer = null
       }
       
+      // Wait for any active processing to finish to ensure stats are updated
+      while (isProcessing) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
       if (currentBatch.length > 0) {
         const batchToProcess = [...currentBatch]
         currentBatch = []

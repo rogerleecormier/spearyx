@@ -52,6 +52,7 @@ export const discoveredCompanies = sqliteTable('discovered_companies', {
 
 export const syncHistory = sqliteTable('sync_history', {
   id: text('id').primaryKey(),
+  syncType: text('sync_type').notNull().default('job_sync'), // 'job_sync' or 'discovery'
   startedAt: integer('started_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
