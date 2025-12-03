@@ -100,7 +100,8 @@ export async function syncJobs(
     updateExisting: boolean;
     addNew: boolean;
     sources?: string[];
-    companyFilter?: string[]; // NEW: Filter to specific companies
+    companyFilter?: string[]; // Filter to specific companies
+    maxJobsPerCompany?: number; // NEW: Limit jobs per company to prevent timeout
     db?: DrizzleD1Database;
     onLog?: (
       message: string,
@@ -186,11 +187,24 @@ export async function syncJobs(
       log(`\n📡 Fetching from ${source.name}...`);
 
       for await (const rawJobs of source.fetch(undefined, log, options.companyFilter)) {
-        log(`Processing batch of ${rawJobs.length} jobs from ${source.name} (Company: ${rawJobs[0]?.company})`);
+        // Log total jobs discovered for this company
+        const companyName = rawJobs[0]?.company || 'Unknown';
+        log(`📊 Discovered ${rawJobs.length} job(s) from ${companyName}`);
+        
+        // Apply job limit if specified (to prevent timeout on large companies)
+        const jobsToProcess = options.maxJobsPerCompany 
+          ? rawJobs.slice(0, options.maxJobsPerCompany)
+          : rawJobs;
+        
+        if (rawJobs.length > jobsToProcess.length) {
+          log(`  ⚙️  Batching: Processing ${jobsToProcess.length} of ${rawJobs.length} jobs (max ${options.maxJobsPerCompany} per company per sync run)`, "warning");
+        }
+        
+        log(`Processing batch of ${jobsToProcess.length} jobs from ${source.name} (Company: ${companyName})`);
 
         // OPTIMIZATION: Pre-load all existing jobs for this batch in a single query
         // This eliminates the N+1 query problem (was: 1 query per job, now: 1 query per batch)
-        const sourceUrls = rawJobs.map(j => j.sourceUrl).filter(Boolean);
+        const sourceUrls = jobsToProcess.map(j => j.sourceUrl).filter(Boolean);
         
         let existingJobsMap = new Map<string, any>();
         
@@ -205,14 +219,14 @@ export async function syncJobs(
               existingJobs.map(job => [job.sourceUrl, job])
             );
             
-            log(`  📊 Batch stats: ${rawJobs.length} jobs to process, ${existingJobs.length} already exist`);
+            log(`  📊 Batch stats: ${jobsToProcess.length} jobs to process, ${existingJobs.length} already exist`);
           } catch (error) {
             log(`  ⚠️  Failed to batch-load existing jobs, falling back to individual checks`, "warning");
             // If batch query fails, we'll fall back to individual queries below
           }
         }
 
-        for (const rawJob of rawJobs) {
+        for (const rawJob of jobsToProcess) {
           try {
             // Use pre-loaded map for O(1) lookup instead of database query
             const existing = existingJobsMap.get(rawJob.sourceUrl);

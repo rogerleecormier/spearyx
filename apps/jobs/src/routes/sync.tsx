@@ -187,7 +187,7 @@ function SyncDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
             <p className="text-slate-600">
-              Automated job sync runs every 5 minutes, processing 5 companies per batch
+              Job sync runs every 15 minutes, discovery runs every 15 minutes (offset by 7 min), processing 5 items per batch
               <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
             </p>
           </div>
@@ -309,6 +309,25 @@ function SyncDashboard() {
                               </>
                             )}
                           </div>
+                          {/* Progress bar */}
+                          {run.totalCompanies > 0 && run.processedCompanies > 0 && (
+                            <div className="mt-2">
+                              <div className="w-full bg-slate-200 rounded-full h-1.5">
+                                <div 
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    run.status === 'completed' ? 'bg-green-600' : 
+                                    run.status === 'failed' ? 'bg-red-600' : 
+                                    'bg-blue-600'
+                                  }`}
+                                  style={{ width: `${Math.min(100, (run.processedCompanies / run.totalCompanies) * 100)}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between text-xs text-slate-500 mt-0.5">
+                                <span>{run.processedCompanies} / {run.totalCompanies}</span>
+                                <span>{Math.round((run.processedCompanies / run.totalCompanies) * 100)}%</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-xs text-slate-500">

@@ -14,7 +14,6 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
         
         // Setup execution context for timeout handling
         const ctx = context as any;
-        let isTimedOut = false;
         
         // Ensure we catch timeouts and mark sync as failed
         if (ctx.executionCtx && ctx.executionCtx.waitUntil) {
@@ -49,21 +48,8 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
             }
           });
 
-          // Cleanup stale syncs (older than 10 minutes)
-          try {
-            // started_at is stored as seconds (unixepoch), so we need to compare with seconds
-            const tenMinutesAgoSeconds = Math.floor((Date.now() - 10 * 60 * 1000) / 1000);
-            
-            await db.update(schema.syncHistory)
-              .set({ 
-                status: 'failed',
-                completedAt: new Date(),
-                logs: sql`json_insert(logs, '$[#]', json_object('timestamp', ${new Date().toISOString()}, 'type', 'error', 'message', '❌ Sync timed out (stale)'))`
-              })
-              .where(sql`status = 'running' AND started_at < ${tenMinutesAgoSeconds} AND id != ${syncId}`);
-          } catch (cleanupError) {
-            console.error('Failed to cleanup stale syncs:', cleanupError);
-          }
+          // Removed aggressive stale sync cleanup that was killing active syncs
+          // Syncs will clean themselves up when they complete or timeout naturally
 
           // Get list of all companies
           const { default: companiesData } = await import('../../../lib/job-sources/greenhouse-companies.json');
@@ -136,6 +122,13 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           
           // Check execution time to prevent timeout
           const MAX_EXECUTION_TIME_MS = 25000; // 25 seconds (leaving 5s buffer)
+          const MAX_JOBS_PER_BATCH = 20; // Process max 20 jobs per company to stay under timeout
+          
+          logs.push({
+            timestamp: new Date().toISOString(),
+            type: 'info',
+            message: `⚙️  Job batching enabled: Max ${MAX_JOBS_PER_BATCH} jobs per company per sync run`
+          });
           
           for (const company of companiesToProcess) {
             // Check if we're running out of time
@@ -169,6 +162,11 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 message: `Processing ${company}...`
               });
 
+              // Force save logs immediately to ensure we know which company is being processed
+              await db.update(schema.syncHistory).set({
+                logs: logs
+              }).where(sql`id = ${syncId}`);
+
               let lastLogSave = Date.now();
 
               const result = await syncJobs({
@@ -176,30 +174,28 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 addNew: true,
                 sources: ['Greenhouse'],
                 companyFilter: [company], // Process one company at a time
+                maxJobsPerCompany: MAX_JOBS_PER_BATCH, // Limit jobs to prevent timeout
                 db,
                 onLog: (message, level = 'info') => {
-                  // Only log important messages to avoid cluttering the DB
-                  if (level === 'error' || level === 'warning' || message.includes('Batch stats') || message.includes('Updated:') || message.includes('Flushed')) {
-                    console.log(`[${level}] ${message}`);
-                    logs.push({
-                      timestamp: new Date().toISOString(),
-                      type: level as 'info' | 'success' | 'error' | 'warning',
-                      message
-                    });
+                  console.log(`[${level}] ${message}`);
+                  logs.push({
+                    timestamp: new Date().toISOString(),
+                    type: level as 'info' | 'success' | 'error' | 'warning',
+                    message
+                  });
 
-                    // Periodically save logs to DB (every 2 seconds) to ensure visibility if it crashes
-                    if (Date.now() - lastLogSave > 2000) {
-                      lastLogSave = Date.now();
-                      const savePromise = db.update(schema.syncHistory).set({
-                        logs: logs
-                      }).where(sql`id = ${syncId}`);
-                      
-                      if (ctx.executionCtx && ctx.executionCtx.waitUntil) {
-                        ctx.executionCtx.waitUntil(savePromise);
-                      } else {
-                        // Fire and forget if no waitUntil
-                        savePromise.catch(e => console.error('Failed to save logs:', e));
-                      }
+                  // Periodically save logs to DB (every 2 seconds) to ensure visibility if it crashes
+                  if (Date.now() - lastLogSave > 2000) {
+                    lastLogSave = Date.now();
+                    const savePromise = db.update(schema.syncHistory).set({
+                      logs: logs
+                    }).where(sql`id = ${syncId}`);
+                    
+                    if (ctx.executionCtx && ctx.executionCtx.waitUntil) {
+                      ctx.executionCtx.waitUntil(savePromise);
+                    } else {
+                      // Fire and forget if no waitUntil
+                      savePromise.catch(e => console.error('Failed to save logs:', e));
                     }
                   }
                 }

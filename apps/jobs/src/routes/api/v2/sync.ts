@@ -2,44 +2,65 @@ import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 
 interface SyncRequestBody {
-  sources?: string[]
-  updateExisting?: boolean
-  addNew?: boolean
+  type: 'job_sync' | 'discovery'
 }
 
 export const Route = createFileRoute('/api/v2/sync')({
   server: {
     handlers: {
       POST: async ({ request, context }) => {
+        const syncStartTime = new Date();
+        const syncId = crypto.randomUUID();
+        
         try {
-          // Manual syncs are not supported on Cloudflare Workers free plan
-          // due to 30-second CPU timeout limit.
-          // 
-          // Full syncs (151 companies) take 2-3 minutes and will always timeout.
-          // 
-          // Use the cron worker instead, which runs every 4 hours automatically
-          // and doesn't have the same timeout constraints.
+          // Parse request body
+          const body = await request.json() as SyncRequestBody;
+          const syncType = body.type || 'job_sync';
+          
+          if (syncType !== 'job_sync' && syncType !== 'discovery') {
+            return json({
+              success: false,
+              error: 'Invalid sync type. Must be "job_sync" or "discovery"'
+            }, { status: 400 });
+          }
+          
+          // Route to appropriate sync endpoint based on type
+          const targetEndpoint = syncType === 'job_sync' 
+            ? '/api/v2/sync-batch'
+            : '/api/v2/discover-companies';
+          
+          console.log(`[Unified Sync] ${syncType} started at ${syncStartTime.toISOString()}`);
+          
+          // Call the appropriate endpoint
+          const ctx = context as any;
+          const baseUrl = ctx.env?.SELF_URL || 'https://jobs.spearyx.com';
+          
+          const response = await fetch(`${baseUrl}${targetEndpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          const result = await response.json();
+          
+          console.log(`[Unified Sync] ${syncType} completed:`, result);
+          
+          return json({
+            success: result.success,
+            syncId: result.syncId || syncId,
+            type: syncType,
+            ...result
+          });
+          
+        } catch (error) {
+          console.error('[Unified Sync] Error:', error);
           
           return json({
             success: false,
-            error: 'Manual syncs are not supported on the free plan due to Cloudflare Workers 30-second timeout limit. Full syncs run automatically every 4 hours via cron worker.',
-            info: {
-              cronSchedule: 'Every 4 hours',
-              totalCompanies: 151,
-              estimatedSyncTime: '2-3 minutes',
-              workerTimeout: '30 seconds',
-              recommendation: 'Wait for the next automatic sync, or upgrade to a paid Cloudflare plan for manual sync support.'
-            }
-          }, { status: 503 })
-        } catch (error) {
-          console.error('Sync API error:', error)
-          return json(
-            {
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred'
-            },
-            { status: 500 }
-          )
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            syncId
+          }, { status: 500 });
         }
       }
     }
