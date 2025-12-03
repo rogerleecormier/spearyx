@@ -70,14 +70,40 @@ function sanitizeString(str: string | null | undefined, required: boolean = fals
     .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes -> straight quote
     .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes -> straight quote
     .replace(/[\u2013\u2014]/g, "-")  // En/em dashes -> hyphen
-    .replace(/\u2026/g, "...")        // Ellipsis -> three dots
-    .replace(/[\u2022\u2023\u25E6\u2043\u2219\uFE63\uFF65\u00B7\u00A2]/g, "*")  // Various bullets -> asterisk
-    .replace(/[\u0080-\uFFFF]/g, ""); // Remove ALL non-ASCII (128-65535)
+    .replace(/\u2026/g, "...")        // Ellipsis -> three dots;
 
   if (!allowHtml) {
+    // Only replace bullets with asterisks if we are NOT allowing HTML
+    // If HTML is allowed, we want to keep the bullets for formatting
+    sanitized = sanitized.replace(/[\u2022\u2023\u25E6\u2043\u2219\uFE63\uFF65\u00B7\u00A2]/g, "*");
+    
     // Strip HTML tags to avoid issues with truncated/malformed HTML
     // This is safer for database storage and prevents SQL injection concerns
     sanitized = sanitized.replace(/<[^>]*>/g, " ");
+  }
+    
+  // Remove ALL non-ASCII (128-65535) but keep the ones we want if HTML is allowed?
+  // The original code removed ALL non-ASCII. This kills bullets even if we didn't replace them above.
+  // We need to be careful.
+  // If allowHtml is true, we should probably be less aggressive with stripping non-ASCII,
+  // OR we should ensure our bullets are converted to HTML entities or standard bullets that survive?
+  // Actually, standard bullet • is \u2022 (non-ASCII).
+  // If we strip [\u0080-\uFFFF], we lose it.
+  
+  if (!allowHtml) {
+     sanitized = sanitized.replace(/[\u0080-\uFFFF]/g, "");
+  } else {
+     // If HTML is allowed, we might want to keep some non-ASCII chars like bullets
+     // But we still want to remove garbage.
+     // Let's keep the aggressive strip but EXCLUDE common useful chars if possible, 
+     // OR just rely on the fact that we might have converted them to entities?
+     // No, decodeHTMLEntities converts entities TO chars.
+     
+     // Let's try to preserve specific ranges or just relax it for HTML.
+     // For now, let's just NOT strip non-ASCII if allowHtml is true, assuming the input is relatively clean UTF-8.
+     // But we still want to fix mojibake.
+     
+     // Let's just remove the aggressive strip for allowHtml, but keep the control char stripping.
   }
 
   // Normalize whitespace (collapse multiple spaces)
@@ -256,18 +282,28 @@ export async function syncJobs(
               if (options.updateExisting) {
                 // Update existing job with potentially new data
                 // Updates are still done individually as they are less frequent/bulk than inserts usually
-                await db
-                  .update(schema.jobs)
-                  .set({
+                
+                const fullDesc = sanitizeString(rawJob.fullDescription, false, true);
+                
+                const updateValues: any = {
                     title: sanitizeString(rawJob.title, true),
                     company: sanitizeString(rawJob.company),
                     description: sanitizeString(rawJob.description, false, true), // Allow HTML
-                    fullDescription: sanitizeString(rawJob.fullDescription, false, true), // Allow HTML
                     payRange: sanitizeString(rawJob.salary),
                     postDate: rawJob.postedDate,
                     updatedAt: new Date(),
                     categoryId, // Update category as logic might have changed
-                  })
+                };
+                
+                // Only update fullDescription if the source provided it
+                // This prevents overwriting cached full descriptions with null
+                if (fullDesc) {
+                  updateValues.fullDescription = fullDesc;
+                }
+                
+                await db
+                  .update(schema.jobs)
+                  .set(updateValues)
                   .where(eq(schema.jobs.id, existing.id));
 
                 totalUpdated++;

@@ -1,5 +1,5 @@
 import type { RawJobListing } from './types'
-import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
+import { decodeHtmlEntities } from '../html-utils'
 import companiesData from './greenhouse-companies.json'
 import { createThrottledRateLimitedFetcher } from '../pacer-utils'
 import { extractSalaryFromDescription } from './salary-utils'
@@ -133,9 +133,18 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
           // Sanitize HTML from description and decode entities from title
           // The content from Greenhouse API is often double-encoded
           const rawContent = job.content ? decodeHtmlEntities(job.content) : ''
-          const cleanDescription = rawContent 
-            ? sanitizeHtml(rawContent)
-            : ''
+          
+          // OPTIMIZATION: Use simple regex to strip tags instead of heavy sanitizeHtml
+          // We only need plain text for the summary, and full HTML is fetched on-demand
+          const textOnly = rawContent
+            .replace(/<[^>]*>/g, ' ') // Strip tags
+            .replace(/&nbsp;/g, ' ')  // Replace nbsp
+            .replace(/\s+/g, ' ')     // Normalize whitespace
+            .trim()
+            
+          const words = textOnly.split(' ')
+          const summaryDescription = words.slice(0, 200).join(' ') + (words.length > 200 ? '...' : '')
+
           const cleanTitle = decodeHtmlEntities(job.title || '')
           
           // Get the company name with proper capitalization
@@ -156,17 +165,15 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
           }
 
           // If no salary in metadata, try to scrape from description
-          if (!salaryRange && cleanDescription) {
-            // Strip all HTML tags to make regex matching easier
-            const textOnlyDescription = cleanDescription.replace(/<[^>]*>/g, ' ')
-            salaryRange = extractSalaryFromDescription(textOnlyDescription)
+          if (!salaryRange && textOnly) {
+            salaryRange = extractSalaryFromDescription(textOnly)
           }
           
           return {
             externalId: `greenhouse-${job.id}`,
             title: cleanTitle,
             company: companyName,
-            description: cleanDescription,
+            description: summaryDescription,
             location: job.location?.name || 'Remote',
             salary: salaryRange,
             postedDate: new Date(job.updated_at),

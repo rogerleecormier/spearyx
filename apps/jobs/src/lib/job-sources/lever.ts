@@ -1,5 +1,5 @@
 import type { RawJobListing } from './types'
-import { sanitizeHtml, decodeHtmlEntities } from '../html-utils'
+import { decodeHtmlEntities } from '../html-utils'
 import companiesData from './lever-companies.json'
 
 import { createThrottledRateLimitedFetcher } from '../pacer-utils'
@@ -126,12 +126,16 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
       }
       
       remoteJobs = remoteJobs.map((job: any) => {
-          // Sanitize HTML from description
-          const rawDescription = job.description ? sanitizeHtml(job.description) : ''
-          
           // Create 200-word summary for DB storage
-          // This matches the "lazy load" pattern used for Greenhouse
-          const textOnly = rawDescription.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+          // OPTIMIZATION: Use simple regex to strip tags instead of heavy sanitizeHtml
+          // We only need plain text for the summary, and full HTML is fetched on-demand
+          const rawDescription = job.description || ''
+          const textOnly = rawDescription
+            .replace(/<[^>]*>/g, ' ') // Strip tags
+            .replace(/&nbsp;/g, ' ')  // Replace nbsp
+            .replace(/\s+/g, ' ')     // Normalize whitespace
+            .trim()
+            
           const words = textOnly.split(' ')
           const cleanDescription = words.slice(0, 200).join(' ') + (words.length > 200 ? '...' : '')
             
@@ -161,8 +165,8 @@ export async function* fetchLeverJobs(query?: string, onLog?: (message: string) 
              
              // Fallback to HTML description if plain text didn't yield results
              if (!salaryRange && cleanDescription) {
-                const textOnlyDescription = cleanDescription.replace(/<[^>]*>/g, ' ');
-                salaryRange = extractSalaryFromDescription(textOnlyDescription);
+                // Use the already computed textOnly for salary extraction
+                salaryRange = extractSalaryFromDescription(textOnly);
              }
           }
           

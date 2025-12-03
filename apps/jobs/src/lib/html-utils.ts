@@ -46,13 +46,20 @@ export function sanitizeHtml(html: string): string {
     $(el).replaceWith(text)
   })
   
-  // Convert div tags to paragraphs for better spacing
+  // Convert div tags to paragraphs for better spacing, but avoid invalid nesting
   $('div').each((_, el) => {
-    const content = $(el).html()
-    if (content && content.trim()) {
-      $(el).replaceWith(`<p>${content}</p>`)
+    const $el = $(el)
+    // If div contains block elements, unwrap it to avoid <p><div>...</div></p> or <p><p>...</p></p>
+    if ($el.find('p, ul, ol, div, h1, h2, h3, h4, h5, h6, blockquote, pre').length > 0) {
+       $el.replaceWith($el.html() || '')
     } else {
-      $(el).remove()
+       // Otherwise it's likely text or inline elements, wrap in p
+       const content = $el.html()
+       if (content && content.trim()) {
+         $el.replaceWith(`<p>${content}</p>`)
+       } else {
+         $el.remove()
+       }
     }
   })
   
@@ -103,22 +110,23 @@ export function sanitizeHtml(html: string): string {
     }
   });
 
-  // Second pass: Wrap consecutive <li> elements (that we just created) in <ul>
-  // We need to do this on the body to catch the new li elements
-  const $body = $('body');
-  let $currentUl: cheerio.Cheerio<any> | null = null;
-
-  $body.children().each((_, el) => {
+  // Second pass: Wrap consecutive <li> elements in <ul>
+  // We iterate through all converted li elements and group them
+  $('li[data-converted="true"]').each((_, el) => {
     const $el = $(el);
-    if (el.tagName === 'li' && $el.attr('data-converted') === 'true') {
-      $el.removeAttr('data-converted');
-      if (!$currentUl) {
-        $currentUl = $('<ul></ul>');
-        $el.before($currentUl);
-      }
-      $currentUl.append($el);
+    // Remove the marker attribute
+    $el.removeAttr('data-converted');
+    
+    // Check if previous sibling is a UL
+    const $prev = $el.prev();
+    if ($prev.length > 0 && $prev[0].tagName === 'ul') {
+      // Append to existing UL
+      $prev.append($el);
     } else {
-      $currentUl = null;
+      // Create new UL and wrap this LI
+      const $ul = $('<ul></ul>');
+      $el.before($ul);
+      $ul.append($el);
     }
   });
 

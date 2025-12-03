@@ -102,11 +102,15 @@ export const Route = createFileRoute('/api/v2/job-content')({
           const words = textOnly.split(' ')
           const summaryText = words.slice(0, 200).join(' ') + (words.length > 200 ? '...' : '')
           
-          // Update DB with summary
+          // Update DB with full description (cache it) and summary
           // ctx and db are already declared at the top of the try block
           
           await db.update(schema.jobs)
-            .set({ description: summaryText })
+            .set({ 
+              fullDescription: content,
+              description: summaryText, // Always update summary to ensure it's fresh and formatted correctly
+              updatedAt: new Date()
+            })
             .where(eq(schema.jobs.sourceUrl, sourceUrl))
 
           return json({ content })
