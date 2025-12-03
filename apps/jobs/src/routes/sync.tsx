@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { RefreshCw, AlertCircle, CheckCircle, Clock, Database, Briefcase, Building2, Search } from 'lucide-react'
+import { RefreshCw, AlertCircle, CheckCircle, Clock, Briefcase, Building2, Search } from 'lucide-react'
 
 export const Route = createFileRoute('/sync')({
   component: SyncDashboard,

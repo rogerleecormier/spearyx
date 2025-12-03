@@ -14,11 +14,16 @@ export default {
     
     console.log(`[${timeStr}] 🔄 ${type === 'job_sync' ? 'Batch sync' : 'Company discovery'} started`);
     
+    // Determine endpoint based on type
+    const endpoint = type === 'job_sync' ? '/api/v2/sync-batch' : '/api/v2/discover-companies';
+    const url = `https://jobs.spearyx.com${endpoint}`;
+    
     try {
-      const response = await fetch("https://jobs.spearyx.com/api/v2/sync", {
+      const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type })
+        // sync-batch and discover-companies don't strictly require a body, but we pass empty object
+        body: JSON.stringify({})
       });
       
       if (!response.ok) {
