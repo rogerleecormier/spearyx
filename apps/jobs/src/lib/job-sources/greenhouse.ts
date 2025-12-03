@@ -52,7 +52,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
+export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, limit?: number): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
   let companies = getCompanyList()
   
@@ -121,6 +121,11 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
       // Apply offset if provided
       if (jobOffset !== undefined && jobOffset > 0) {
         remoteJobs = remoteJobs.slice(jobOffset);
+      }
+
+      // Apply limit if provided (OPTIMIZATION: slice before mapping to save CPU)
+      if (limit !== undefined && limit > 0) {
+        remoteJobs = remoteJobs.slice(0, limit);
       }
 
       remoteJobs = remoteJobs.map((job: any) => {

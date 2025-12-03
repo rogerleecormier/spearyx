@@ -156,7 +156,7 @@ export async function syncJobs(
 
   // Create batched writer for new jobs
   const batchWriter = createBatchedDbWriter({
-    maxSize: 50, // Increased to 50 for better throughput
+    maxSize: 5, // Reduced to 5 to avoid D1 parameter limit (100 params)
     wait: 2000,
     writeFn: async (jobs: any[]) => {
       try {
@@ -190,7 +190,7 @@ export async function syncJobs(
     try {
       log(`\n📡 Fetching from ${source.name}...`);
 
-      for await (const rawJobs of source.fetch(undefined, log, options.companyFilter, options.jobOffset)) {
+      for await (const rawJobs of source.fetch(undefined, log, options.companyFilter, options.jobOffset, options.maxJobsPerCompany)) {
         // Log total jobs discovered for this company
         const companyName = rawJobs[0]?.company || 'Unknown';
         const totalJobsDiscovered = rawJobs.length;

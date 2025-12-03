@@ -25,7 +25,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchHimalayasJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number) {
+export async function* fetchHimalayasJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, jobLimit?: number) {
   const baseUrl = 'https://himalayas.app/jobs/api'
   const limit = 20 // API limit per request
   let offset = 0
@@ -110,6 +110,11 @@ export async function* fetchHimalayasJobs(query?: string, onLog?: (message: stri
       }
       
       offset += limit
+      
+      // If we have a limit and we've reached it, stop
+      if (jobLimit !== undefined && jobLimit > 0 && totalJobs >= jobLimit) {
+        break
+      }
       
       // Throttling handled by throttledFetch
     }

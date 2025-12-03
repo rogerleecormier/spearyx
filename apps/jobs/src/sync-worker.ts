@@ -5,10 +5,9 @@ export interface Env {
 export default {
   async scheduled(_event: ScheduledEvent, _env: Env, _ctx: ExecutionContext) {
     const minute = new Date().getMinutes();
-    // Alternate between job sync and discovery based on time
-    // 0-9, 20-29, 40-49: job_sync
-    // 10-19, 30-39, 50-59: discovery
-    const type = minute % 20 < 10 ? 'job_sync' : 'discovery';
+    // NEW LOGIC: Run discovery only when the minute ends in 0 or 5 (every 5 mins).
+    // Run job_sync on all other minutes (80% of the time).
+    const type = minute % 5 === 0 ? 'discovery' : 'job_sync';
     
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });

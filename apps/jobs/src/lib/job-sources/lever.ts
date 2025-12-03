@@ -48,7 +48,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchLeverJobs(onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
+export async function* fetchLeverJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, limit?: number): AsyncGenerator<RawJobListing[]> {
   let companies = getCompanyList()
   
   // Filter to specific companies if provided
@@ -117,6 +117,11 @@ export async function* fetchLeverJobs(onLog?: (message: string) => void, company
       // Apply offset if provided
       if (jobOffset !== undefined && jobOffset > 0) {
         remoteJobs = remoteJobs.slice(jobOffset);
+      }
+      
+      // Apply limit if provided
+      if (limit !== undefined && limit > 0) {
+        remoteJobs = remoteJobs.slice(0, limit);
       }
       
       remoteJobs = remoteJobs.map((job: any) => {

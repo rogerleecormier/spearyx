@@ -19,7 +19,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number): AsyncGenerator<RawJobListing[]> {
+export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, limit?: number): AsyncGenerator<RawJobListing[]> {
   const log = (msg: string) => {
     console.log(msg)
     onLog?.(msg)
@@ -74,8 +74,18 @@ export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: strin
           tags: job.tags || []
         }
       })
+      
+    // Apply limit if provided
+    if (limit !== undefined && limit > 0) {
+      // Note: We can't slice before mapping easily because filter is part of the chain
+      // But we can slice the result
+      const limitedJobs = processedJobs.slice(0, limit);
+      yield limitedJobs;
+    } else {
+      yield processedJobs;
+    }
 
-    yield processedJobs
+
 
   } catch (error) {
     log(`Error fetching from RemoteOK: ${error}`)
