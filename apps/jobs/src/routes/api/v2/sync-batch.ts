@@ -3,6 +3,14 @@ import { json } from '@tanstack/react-start'
 import { getDbFromContext, schema } from '../../../db/db'
 import { sql } from 'drizzle-orm'
 
+interface SyncItem {
+  name: string;      // Company slug or Source name
+  source: string;    // 'Greenhouse', 'Lever', 'RemoteOK', 'Himalayas'
+  isPseudo: boolean; // True for aggregators like RemoteOK
+}
+
+let cachedSyncItems: SyncItem[] | null = null;
+
 export const Route = createFileRoute('/api/v2/sync-batch')({
   server: {
     handlers: {
@@ -54,42 +62,40 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           // Get list of all companies/sources to sync
           // We unify everything into a single list of "SyncItems" to ensure fair scheduling
           
-          interface SyncItem {
-            name: string;      // Company slug or Source name
-            source: string;    // 'Greenhouse', 'Lever', 'RemoteOK', 'Himalayas'
-            isPseudo: boolean; // True for aggregators like RemoteOK
+          if (!cachedSyncItems) {
+            const allItems: SyncItem[] = [];
+
+            // 1. Add Greenhouse Companies
+            const { default: ghData } = await import('../../../lib/job-sources/greenhouse-companies.json');
+            Object.values((ghData as any).categories).forEach((category: any) => {
+              category.companies.forEach((slug: string) => {
+                allItems.push({ name: slug, source: 'Greenhouse', isPseudo: false });
+              });
+            });
+
+            // 2. Add Lever Companies
+            const { default: leverData } = await import('../../../lib/job-sources/lever-companies.json');
+            Object.values((leverData as any).categories).forEach((category: any) => {
+              category.companies.forEach((slug: string) => {
+                allItems.push({ name: slug, source: 'Lever', isPseudo: false });
+              });
+            });
+
+            // 3. Add Aggregators (Pseudo-companies)
+            // We treat them as single items in the batch loop
+            allItems.push({ name: 'remoteok', source: 'RemoteOK', isPseudo: true });
+            allItems.push({ name: 'himalayas', source: 'Himalayas', isPseudo: true });
+            
+            // Deduplicate based on name+source (though unlikely to collide)
+            const uniqueItems = Array.from(new Map(allItems.map(item => [`${item.source}:${item.name}`, item])).values());
+            
+            // Sort for consistent ordering (optional, but good for debugging)
+            uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
+            
+            cachedSyncItems = uniqueItems;
           }
           
-          const allItems: SyncItem[] = [];
-
-          // 1. Add Greenhouse Companies
-          const { default: ghData } = await import('../../../lib/job-sources/greenhouse-companies.json');
-          Object.values((ghData as any).categories).forEach((category: any) => {
-            category.companies.forEach((slug: string) => {
-              allItems.push({ name: slug, source: 'Greenhouse', isPseudo: false });
-            });
-          });
-
-          // 2. Add Lever Companies
-          const { default: leverData } = await import('../../../lib/job-sources/lever-companies.json');
-          Object.values((leverData as any).categories).forEach((category: any) => {
-            category.companies.forEach((slug: string) => {
-              allItems.push({ name: slug, source: 'Lever', isPseudo: false });
-            });
-          });
-
-          // 3. Add Aggregators (Pseudo-companies)
-          // We treat them as single items in the batch loop
-          allItems.push({ name: 'remoteok', source: 'RemoteOK', isPseudo: true });
-          allItems.push({ name: 'himalayas', source: 'Himalayas', isPseudo: true });
-          
-          // Deduplicate based on name+source (though unlikely to collide)
-          const uniqueItems = Array.from(new Map(allItems.map(item => [`${item.source}:${item.name}`, item])).values());
-          
-          // Sort for consistent ordering (optional, but good for debugging)
-          uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
-          
-          const companies = uniqueItems; // Renaming for compatibility with existing code structure, though it's now "items"
+          const companies = cachedSyncItems; // Renaming for compatibility with existing code structure, though it's now "items"
           
           const COMPANIES_PER_BATCH = 5; // Reduced from 10 to avoid CPU timeout
           

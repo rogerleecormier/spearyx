@@ -260,6 +260,8 @@ export async function syncJobs(
           }
         }
 
+        let batchUpdates: any[] = [];
+
         for (const rawJob of jobsToProcess) {
           try {
             // Use pre-loaded map for O(1) lookup instead of database query
@@ -283,12 +285,10 @@ export async function syncJobs(
                 // Update existing job with potentially new data
                 // Updates are still done individually as they are less frequent/bulk than inserts usually
                 
-                const fullDesc = sanitizeString(rawJob.fullDescription, false, true);
-                
                 const updateValues: any = {
                     title: sanitizeString(rawJob.title, true),
                     company: sanitizeString(rawJob.company),
-                    description: sanitizeString(rawJob.description, false, true), // Allow HTML
+                    description: rawJob.description || null, // Already sanitized by sanitizeHtml() in source files
                     payRange: sanitizeString(rawJob.salary),
                     postDate: rawJob.postedDate,
                     updatedAt: new Date(),
@@ -297,17 +297,21 @@ export async function syncJobs(
                 
                 // Only update fullDescription if the source provided it
                 // This prevents overwriting cached full descriptions with null
-                if (fullDesc) {
-                  updateValues.fullDescription = fullDesc;
+                if (rawJob.fullDescription) {
+                  updateValues.fullDescription = rawJob.fullDescription; // Already sanitized by sanitizeHtml() in source files
                 }
                 
-                await db
-                  .update(schema.jobs)
-                  .set(updateValues)
-                  .where(eq(schema.jobs.id, existing.id));
+                // Add to batch updates list
+                batchUpdates.push(
+                  db
+                    .update(schema.jobs)
+                    .set(updateValues)
+                    .where(eq(schema.jobs.id, existing.id))
+                );
 
                 totalUpdated++;
-                log(`  🔄 Updated: ${rawJob.title}`);
+                // Removed per-job log to reduce CPU/Memory usage
+                // log(`  🔄 Updated: ${rawJob.title}`);
               }
               continue;
             }
@@ -317,8 +321,8 @@ export async function syncJobs(
               await batchWriter.add({
                 title: sanitizeString(rawJob.title, true),
                 company: sanitizeString(rawJob.company),
-                description: sanitizeString(rawJob.description, false, true), // Allow HTML
-                fullDescription: sanitizeString(rawJob.fullDescription, false, true), // Allow HTML
+                description: rawJob.description || null, // Already sanitized by sanitizeHtml() in source files
+                fullDescription: rawJob.fullDescription || null, // Already sanitized by sanitizeHtml() in source files
                 payRange: sanitizeString(rawJob.salary),
                 postDate: rawJob.postedDate,
                 sourceUrl: sanitizeString(rawJob.sourceUrl, true),
@@ -337,6 +341,18 @@ export async function syncJobs(
               `  ❌ Error processing job "${rawJob.title}": ${errorMsg}`,
               "error"
             );
+          }
+        }
+
+        // Execute batch updates if any
+        if (batchUpdates.length > 0) {
+          try {
+            await db.batch(batchUpdates as [any, ...any[]]);
+            log(`  🔄 Batch updated ${batchUpdates.length} existing jobs`);
+            batchUpdates = []; // Clear the batch
+          } catch (batchError) {
+            log(`  ❌ Error executing batch updates: ${batchError}`, "error");
+            // Fallback to individual updates? No, let's just fail this batch of updates to save CPU
           }
         }
       }

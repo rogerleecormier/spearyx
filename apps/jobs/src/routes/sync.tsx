@@ -11,6 +11,13 @@ interface DashboardStats {
   totalActiveCompanies: number
   totalJobs: number
   pendingCompanies: number
+  notDiscoveredCompanies: number
+  jobsBySource: {
+    greenhouse: number
+    lever: number
+    remoteok: number
+    himalayas: number
+  }
   lastSyncAt: string | null
 }
 
@@ -187,8 +194,8 @@ function SyncDashboard() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
-            <p className="text-slate-600">
-              Runs every minute. Job sync runs 80% of the time, discovery runs every 5 minutes. Processes 5 companies per batch, up to 20 jobs per company.
+            <p className="text-sm text-muted-foreground pr-4">
+              Runs every 2 mins. Sync (80%) / Discovery (every 5m). 5 companies/batch, max 20 jobs/company.
               <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
             </p>
           </div>
@@ -214,49 +221,113 @@ function SyncDashboard() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Building2 className="w-6 h-6 text-blue-600" />
+        <div className="space-y-8 mb-8">
+          {/* Row 1: Company Metrics */}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Company Discovery</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Building2 className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Discovered ATS Companies</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.totalDiscoveredCompanies || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Directly tracked via ATS platforms</p>
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Discovered ATS Companies</h3>
+
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Building2 className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Companies with Jobs</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.totalActiveCompanies || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Total companies with active jobs</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Search className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Companies Pending Discovery</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.pendingCompanies || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Pending discovery check</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Search className="w-6 h-6 text-slate-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Companies Not Discovered</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.notDiscoveredCompanies || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">Tried but not found on any source</p>
+              </div>
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats?.totalDiscoveredCompanies || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Directly tracked via ATS platforms</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Building2 className="w-6 h-6 text-purple-600" />
+          {/* Row 2: Job Metrics by Source */}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Jobs by Source</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Briefcase className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Greenhouse Jobs</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.greenhouse || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.greenhouse || 0) / stats.totalJobs) * 100) : 0}% of total jobs
+                </p>
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Companies with Jobs</h3>
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats?.totalActiveCompanies || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Total companies with active jobs</p>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Search className="w-6 h-6 text-orange-600" />
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Briefcase className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Lever Jobs</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.lever || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.lever || 0) / stats.totalJobs) * 100) : 0}% of total jobs
+                </p>
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Companies Remaining</h3>
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats?.pendingCompanies || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Pending discovery check</p>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Briefcase className="w-6 h-6 text-green-600" />
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Briefcase className="w-6 h-6 text-red-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">RemoteOK Jobs</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.remoteok || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.remoteok || 0) / stats.totalJobs) * 100) : 0}% of total jobs
+                </p>
               </div>
-              <h3 className="text-sm font-medium text-slate-600">Jobs Found</h3>
+
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Briefcase className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600">Himalayas Jobs</h3>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.himalayas || 0}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.himalayas || 0) / stats.totalJobs) * 100) : 0}% of total jobs
+                </p>
+              </div>
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats?.totalJobs || 0}</p>
-            <p className="text-xs text-slate-500 mt-1">Total active job listings</p>
           </div>
         </div>
 
@@ -302,8 +373,13 @@ function SyncDashboard() {
                           <div className="text-sm text-slate-600">
                             {run.syncType === 'discovery' ? (
                               <>
-                                {run.processedCompanies > 0 && `${run.processedCompanies} companies checked`}
-                                {run.stats.companiesAdded > 0 && (run.processedCompanies > 0 ? ' • ' : '') + `+${run.stats.companiesAdded} discovered`}
+                                {run.processedCompanies > 0 && (
+                                  <>
+                                    {`${run.processedCompanies} companies processed`}
+                                    {' • '}
+                                    {`${run.stats.companiesAdded} discovered`}
+                                  </>
+                                )}
                                 {run.processedCompanies === 0 && run.stats.companiesAdded === 0 && 'No changes'}
                               </>
                             ) : (
@@ -321,8 +397,8 @@ function SyncDashboard() {
                               </>
                             )}
                           </div>
-                          {/* Progress bar */}
-                          {run.totalCompanies > 0 && run.processedCompanies > 0 && (
+                          {/* Progress bar - only for sync jobs */}
+                          {run.syncType !== 'discovery' && run.totalCompanies > 0 && run.processedCompanies > 0 && (
                             <div className="mt-2">
                               <div className="w-full bg-slate-200 rounded-full h-1.5">
                                 <div 

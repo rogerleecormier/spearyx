@@ -1,6 +1,50 @@
 import * as cheerio from 'cheerio'
 
 /**
+ * Converts plain text to HTML by detecting paragraphs and headings
+ * This is needed when APIs return plain text instead of HTML
+ */
+function convertPlainTextToHtml(text: string): string {
+  if (!text) return ''
+  
+  // Check if the text already has HTML tags
+  if (/<[a-z][\s\S]*>/i.test(text)) {
+    // Already has HTML, return as-is
+    return text
+  }
+  
+  // Split by double newlines to detect paragraphs
+  const paragraphs = text.split(/\n\n+/)
+  
+  let html = ''
+  for (const para of paragraphs) {
+    if (!para.trim()) continue
+    
+    // Check if this paragraph looks like a heading (ends with colon, short, title case)
+    const trimmed = para.trim()
+    const lines = trimmed.split('\n')
+    
+    for (const line of lines) {
+      const cleanLine = line.trim()
+      if (!cleanLine) continue
+      
+      // Detect headings: short lines ending with colon, or all caps
+      if (cleanLine.endsWith(':') && cleanLine.length < 80) {
+        html += `<h3>${cleanLine}</h3>`
+      } else if (/^[A-Z][A-Z\s'&]{2,50}:/.test(cleanLine)) {
+        // ALL CAPS heading
+        html += `<h3>${cleanLine}</h3>`
+      } else {
+        // Regular paragraph
+        html += `<p>${cleanLine}</p>`
+      }
+    }
+  }
+  
+  return html || `<p>${text}</p>`
+}
+
+/**
  * Sanitizes HTML while preserving basic formatting
  * Keeps: <p>, <br>, <b>, <strong>, <i>, <em>, <u>, <ul>, <li>, <h1-h6>
  * Removes: <script>, <style>, dangerous attributes, inline styles
@@ -8,17 +52,58 @@ import * as cheerio from 'cheerio'
 export function sanitizeHtml(html: string): string {
   if (!html) return ''
   
-  // First fix common encoding issues before processing
-  let cleaned = html
-    .replace(/&nbsp;/g, ' ') // Replace literal &nbsp; with space
-    .replace(/\u00A0/g, ' ') // Replace non-breaking space char with space
-    .replace(/â€™/g, "'")   // Right single quote
-    .replace(/â€œ/g, '"')   // Left double quote
-    .replace(/â€/g, '"')    // Right double quote
-    .replace(/â€“/g, '–')   // En dash
-    .replace(/â€”/g, '—')   // Em dash
-    .replace(/â€¢/g, '•')   // Bullet
-    .replace(/Â/g, '')      // Non-breaking space artifact
+  // STEP 1: Convert plain text to HTML if needed
+  // This handles cases where APIs return plain text instead of HTML
+  const htmlInput = convertPlainTextToHtml(html)
+  
+  // STEP 2: Fix common encoding issues before processing
+  let cleaned = htmlInput
+    // Fix common encoding issues (Mojibake)
+    // UTF-8 characters interpreted as Windows-1252 or Latin-1
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\u00A0/g, ' ')
+    
+    // Apostrophes / Single Quotes
+    .replace(/â€™/g, "'")     // ’ (U+2019) -> â€™
+    .replace(/â€˜/g, "'")     // ‘ (U+2018) -> â€˜
+    
+    // Robust fix for UTF-8 bytes interpreted as Latin-1 (E2 80 XX sequences)
+    // This covers: ’ (99), ‘ (98), “ (9C), ” (9D), – (93), — (94), … (A6)
+    .replace(/\u00e2\u0080([\u0080-\u00bf])/g, (_match, p1) => {
+      const hex = p1.charCodeAt(0).toString(16).toUpperCase();
+      switch (hex) {
+        case '98': return "'"; // ‘
+        case '99': return "'"; // ’
+        case '9C': return '"'; // “
+        case '9D': return '"'; // ”
+        case '93': return "–"; // –
+        case '94': return "—"; // —
+        case 'A6': return "..."; // …
+        default: return "'"; // Default to apostrophe for unknown E2 80 XX chars to be safe
+      }
+    })
+
+    // Weird Glyphs (Observed in screenshots)
+    .replace(/â⁻⁗/g, "'")     // â (E2) + ⁻ (207B) + ⁗ (2057) -> '
+    .replace(/\u00e2\u207b\u2057/g, "'") // Explicit unicode for above
+    
+    // Double Quotes (Legacy patterns)
+    .replace(/â€œ/g, '"')     // “ (U+201C) -> â€œ
+    .replace(/â\u0080\u009c/gi, '"')
+    .replace(/â€/g, '"')      // ” (U+201D) -> â€ (often truncated)
+    .replace(/â\u0080\u009d/gi, '"')
+    
+    // Dashes
+    .replace(/â€“/g, '–')     // – (U+2013) -> â€“
+    .replace(/â\u0080\u0093/g, '–')
+    .replace(/â€”/g, '—')     // — (U+2014) -> â€”
+    .replace(/â\u0080\u0094/g, '—')
+    
+    // Bullets and others
+    .replace(/â€¢/g, '•')     // • (U+2022) -> â€¢
+    .replace(/â\u0080\u00a2/g, '•')
+    .replace(/Â/g, '')        // Non-breaking space artifact (U+00C2)
+    
     .replace(/\\n/g, '') // Remove literal \n characters
   
   // Load HTML with cheerio
@@ -142,14 +227,42 @@ export function sanitizeHtml(html: string): string {
     .replace(/<p>\s*<\/p>/g, '') // Remove empty paragraphs
     .replace(/<p>\s*•\s*<\/p>/g, '') // Remove empty bullet points
     .replace(/<p><br\s*\/?><\/p>/g, '') // Remove paragraphs with only br
-    .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>') // Remove duplicate breaks
+    
+    // Convert double breaks to paragraph splits (for spacing)
+    .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '</p><p>')
+    
+    // ENHANCED: Convert bold/strong text followed by colon at start of paragraph into h3
+    // This handles "Technical Skills:", "About the Role:", etc.
+    // Pattern: <p><strong>TEXT:</strong> or <p><b>TEXT:</b>
+    .replace(/<p>\s*<(strong|b)>([^<]+?):<\/(strong|b)>/gi, '<h3>$2:</h3><p>')
+    
+    // ENHANCED: Also handle case where bold heading is followed by a break
+    // Pattern: <p><strong>TEXT:</strong><br> -> <h3>TEXT:</h3><p>
+    .replace(/<p>\s*<(strong|b)>([^<]+?):<\/(strong|b)>\s*<br\s*\/?>/gi, '<h3>$2:</h3><p>')
+    
+    // Heuristic: If a paragraph starts with bold/strong and is followed by a break, split it
+    // This handles "<b>Heading</b><br>Content" -> "<p><b>Heading</b></p><p>Content</p>"
+    .replace(/<p>\s*(<(?:b|strong)>.*?<\/(?:b|strong)>)\s*<br\s*\/?>/g, '<p>$1</p><p>')
+    
+    // Heuristic: Detect ALL CAPS HEADINGS followed by a colon in the middle of text
+    // Example: "...with us? THE OPPORTUNITY: At Clari..." -> "...with us?</p><p><strong>THE OPPORTUNITY:</strong> At Clari..."
+    // We look for:
+    // 1. Sentence ending (punctuation or start of string)
+    // 2. Optional whitespace
+    // 3. ALL CAPS PHRASE (min 3 chars, max 50 chars to avoid false positives)
+    // 4. Colon
+    .replace(/([.?!]\s+|^)([A-Z][A-Z\s'&]{2,50}):/g, '$1</p><h3>$2:</h3><p>')
+    
     .replace(/\s+/g, ' ') // Normalize whitespace to single spaces
     .replace(/<\/p>\s*<p>/g, '</p><p>') // Clean paragraph spacing
+    .replace(/<\/h3>\s*<p>\s*<\/p>/g, '</h3>') // Remove empty paragraphs after headings
     .replace(/\\n/g, '') // Remove any remaining literal \n
+    .replace(/<p>\s*<\/p>/g, '') // Clean up any empty paragraphs created by the split
     .trim()
   
   return sanitized
 }
+
 
 /**
  * Decodes HTML entities and fixes common UTF-8/Latin-1 mojibake issues

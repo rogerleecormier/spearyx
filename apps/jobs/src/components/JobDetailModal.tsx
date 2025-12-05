@@ -16,22 +16,22 @@ export default function JobDetailModal({
 }: JobDetailModalProps) {
   const [fullDescription, setFullDescription] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isCustomDomain, setIsCustomDomain] = useState(false);
 
   useEffect(() => {
-    // If we have the full description in the DB (e.g. Himalayas/RemoteOK), use it immediately
+    // Priority 1: If we have the full description in the DB (e.g. Himalayas/RemoteOK), use it immediately
     if (job.fullDescription) {
       setFullDescription(job.fullDescription);
-      setIsLoading(false);
-      return;
+      // We continue to fetch below to ensure we get the latest sanitized version
     }
 
+    // Priority 2: Fetch fresh content
     if (isOpen && job.sourceUrl && job.company) {
-      // If we already have a long description (likely full), maybe skip? 
-      // But user wants dynamic fetch. Let's fetch if it looks like a summary or just always to be safe.
-      // For now, let's always fetch to ensure we get the full HTML.
-      
       const fetchContent = async () => {
         setIsLoading(true);
+        setFetchError(null);
+        setIsCustomDomain(false);
         try {
           const params = new URLSearchParams({
             url: job.sourceUrl,
@@ -43,22 +43,34 @@ export default function JobDetailModal({
             const data = await response.json() as { content?: string };
             if (data.content) {
               setFullDescription(data.content);
+              setFetchError(null);
+              setIsCustomDomain(false);
+            } else {
+              setFetchError('No content returned from API');
             }
+          } else {
+            const errorData = await response.json() as { error?: string; isCustomDomain?: boolean; hint?: string };
+            setIsCustomDomain(errorData.isCustomDomain || false);
+            setFetchError(errorData.hint || errorData.error || `Failed to load (${response.status})`);
           }
         } catch (error) {
           console.error("Failed to fetch job content:", error);
+          setFetchError(error instanceof Error ? error.message : 'Failed to fetch content');
+          setIsCustomDomain(false);
         } finally {
           setIsLoading(false);
         }
       };
 
       fetchContent();
-    } else {
-      // Reset when closed or invalid
-      setFullDescription(null);
-      setIsLoading(false);
+    } else if (!isOpen) {
+      // Reset error when modal closes
+      setFetchError(null);
+      setIsCustomDomain(false);
     }
-  }, [isOpen, job.sourceUrl, job.company]);
+    // Removed fullDescription from dependencies to prevent infinite loop
+    // We only want to re-run this when the JOB changes (sourceUrl/company) or modal opens
+  }, [isOpen, job.sourceUrl, job.company, job.fullDescription]);
 
   if (!isOpen) return null;
 
@@ -112,10 +124,62 @@ export default function JobDetailModal({
           </div>
 
           {/* Description */}
-          <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline">
+          <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-p:mb-4 prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-li:my-1">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Job Description</h3>
             
-            {isLoading ? (
+            {fetchError ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                {isCustomDomain ? (
+                  // User-friendly message for custom domain jobs
+                  <div className="text-center max-w-md">
+                    <div className="mb-6">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                        <ExternalLink className="text-blue-600" size={32} />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                        View Full Description on Job Site
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        This job is hosted on a custom domain. Click the button below to view the complete job description and apply.
+                      </p>
+                    </div>
+                    <a
+                      href={job.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow"
+                    >
+                      View Full Job Description <ExternalLink size={18} />
+                    </a>
+                  </div>
+                ) : (
+                  // Technical error for other cases
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="text-red-600 p-4 bg-red-50 rounded-lg mb-4 max-w-md text-center">
+                      <p className="font-semibold mb-2">Failed to load full description</p>
+                      <p className="text-sm text-red-700">{fetchError}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFetchError(null);
+                        setFullDescription(null);
+                        setIsCustomDomain(false);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+                    >
+                      Retry
+                    </button>
+                    {/* Show summary as fallback */}
+                    {job.description && (
+                      <div className="mt-6 opacity-60 border-t pt-6">
+                        <p className="text-sm text-slate-500 mb-2">Summary:</p>
+                        <div dangerouslySetInnerHTML={{ __html: job.description }} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : isLoading ? (
               <div className="flex flex-col items-center justify-center py-12 text-slate-500">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-4"></div>
                 <p>Loading full description...</p>
@@ -125,7 +189,13 @@ export default function JobDetailModal({
                 )}
               </div>
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: fullDescription || job.description || 'No description available.' }} />
+              <div 
+                className="job-description-content"
+                style={{
+                  lineHeight: '1.75'
+                }}
+                dangerouslySetInnerHTML={{ __html: fullDescription || job.fullDescription || job.description || 'No description available.' }} 
+              />
             )}
           </div>
         </div>

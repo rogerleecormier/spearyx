@@ -69,9 +69,9 @@ export const categoryKeywords: CategoryKeywords[] = [
   }
 ]
 
-export function determineCategoryId(title: string, description: string, tags: string[] = []): number {
-  const titleLower = title.toLowerCase()
-  const descriptionLower = description.toLowerCase()
+export function determineCategoryId(title: string | null | undefined, description: string | null | undefined, tags: string[] = []): number {
+  const titleLower = (title || '').toLowerCase()
+  const descriptionLower = (description || '').toLowerCase()
   const tagsLower = tags.map(t => t.toLowerCase())
   
   // Score each category based on keyword matches

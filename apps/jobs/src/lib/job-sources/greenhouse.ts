@@ -2,7 +2,6 @@ import type { RawJobListing } from './types'
 import { decodeHtmlEntities } from '../html-utils'
 import companiesData from './greenhouse-companies.json'
 import { createThrottledRateLimitedFetcher } from '../pacer-utils'
-import { extractSalaryFromDescription } from './salary-utils'
 
 // Type definition for the JSON structure
 interface CompanyDatabase {
@@ -53,13 +52,15 @@ const throttledFetch = createThrottledRateLimitedFetcher({
   },
 })
 
-export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, limit?: number): AsyncGenerator<RawJobListing[]> {
+export async function* fetchGreenhouseJobs(_query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, limit?: number): AsyncGenerator<RawJobListing[]> {
   // const allJobs: RawJobListing[] = [] // No longer needed
-  let companies = getCompanyList()
+  let companies: string[] = []
   
   // Filter to specific companies if provided
   if (companyFilter && companyFilter.length > 0) {
-    companies = companies.filter(c => companyFilter.includes(c))
+    companies = companyFilter
+  } else {
+    companies = getCompanyList()
   }
   
   const log = (msg: string) => {
@@ -130,21 +131,6 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
       }
 
       remoteJobs = remoteJobs.map((job: any) => {
-          // Sanitize HTML from description and decode entities from title
-          // The content from Greenhouse API is often double-encoded
-          const rawContent = job.content ? decodeHtmlEntities(job.content) : ''
-          
-          // OPTIMIZATION: Use simple regex to strip tags instead of heavy sanitizeHtml
-          // We only need plain text for the summary, and full HTML is fetched on-demand
-          const textOnly = rawContent
-            .replace(/<[^>]*>/g, ' ') // Strip tags
-            .replace(/&nbsp;/g, ' ')  // Replace nbsp
-            .replace(/\s+/g, ' ')     // Normalize whitespace
-            .trim()
-            
-          const words = textOnly.split(' ')
-          const summaryDescription = words.slice(0, 200).join(' ') + (words.length > 200 ? '...' : '')
-
           const cleanTitle = decodeHtmlEntities(job.title || '')
           
           // Get the company name with proper capitalization
@@ -163,17 +149,12 @@ export async function* fetchGreenhouseJobs(query?: string, onLog?: (message: str
               salaryRange = salaryField.value
             }
           }
-
-          // If no salary in metadata, try to scrape from description
-          if (!salaryRange && textOnly) {
-            salaryRange = extractSalaryFromDescription(textOnly)
-          }
           
           return {
             externalId: `greenhouse-${job.id}`,
             title: cleanTitle,
             company: companyName,
-            description: summaryDescription,
+            description: null, // No description stored during sync
             location: job.location?.name || 'Remote',
             salary: salaryRange,
             postedDate: new Date(job.updated_at),

@@ -137,6 +137,63 @@
 }
 
 /* ============================================================================
+   Job Description Content (Modal)
+   Explicit styling to ensure formatting works regardless of Tailwind prose
+   ============================================================================ */
+
+.job-description-content {
+  color: var(--jobs-text);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.job-description-content p {
+  margin-bottom: 1.25rem;
+}
+
+.job-description-content h1,
+.job-description-content h2,
+.job-description-content h3,
+.job-description-content h4 {
+  color: var(--jobs-text);
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.job-description-content h3 {
+  font-size: 1.125rem;
+}
+
+.job-description-content ul,
+.job-description-content ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.job-description-content li {
+  margin-bottom: 0.5rem;
+}
+
+.job-description-content strong,
+.job-description-content b {
+  font-weight: 600;
+  color: var(--jobs-text);
+}
+
+.job-description-content a {
+  color: var(--jobs-primary);
+  text-decoration: none;
+}
+
+.job-description-content a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================================
    Job Card Footer
    ============================================================================ */
 

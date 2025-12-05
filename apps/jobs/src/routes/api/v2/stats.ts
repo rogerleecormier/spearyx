@@ -30,6 +30,35 @@ export const Route = createFileRoute('/api/v2/stats')({
           .where(sql`status = 'pending'`)
           const pendingCompanies = pendingCompaniesResult[0]?.count || 0
 
+          // Get not discovered companies (companies we tried but failed to find)
+          const notDiscoveredResult = await db.select({
+            count: sql<number>`count(*)`
+          }).from(schema.potentialCompanies)
+          .where(sql`status = 'not_found'`)
+          const notDiscoveredCompanies = notDiscoveredResult[0]?.count || 0
+
+          // Get jobs by source
+          const jobsBySourceResult = await db.select({
+            source: schema.jobs.sourceName,
+            count: sql<number>`count(*)`
+          }).from(schema.jobs)
+          .groupBy(schema.jobs.sourceName)
+          
+          const jobsBySource = {
+            greenhouse: 0,
+            lever: 0,
+            remoteok: 0,
+            himalayas: 0
+          }
+
+          jobsBySourceResult.forEach(row => {
+            const source = row.source.toLowerCase()
+            if (source.includes('greenhouse')) jobsBySource.greenhouse += row.count
+            else if (source.includes('lever')) jobsBySource.lever += row.count
+            else if (source.includes('remoteok')) jobsBySource.remoteok += row.count
+            else if (source.includes('himalayas')) jobsBySource.himalayas += row.count
+          })
+
           // Get total active companies (companies with jobs)
           const activeCompaniesResult = await db.select({
             count: sql<number>`count(distinct company)`
@@ -54,6 +83,8 @@ export const Route = createFileRoute('/api/v2/stats')({
               totalActiveCompanies,
               totalJobs,
               pendingCompanies,
+              notDiscoveredCompanies,
+              jobsBySource,
               lastSyncAt: lastSyncAt ? new Date(lastSyncAt).toISOString() : null
             }
           })
