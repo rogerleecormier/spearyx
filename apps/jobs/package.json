@@ -12,7 +12,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:prod": "wrangler d1 migrations apply DB --remote",
-    "deploy:sync": "wrangler deploy --config wrangler.sync.toml"
+    "deploy:sync": "wrangler deploy --config wrangler.sync.toml",
+    "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.13.8",

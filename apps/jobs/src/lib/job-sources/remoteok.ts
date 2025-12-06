@@ -77,12 +77,20 @@ export async function* fetchRemoteOKJobs(query?: string, onLog?: (message: strin
       })
       
     // Apply limit if provided
-    if (limit !== undefined && limit > 0) {
-      // Note: We can't slice before mapping easily because filter is part of the chain
-      // But we can slice the result
-      const limitedJobs = processedJobs.slice(0, limit);
-      yield limitedJobs;
+    // Apply pagination (offset + limit)
+    if (jobOffset !== undefined && jobOffset > 0) {
+      if (limit !== undefined && limit > 0) {
+        // Return a slice from offset to offset + limit
+        yield processedJobs.slice(jobOffset, jobOffset + limit);
+      } else {
+        // Return everything from offset onwards
+        yield processedJobs.slice(jobOffset);
+      }
+    } else if (limit !== undefined && limit > 0) {
+      // No offset, just limit
+      yield processedJobs.slice(0, limit);
     } else {
+      // Return everything
       yield processedJobs;
     }
 

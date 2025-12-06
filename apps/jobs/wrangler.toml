@@ -31,3 +31,4 @@ directory = "dist/client"
 [[routes]]
 pattern = "jobs.spearyx.com"
 custom_domain = true
+

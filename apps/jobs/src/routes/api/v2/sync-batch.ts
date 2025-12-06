@@ -9,7 +9,12 @@ interface SyncItem {
   isPseudo: boolean; // True for aggregators like RemoteOK
 }
 
-let cachedSyncItems: SyncItem[] | null = null;
+let cachedRegularCompanies: SyncItem[] | null = null;
+
+const aggregators: SyncItem[] = [
+  { name: 'remoteok', source: 'RemoteOK', isPseudo: true },
+  { name: 'himalayas', source: 'Himalayas', isPseudo: true }
+];
 
 export const Route = createFileRoute('/api/v2/sync-batch')({
   server: {
@@ -40,6 +45,24 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           const ctx = context as any
           const db = await getDbFromContext(ctx)
 
+          // 🔒 OVERLAP PROTECTION: Check for active syncs started in the last 2 minutes
+          // This prevents "cascading" failures where multiple workers pile up
+          // 'started_at' is an integer (unix seconds), so we must compare with seconds
+          const twoMinutesAgoSeconds = Math.floor((Date.now() - 2 * 60 * 1000) / 1000);
+          
+          const activeSyncs = await db.select().from(schema.syncHistory)
+            .where(sql`status = 'running' AND started_at > ${twoMinutesAgoSeconds}`)
+            .limit(1);
+
+          if (activeSyncs.length > 0) {
+            console.warn('⚠️ Sync already running (lock active), skipping this run.');
+            return json({
+              success: false,
+              message: 'Sync already active (lock)',
+              skipped: true
+            });
+          }
+
           // Create initial sync history record
           await db.insert(schema.syncHistory).values({
             id: syncId,
@@ -59,45 +82,62 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
           // Removed aggressive stale sync cleanup that was killing active syncs
           // Syncs will clean themselves up when they complete or timeout naturally
 
-          // Get list of all companies/sources to sync
-          // We unify everything into a single list of "SyncItems" to ensure fair scheduling
+          // Get list of all companies to sync (excluding aggregators)
           
-          if (!cachedSyncItems) {
-            const allItems: SyncItem[] = [];
+          // Get list of all items to sync (companies + aggregators)
+          
+          if (!cachedRegularCompanies) {
+            // 1. Load Regular Companies ONLY
+            const regularItems: SyncItem[] = [];
 
-            // 1. Add Greenhouse Companies
+            // Add Greenhouse Companies
             const { default: ghData } = await import('../../../lib/job-sources/greenhouse-companies.json');
             Object.values((ghData as any).categories).forEach((category: any) => {
               category.companies.forEach((slug: string) => {
-                allItems.push({ name: slug, source: 'Greenhouse', isPseudo: false });
+                regularItems.push({ name: slug, source: 'Greenhouse', isPseudo: false });
               });
             });
 
-            // 2. Add Lever Companies
+            // Add Lever Companies
             const { default: leverData } = await import('../../../lib/job-sources/lever-companies.json');
             Object.values((leverData as any).categories).forEach((category: any) => {
               category.companies.forEach((slug: string) => {
-                allItems.push({ name: slug, source: 'Lever', isPseudo: false });
+                regularItems.push({ name: slug, source: 'Lever', isPseudo: false });
               });
             });
-
-            // 3. Add Aggregators (Pseudo-companies)
-            // We treat them as single items in the batch loop
-            allItems.push({ name: 'remoteok', source: 'RemoteOK', isPseudo: true });
-            allItems.push({ name: 'himalayas', source: 'Himalayas', isPseudo: true });
             
-            // Deduplicate based on name+source (though unlikely to collide)
-            const uniqueItems = Array.from(new Map(allItems.map(item => [`${item.source}:${item.name}`, item])).values());
+            // Deduplicate regular items
+            const uniqueRegular = Array.from(new Map(regularItems.map(item => [`${item.source}:${item.name}`, item])).values());
             
-            // Sort for consistent ordering (optional, but good for debugging)
-            uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
+            // Sort alphabetically for consistent chunking
+            uniqueRegular.sort((a, b) => a.name.localeCompare(b.name));
             
-            cachedSyncItems = uniqueItems;
+            // 2. Build Interleaved Schedule
+            // Pattern: [Aggregator 1, Aggregator 2, Company 1, Company 2, Aggregator 1, Aggregator 2, Company 3, Company 4, ...]
+            const schedule: SyncItem[] = [];
+            const chunkSize = 2; // "Greenhouse/Lever twice"
+            
+            for (let i = 0; i < uniqueRegular.length; i += chunkSize) {
+              // Add Aggregators first (Priority!)
+              schedule.push(...aggregators);
+              
+              // Add Chunk of Regular Companies
+              const chunk = uniqueRegular.slice(i, i + chunkSize);
+              schedule.push(...chunk);
+            }
+            
+            // If no companies exist, ensure aggregators still run
+            if (uniqueRegular.length === 0) {
+              schedule.push(...aggregators);
+            }
+            
+            cachedRegularCompanies = schedule;
           }
           
-          const companies = cachedSyncItems; // Renaming for compatibility with existing code structure, though it's now "items"
+          const allSyncItems = cachedRegularCompanies;
           
-          const COMPANIES_PER_BATCH = 5; // Reduced from 10 to avoid CPU timeout
+          // STRICT LIMIT: Process exactly 1 item per run to avoid CPU timeout
+          const ITEMS_PER_BATCH = 1; 
           
           // Get or create batch state
           let batchState = await db.select().from(schema.syncHistory)
@@ -117,7 +157,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               id: stateId,
               status: 'batch_state',
               lastProcessedIndex: 0,
-              totalCompanies: companies.length,
+              totalCompanies: allSyncItems.length,
               stats: {
                 jobsAdded: 0,
                 jobsUpdated: 0,
@@ -129,24 +169,22 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
             });
           }
           
-          // Calculate which companies to process this batch
-          const startIndex = currentBatchIndex;
-          const endIndex = Math.min(startIndex + COMPANIES_PER_BATCH, companies.length);
-          const companiesToProcess = companies.slice(startIndex, endIndex);
+          // Ensure index is valid
+          if (currentBatchIndex >= allSyncItems.length) {
+            currentBatchIndex = 0;
+          }
           
-          // If we've reached the end, wrap around to the beginning
-          const nextIndex = endIndex >= companies.length ? 0 : endIndex;
+          // Select single item
+          const itemToProcess = allSyncItems[currentBatchIndex];
+          const itemsToProcess = [itemToProcess];
           
-          logs.push({
-            timestamp: new Date().toISOString(),
-            type: 'info',
-            message: `📊 Processing batch: companies ${startIndex}-${endIndex-1} of ${companies.length}`
-          });
+          // Calculate next index
+          const nextIndex = (currentBatchIndex + 1) % allSyncItems.length;
           
           logs.push({
             timestamp: new Date().toISOString(),
             type: 'info',
-            message: `📋 Items: ${companiesToProcess.map(c => `${c.name} (${c.source})`).join(', ')}`
+            message: `📊 Processing item ${currentBatchIndex + 1} of ${allSyncItems.length}: ${itemToProcess.name} (${itemToProcess.source})`
           });
           
           // Process companies one by one to ensure progress is saved
@@ -168,7 +206,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
             message: `⚙️  Job batching enabled: Max ${MAX_JOBS_PER_BATCH} jobs per company per sync run`
           });
           
-          for (const item of companiesToProcess) {
+          for (const item of itemsToProcess) {
             // Check if we're running out of time
             if (new Date().getTime() - syncStartTime.getTime() > MAX_EXECUTION_TIME_MS) {
               logs.push({
@@ -263,7 +301,16 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 syncOptions.companyFilter = [item.name];
               }
 
-              const result = await syncJobs(syncOptions);
+              // ⏱️ GLOBAL TIMEOUT WRAPPER
+              // Wrap the sync logic in a race to prevent infinite hanging on fetch/DB
+              const SYNC_TIMEOUT_MS = 50000; // 50 seconds (Worker limit is ~60s)
+              
+              const syncPromise = syncJobs(syncOptions);
+              const timeoutPromise = new Promise<{added: number, updated: number, skipped: number, deleted: number}>((_, reject) => {
+                 setTimeout(() => reject(new Error('Sync operation timed out (50s hard limit)')), SYNC_TIMEOUT_MS);
+              });
+              
+              const result = await Promise.race([syncPromise, timeoutPromise]);
               
               totalAdded += result.added;
               totalUpdated += result.updated;
@@ -343,14 +390,13 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
                 processedCompanies: companiesProcessedCount
               }).where(sql`id = ${syncId}`);
 
-              // Update batch state incrementally
-              let newIndex = startIndex + companiesProcessedCount;
-              if (newIndex >= companies.length) newIndex = 0; // Wrap around
-
-              await db.update(schema.syncHistory).set({
-                lastProcessedIndex: newIndex,
-                processedCompanies: newIndex,
-              }).where(sql`id = ${stateId}`);
+              
+              // If item is not pseudo, it counts towards index progress.
+              if (!item.isPseudo) {
+                 // We don't really need to update index incrementally per company if we just use nextIndex at the end.
+                 // But existing code did it.
+                 // Let's stick to updating it at the end of the batch to be safe, or just rely on the fact that we calculated nextIndex correctly.
+              }
 
             } catch (error) {
               hasError = true;
@@ -366,6 +412,12 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               }).where(sql`id = ${syncId}`);
             }
           }
+            
+          // Update batch state to next start index
+          await db.update(schema.syncHistory).set({
+            lastProcessedIndex: nextIndex,
+            processedCompanies: nextIndex, // This might be confusing if it wraps to 0, but it's just state
+          }).where(sql`id = ${stateId}`);
             
           logs.push({
             timestamp: new Date().toISOString(),
@@ -409,10 +461,10 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
             success: true,
             syncId,
             batch: {
-              startIndex,
-              endIndex,
-              companiesProcessed: companiesToProcess.length,
-              companies: companiesToProcess,
+              startIndex: currentBatchIndex,
+              endIndex: currentBatchIndex + 1,
+              companiesProcessed: itemsToProcess.length,
+              companies: itemsToProcess,
               nextIndex,
               wrappedAround: nextIndex === 0
             },
@@ -420,7 +472,7 @@ export const Route = createFileRoute('/api/v2/sync-batch')({
               jobsAdded: totalAdded,
               jobsUpdated: totalUpdated
             },
-            message: `Processed ${companiesToProcess.length} companies (${startIndex}-${endIndex-1}). Next batch starts at ${nextIndex}.`
+            message: `Processed item ${currentBatchIndex + 1} of ${allSyncItems.length}: ${itemsToProcess[0].name}. Next batch starts at ${nextIndex}.`
           });
           
         } catch (error) {

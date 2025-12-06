@@ -5,10 +5,10 @@ export interface Env {
 export default {
   async scheduled(_event: ScheduledEvent, _env: Env, _ctx: ExecutionContext) {
     const minute = new Date().getMinutes();
-    // NEW LOGIC: With 5-minute cron interval (0, 5, 10, ..., 55)
-    // Run discovery only at the top of the hour (minute 0).
-    // Run job_sync at 5, 10, 15, ..., 55.
-    const type = minute === 0 ? 'discovery' : 'job_sync';
+    // NEW LOGIC: With 1-minute cron interval
+    // Run discovery every 5 minutes (0, 5, 10, ...)
+    // Run job_sync at all other times
+    const type = (minute % 5 === 0) ? 'discovery' : 'job_sync';
     
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });

@@ -152,9 +152,9 @@ function HomePage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Search and Filters */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+          <div className="flex flex-col lg:flex-row gap-5 items-start lg:items-center">
             {/* Search Bar - Grows to fill space */}
-            <div className="w-full lg:flex-1">
+            <div className="w-full lg:flex-[2] min-w-[350px]">
               <SearchBar onSearch={handleSearch} />
             </div>
 

@@ -1,5 +1,6 @@
 import { Search, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Input } from "@spearyx/ui-kit";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -8,7 +9,7 @@ interface SearchBarProps {
 
 export default function SearchBar({
   onSearch,
-  placeholder = "Search jobs by title, description, or category...",
+  placeholder = "Search jobs...",
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
@@ -28,21 +29,21 @@ export default function SearchBar({
 
   return (
     <div className="relative w-full">
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
-      <input
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+      <Input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-12 pr-12 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+        className="w-full !pl-11 pr-10 h-10 bg-white border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/10 transition-all shadow-sm"
       />
       {query && (
         <button
           onClick={handleClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
           aria-label="Clear search"
         >
-          <X size={20} />
+          <X size={16} />
         </button>
       )}
     </div>

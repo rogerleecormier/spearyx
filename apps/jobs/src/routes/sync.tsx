@@ -195,7 +195,7 @@ function SyncDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
             <p className="text-sm text-muted-foreground pr-4">
-              Runs every 2 mins. Sync (80%) / Discovery (every 5m). 5 companies/batch, max 20 jobs/company.
+              Runs every 1 min. Priority: Aggregators (every 4 runs). 1 item/batch. Max 20 jobs/item. Discovery every 5m.
               <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
             </p>
           </div>

@@ -15,10 +15,19 @@ export const categoryKeywords: CategoryKeywords[] = [
   {
     id: 2, // Project Management
     keywords: [
-      'project manager', 'product manager', 'scrum master', 'agile',
-      'program manager', 'delivery manager', 'pm', 'pmo', 'kanban',
-      'project coordinator', 'product owner', 'technical project manager',
-      'tpm', 'technical pm', 'technical program manager'
+      'project manager', 'scrum master', 'agile',
+      'program manager', 'delivery manager', 'pmo', 'kanban',
+      'project coordinator', 'technical project manager',
+      'tpm', 'technical program manager'
+    ]
+  },
+  {
+    id: 9, // Product Management
+    keywords: [
+      'product manager', 'product owner', 'product lead',
+      'head of product', 'vp of product', 'director of product',
+      'associate product manager', 'apm', 'group product manager',
+      'gpm', 'pm'
     ]
   },
   {

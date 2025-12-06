@@ -28,7 +28,7 @@ const throttledFetch = createThrottledRateLimitedFetcher({
 export async function* fetchHimalayasJobs(query?: string, onLog?: (message: string) => void, companyFilter?: string[], jobOffset?: number, jobLimit?: number) {
   const baseUrl = 'https://himalayas.app/jobs/api'
   const limit = 20 // API limit per request
-  let offset = 0
+  let offset = jobOffset || 0
   let totalJobs = 0
   
   const log = (msg: string) => {
@@ -69,7 +69,16 @@ export async function* fetchHimalayasJobs(query?: string, onLog?: (message: stri
       const remoteJobs = jobs.filter((job: any) => {
         // Jobs with no location restrictions are fully remote
         // Jobs with location restrictions are limited to specific countries
-        return !job.locationRestrictions || job.locationRestrictions.length === 0
+        // We want to include "United States" or "USA" or "US" restricted jobs as well
+        if (!job.locationRestrictions || job.locationRestrictions.length === 0) {
+          return true;
+        }
+        
+        // Check if any restriction is US-related
+        const usTerms = ['united states', 'usa', 'us', 'north america'];
+        return job.locationRestrictions.some((loc: string) => 
+          usTerms.some(term => loc.toLowerCase().includes(term))
+        );
       })
       
       if (remoteJobs.length === 0) {

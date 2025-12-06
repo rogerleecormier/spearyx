@@ -41,6 +41,11 @@ const defaultCategories = [
     slug: 'sales',
     description: 'Sales representatives, account executives, and business development',
   },
+  {
+    name: 'Product Management',
+    slug: 'product-management',
+    description: 'Product managers, product owners, and product leadership roles',
+  },
 ]
 
 const mockJobs = [
@@ -63,7 +68,7 @@ const mockJobs = [
     postDate: new Date('2025-11-22'),
     sourceUrl: 'https://example.com/jobs/product-manager-saas',
     sourceName: 'RemoteOK',
-    categoryId: 2, // Project Management
+    categoryId: 9, // Product Management
     remoteType: 'fully_remote',
   },
   {
