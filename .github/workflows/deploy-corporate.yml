@@ -40,12 +40,14 @@ jobs:
           cp apps/corporate/package.json release/
           cp -r apps/corporate/dist release/
           
-          # Copy node_modules from root, dereferencing symlinks
-          # This ensures that internal packages (like @spearyx/ui-kit) are copied as real files
-          cp -rL node_modules release/
+          # Install ONLY production dependencies in the release folder
+          # This is much smaller than the 700MB development node_modules
+          cp package.json release/
+          cp package-lock.json release/
+          cd release
+          npm ci --omit=dev --ignore-scripts
           
           # Zip the release directory
-          cd release
           zip -r ../release.zip .
 
       - name: Upload artifact for deployment job
