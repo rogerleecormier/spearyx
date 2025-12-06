@@ -37,15 +37,18 @@ jobs:
           
           # Copy application files
           cp apps/corporate/server.js release/
-          cp apps/corporate/package.json release/
           cp -r apps/corporate/dist release/
           
-          # Install ONLY production dependencies in the release folder
-          # This is much smaller than the 700MB development node_modules
-          cp package.json release/
-          cp package-lock.json release/
+          # Prepare package.json for production
+          # We use the app's package.json but remove local workspace dependencies
+          # because they are already bundled and cannot be installed from registry
+          # We assume jq is available on ubuntu-latest
+          jq 'del(.dependencies["@spearyx/shared-config"]) | del(.dependencies["@spearyx/shared-utils"]) | del(.dependencies["@spearyx/ui-kit"])' apps/corporate/package.json > release/package.json
+          
+          # Install dependencies
           cd release
-          npm ci --omit=dev --ignore-scripts
+          # We use npm install (not ci) because we generated a fresh modified package.json without a lockfile
+          npm install --omit=dev --ignore-scripts
           
           # Zip the release directory
           zip -r ../release.zip .
