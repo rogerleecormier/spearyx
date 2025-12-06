@@ -49,6 +49,13 @@ jobs:
           cd release
           # We use npm install (not ci) because we generated a fresh modified package.json without a lockfile
           npm install --omit=dev --ignore-scripts
+
+          # Package node_modules as tar.gz
+          # Azure App Service on Linux prioritizes node_modules.tar.gz if found
+          # and a stale one on the server prevents our new dependencies from being used.
+          # By providing our own, we overwrite the stale one.
+          tar -czf node_modules.tar.gz node_modules
+          rm -rf node_modules
           
           # Zip the release directory
           zip -r ../release.zip .
