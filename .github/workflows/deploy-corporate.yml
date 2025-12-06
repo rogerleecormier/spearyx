@@ -54,8 +54,21 @@ jobs:
           # Azure App Service on Linux prioritizes node_modules.tar.gz if found
           # and a stale one on the server prevents our new dependencies from being used.
           # By providing our own, we overwrite the stale one.
-          tar -czf node_modules.tar.gz node_modules
+          # We cd into node_modules so the tarball contains the *contents* at the root,
+          # avoiding a nested node_modules/node_modules structure when extracted to /node_modules
+          cd node_modules
+          tar -czf ../node_modules.tar.gz .
+          cd ..
           rm -rf node_modules
+
+          # Verify the tarball
+          echo "Verifying node_modules.tar.gz..."
+          ls -lh node_modules.tar.gz
+          if ! tar -tzf node_modules.tar.gz > /dev/null; then
+            echo "Error: node_modules.tar.gz is corrupted"
+            exit 1
+          fi
+          echo "node_modules.tar.gz is valid."
           
           # Zip the release directory
           zip -r ../release.zip .
