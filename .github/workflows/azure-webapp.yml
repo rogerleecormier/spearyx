@@ -28,11 +28,16 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Create deployment package
+      - name: Prepare deployment package
         run: |
-          cd apps/jobs
-          zip -r ../../deploy.zip . -x "*.git*" -x "node_modules/*" -x ".turbo/*"
-          cd ../..
+          mkdir -p deploy
+          cp -r apps/jobs/dist deploy/
+          cp apps/jobs/package.json deploy/
+          cp package-lock.json deploy/ || true
+          cd deploy
+          npm install --production --omit=dev
+          cd ..
+          zip -r deploy.zip deploy/
 
       - name: Azure Login
         uses: azure/login@v1
@@ -41,8 +46,9 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
-          az webapp deployment source config-zip \
+          az webapp deploy \
             --resource-group spearyx-rg \
             --name spearyx-dev \
-            --src deploy.zip
+            --src-path deploy.zip \
+            --type zip
 
