@@ -10,11 +10,14 @@ const __dirname = dirname(__filename);
 const imported = await import('./dist/server/server.js');
 const handler = imported.default || imported.handler;
 
-console.log('Server imported:', imported);
-console.log('Handler:', handler);
+console.log('Server imported keys:', Object.keys(imported));
 
-if (!handler) {
-  console.error('Failed to import handler from ./dist/server/server.js');
+// The handler is likely an object with a fetch method (like { fetch: ... })
+// We need to adapt Node.js (req, res) -> Web (Request, Response)
+const fetchHandler = handler.fetch || (typeof handler === 'function' ? handler : null);
+
+if (!fetchHandler) {
+  console.error('Failed to find fetch handler. Exported:', handler);
   process.exit(1);
 }
 
@@ -23,15 +26,36 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 const server = createServer(async (req, res) => {
   try {
-    // Handle the request with TanStack Start
-    const response = await handler(req);
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const url = new URL(req.url, `${protocol}://${req.headers.host}`);
+    
+    // Create Web Request from Node req
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (Array.isArray(value)) {
+        value.forEach(v => headers.append(key, v));
+      } else if (value) {
+        headers.append(key, value);
+      }
+    }
+
+    const request = new Request(url, {
+      method: req.method,
+      headers,
+      body: (req.method !== 'GET' && req.method !== 'HEAD') ? req : undefined,
+      // @ts-ignore - duplex is needed for streaming bodies in Node 18+
+      duplex: 'half' 
+    });
+
+    // Call the handler
+    const response = await fetchHandler(request);
     
     // Copy response to Node.js response
+    res.statusCode = response.status;
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
-    res.statusCode = response.status;
-    
+
     if (response.body) {
       const reader = response.body.getReader();
       while (true) {
