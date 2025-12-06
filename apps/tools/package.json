@@ -34,6 +34,7 @@
     "pptxgenjs": "^4.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "sirv": "^3.0.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.0.6",
     "tailwindcss-animate": "^1.0.7",
