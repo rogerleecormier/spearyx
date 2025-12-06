@@ -1,8 +1,13 @@
-name: Deploy to Azure Web Apps
+name: Deploy Corporate App
 
 on:
   push:
     branches: [develop]
+    paths:
+      - 'apps/corporate/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-corporate.yml'
   workflow_dispatch:
 
 jobs:

@@ -7,7 +7,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Import the TanStack Start server
-const { default: handler } = await import('./dist/server/server.js');
+const imported = await import('./dist/server/server.js');
+const handler = imported.default || imported.handler;
+
+console.log('Server imported:', imported);
+console.log('Handler:', handler);
+
+if (!handler) {
+  console.error('Failed to import handler from ./dist/server/server.js');
+  process.exit(1);
+}
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
