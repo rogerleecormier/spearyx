@@ -3,13 +3,11 @@ name: Azure Static Web Apps CI/CD
 on:
   push:
     branches:
-      - azure-production
-      - azure-staging
-      - azure-development
+      - develop
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - azure-production
+      - develop
 
 jobs:
   build_and_deploy:
@@ -38,17 +36,15 @@ jobs:
         run: npm run build
         working-directory: apps/jobs
         env:
-          NODE_ENV: production
+          NODE_ENV: development
 
       - name: Determine deployment environment
         id: env
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "environment=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "environment=" >> $GITHUB_OUTPUT
           else
-            echo "environment=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "environment=development" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to Azure Static Web Apps
@@ -56,11 +52,11 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_SKY_05001190F }}
           action: upload
-          app_location: ./apps/jobs/dist
+          app_location: apps/jobs/dist
           output_location: ""
           skip_app_build: true
           deployment_environment: ${{ steps.env.outputs.environment }}
-          production_branch: main
+          production_branch: develop
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -72,5 +68,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_SKY_05001190F }}
           action: close
-          app_location: ./apps/jobs/dist
+          app_location: apps/jobs/dist
           deployment_environment: pr-${{ github.event.pull_request.number }}
