@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev --port 3001",
     "build": "vite build",
+    "start": "node server.js",
     "serve": "vite preview",
     "test": "vitest run",
     "preview": "vite preview"
