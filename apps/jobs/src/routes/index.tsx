@@ -7,6 +7,7 @@ import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import SortControls from "../components/SortControls";
 import type { JobWithCategory } from "../lib/search-utils";
+import { getStaticCategories, getStaticJobs } from "../lib/static-data";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
@@ -15,22 +16,6 @@ interface Category {
   name: string;
   slug: string;
   jobCount: number;
-}
-
-interface JobsResponse {
-  success: boolean;
-  data: {
-    jobs: JobWithCategory[];
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
-}
-
-interface CategoriesResponse {
-  success: boolean;
-  data: Category[];
 }
 
 function HomePage() {
@@ -51,46 +36,20 @@ function HomePage() {
   >("newest");
   const [totalJobs, setTotalJobs] = useState(0);
 
-  // Fetch categories on mount
+  // Load categories on mount (static data for Azure SWA preview)
   useEffect(() => {
-    fetch("/api/categories")
-      .then((res) => res.json() as unknown)
-      .then((data) => {
-        const typedData = data as CategoriesResponse;
-        if (typedData.success) {
-          setCategories(typedData.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching categories:", error));
+    setCategories(getStaticCategories());
   }, []);
 
-  // Fetch jobs whenever filters change
+  // Load jobs (static data for Azure SWA preview)
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("search", searchQuery);
-    if (selectedCategoryId)
-      params.set("category", selectedCategoryId.toString());
-    if (selectedSource) params.set("source", selectedSource);
-    if (selectedSalaryRange) params.set("salaryRange", selectedSalaryRange);
-    if (includeNoSalary) params.set("includeNoSalary", "true");
-    params.set("sortBy", sortBy);
-    params.set("limit", "50");
-
-    fetch(`/api/jobs?${params.toString()}`)
-      .then((res) => res.json() as unknown)
-      .then((data) => {
-        const typedData = data as JobsResponse;
-        if (typedData.success) {
-          setJobs(typedData.data.jobs);
-          setTotalJobs(typedData.data.total);
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching jobs:", error);
-        setLoading(false);
-      });
+    // Using static empty data for Azure SWA preview
+    // This will be replaced with Azure Functions API calls later
+    const staticData = getStaticJobs();
+    setJobs(staticData.jobs);
+    setTotalJobs(staticData.total);
+    setLoading(false);
   }, [
     searchQuery,
     selectedCategoryId,

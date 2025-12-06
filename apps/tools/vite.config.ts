@@ -6,18 +6,17 @@ import tailwindcss from "@tailwindcss/vite";
 
 const config = defineConfig({
   plugins: [
-    // TanStack Start must come first for proper routing
     tanstackStart(),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
     viteReact(),
   ],
-  optimizeDeps: {
-    exclude: ["wrangler"],
+  build: {
+    outDir: "dist",
   },
 });
 
 export default config;
+
