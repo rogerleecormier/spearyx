@@ -22,20 +22,26 @@ jobs:
       - name: Install dependencies and build
         run: |
           npm clean-install
-          cd apps/jobs
+          cd apps/corporate
           npm run build
 
       - name: Zip artifact for deployment
         run: |
-          cd apps/jobs
-          zip -r ../../release.zip dist package.json package-lock.json node_modules server.js
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: release.zip
-          retention-days: 1
+          # Create a temporary directory for the release
+          mkdir release
+          
+          # Copy application files
+          cp apps/corporate/server.js release/
+          cp apps/corporate/package.json release/
+          cp -r apps/corporate/dist release/
+          
+          # Copy node_modules from root, dereferencing symlinks
+          # This ensures that internal packages (like @spearyx/ui-kit) are copied as real files
+          cp -rL node_modules release/
+          
+          # Zip the release directory
+          cd release
+          zip -r ../release.zip .
 
   deploy:
     runs-on: ubuntu-latest
