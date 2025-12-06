@@ -72,4 +72,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_SKY_05001190F }}
           action: close
+          app_location: ./apps/jobs/dist
           deployment_environment: pr-${{ github.event.pull_request.number }}
