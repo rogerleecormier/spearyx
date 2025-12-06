@@ -1,0 +1,100 @@
+name: Deploy Tools App
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'apps/tools/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-tools.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies and build
+        run: |
+          npm clean-install
+          cd apps/tools
+          npm run build
+
+      - name: Zip artifact for deployment
+        run: |
+          # Create a temporary directory for the release
+          mkdir release
+          
+          # Copy application files
+          cp apps/tools/server.js release/
+          cp -r apps/tools/dist release/
+          
+          # Prepare package.json for production
+          # We use the app's package.json but remove local workspace dependencies
+          # because they are already bundled and cannot be installed from registry
+          # We assume jq is available on ubuntu-latest
+          jq 'del(.dependencies["@spearyx/shared-config"]) | del(.dependencies["@spearyx/shared-utils"]) | del(.dependencies["@spearyx/ui-kit"])' apps/tools/package.json > release/package.json
+          
+          # Install dependencies
+          cd release
+          # We use npm install (not ci) because we generated a fresh modified package.json without a lockfile
+          npm install --omit=dev --ignore-scripts
+
+          # Keep node_modules directory - Azure will use it directly
+          echo "Production dependencies installed successfully:"
+          ls -la node_modules | head -20
+          echo ""
+          echo "Verifying sirv is installed..."
+          ls node_modules/sirv || echo "WARNING: sirv not found!"
+          
+          # Zip the release directory (including node_modules)
+          zip -r ../release.zip .
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: release.zip
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Development'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'spearyx-dev'
+          slot-name: 'Production'
+          package: .
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+      - name: Delete artifact
+        uses: GeekyEggo/delete-artifact@v5.1.0
+        with:
+          name: node-app
+
+
