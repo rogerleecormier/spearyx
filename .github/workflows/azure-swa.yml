@@ -38,6 +38,27 @@ jobs:
         env:
           NODE_ENV: development
 
+      - name: Create index.html for Azure SWA
+        run: |
+          MAIN_JS=$(ls apps/jobs/dist/client/assets/main-*.js | head -1 | xargs basename)
+          MAIN_CSS=$(ls apps/jobs/dist/client/assets/styles-*.css 2>/dev/null | head -1 | xargs basename || echo "")
+          cat > apps/jobs/dist/client/index.html << EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Spearyx Jobs - Remote Job Opportunities</title>
+            <link rel="icon" href="/favicon.ico">
+            ${MAIN_CSS:+<link rel="stylesheet" href="/assets/$MAIN_CSS">}
+          </head>
+          <body>
+            <div id="root"></div>
+            <script type="module" src="/assets/$MAIN_JS"></script>
+          </body>
+          </html>
+          EOF
+
       - name: Determine deployment environment
         id: env
         run: |
@@ -52,7 +73,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_BUSH_0AE4FA20F }}
           action: upload
-          app_location: apps/jobs/dist
+          app_location: apps/jobs/dist/client
           output_location: ""
           skip_app_build: true
           deployment_environment: ${{ steps.env.outputs.environment }}
