@@ -499,8 +499,8 @@ export default function DescriptionPanel({
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              AI analyzes your description to suggest relevant roles and tasks
-              automatically.
+              We analyze your description to suggest relevant roles and tasks
+              based on project templates.
             </TooltipContent>
           </Tooltip>
         </div>
@@ -553,7 +553,7 @@ export default function DescriptionPanel({
             </Title>
             <Body className="text-sm text-success-700">
               {isFallback
-                ? "Generated using template data (AI unavailable)"
+                ? "Generated using smart templates based on your project description!"
                 : "Roles and tasks generated successfully!"}
             </Body>
           </div>

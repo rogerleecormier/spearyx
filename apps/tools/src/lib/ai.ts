@@ -14,6 +14,7 @@ import {
   getWorkerEndpoint,
   getWorkerApiKey,
   AI_CONFIG,
+  AI_ENABLED,
 } from "../config/workers";
 import promptsData from "../config/prompts.json";
 import { RaciValue } from "@/types/raci";
@@ -109,18 +110,21 @@ export class AIService {
   }
 
   /**
-   * Check if AI service is available (mock for fallback testing)
+   * Check if AI service is available
+   * Returns false when AI_ENABLED is false (Azure deployment)
    */
   async isAvailable(): Promise<boolean> {
+    // AI is explicitly disabled in configuration
+    if (!AI_ENABLED) {
+      return false;
+    }
+
     try {
       const endpoint = getWorkerEndpoint();
       const apiKey = getWorkerApiKey();
 
-      if (!apiKey || apiKey === "dev-key") {
-        // Development mode - AI available if endpoint is configured
-        return (
-          endpoint !== "http://localhost:8787" || import.meta.env.PROD !== true
-        );
+      if (!endpoint || !apiKey || apiKey === "dev-key") {
+        return false;
       }
 
       // Try a health check request
@@ -221,6 +225,14 @@ export class AIService {
     requestId?: string
   ): Promise<T> {
     const id = requestId || `ai-${Date.now()}-${Math.random()}`;
+
+    // If AI is disabled, immediately use fallback
+    if (!AI_ENABLED) {
+      console.log(`AI disabled - using fallback for ${promptType}`);
+      this.lastFallbackUsed = true;
+      this.lastFallbackTime = Date.now();
+      return this.getFallbackData<T>(promptType, variables);
+    }
 
     try {
       // Get prompt template

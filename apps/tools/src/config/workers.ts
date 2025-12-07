@@ -1,19 +1,29 @@
 /**
- * Cloudflare Workers Configuration
- * API endpoints for AI-powered features
+ * AI Configuration for Azure Web Apps
+ * 
+ * AI features are disabled by default in production.
+ * The RACI generator uses template-based fallback data instead.
+ * 
+ * To enable AI in the future, set VITE_AI_ENABLED=true and configure
+ * the AI endpoint (e.g., Azure OpenAI Service).
  */
 
+/**
+ * Check if AI features are enabled
+ * AI is disabled by default in production Azure deployment
+ */
+export const AI_ENABLED = import.meta.env.VITE_AI_ENABLED === "true";
+
 export const WORKER_CONFIG = {
-  // Development
+  // Development - AI can be enabled locally with a configured endpoint
   dev: {
-    endpoint: import.meta.env.VITE_WORKER_DEV_URL || "http://localhost:8787",
-    apiKey: import.meta.env.VITE_WORKER_API_KEY || "dev-key",
+    endpoint: import.meta.env.VITE_AI_ENDPOINT || "http://localhost:8787",
+    apiKey: import.meta.env.VITE_AI_API_KEY || "dev-key",
   },
-  // Production
+  // Production - Requires explicit configuration 
   prod: {
-    endpoint:
-      import.meta.env.VITE_WORKER_PROD_URL || "https://raci-worker.example.com",
-    apiKey: import.meta.env.VITE_WORKER_API_KEY || "",
+    endpoint: import.meta.env.VITE_AI_ENDPOINT || "",
+    apiKey: import.meta.env.VITE_AI_API_KEY || "",
   },
 };
 

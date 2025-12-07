@@ -278,7 +278,7 @@ export default function RaciGeneratorPage() {
                   <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200">
                     <Info className="w-4 h-4 flex-shrink-0" />
                     <span className="font-medium text-xs">
-                      Using template data
+                      Using smart templates
                     </span>
                   </div>
                 )}
@@ -631,8 +631,7 @@ export default function RaciGeneratorPage() {
                     <span className="text-2xl flex-shrink-0">📥</span>
                     <div className="min-w-0">
                       <Label
-                        className="font-bold text-sm block"
-                        style={{ color: "#15803d" }}
+                        className="font-bold text-sm block text-green-700"
                       >
                         Export & Download
                       </Label>
