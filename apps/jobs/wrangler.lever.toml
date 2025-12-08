@@ -1,0 +1,15 @@
+name = "spearyx-sync-lever"
+main = "src/workers/lever-sync.ts"
+compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/2 * * * *"]  # Every 2 minutes
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+
+[observability]
+enabled = true

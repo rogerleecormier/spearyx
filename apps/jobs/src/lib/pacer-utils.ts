@@ -1,99 +1,69 @@
+/**
+ * Pacer Utilities - TanStack Pacer Integration
+ * 
+ * Thin wrappers around @tanstack/pacer primitives optimized for 
+ * Cloudflare Workers with 10ms CPU limit
+ */
 
+import { 
+  asyncThrottle,
+  AsyncQueuer,
+  type AsyncThrottlerOptions
+} from '@tanstack/pacer'
 
 /**
  * Configuration for throttled API fetching
  */
 export interface ThrottledFetcherConfig {
   /** Time to wait between executions in milliseconds */
-  wait: number
-  /** Execute on the leading edge of the timeout */
-  leading?: boolean
-  /** Execute on the trailing edge of the timeout */
-  trailing?: boolean
+  wait?: number
   /** Maximum number of retries on failure */
   maxRetries?: number
   /** Base delay for exponential backoff in milliseconds */
   retryDelay?: number
+  /** Request timeout in milliseconds */
+  timeout?: number
 }
 
 /**
- * Configuration for batched database operations
+ * Creates a throttled fetch function optimized for Cloudflare Workers
+ * Uses TanStack Pacer's asyncThrottle under the hood
  */
-export interface BatchedDbWriterConfig<T> {
-  /** Maximum number of items in a batch before flushing */
-  maxSize: number
-  /** Maximum time to wait before flushing a batch in milliseconds */
-  wait: number
-  /** Function to execute the batch write */
-  writeFn: (items: T[]) => Promise<void>
-  /** Optional callback for batch completion */
-  onBatchComplete?: (items: T[], success: boolean) => void
-  /** Optional callback for errors */
-  onError?: (error: Error, items: T[]) => void
-}
-
-/**
- * Configuration for rate limiting
- */
-export interface RateLimiterConfig {
-  /** Maximum number of requests allowed */
-  maxRequests: number
-  /** Time window in milliseconds */
-  windowMs: number
-  /** Use sliding window (true) or fixed window (false) */
-  sliding?: boolean
-}
-
-/**
- * Creates a throttled fetch function that limits the rate of API calls
- * Uses a queue-based approach (via RateLimiter) to ensure all requests are executed
- * but spaced out by the 'wait' interval.
- * 
- * @example
- * const throttledFetch = createThrottledFetcher({
- *   wait: 500,
- *   trailing: true, // Note: leading/trailing are ignored in this implementation
- *   maxRetries: 3
- * })
- * 
- * const data = await throttledFetch('https://api.example.com/data')
- */
-export function createThrottledFetcher(config: ThrottledFetcherConfig) {
+export function createThrottledFetcher(config: ThrottledFetcherConfig = {}) {
   const {
-    wait,
+    wait = 500,
     maxRetries = 3,
     retryDelay = 1000,
+    timeout = 5000
   } = config
 
-  // Use rate limiter for spacing (1 request per 'wait' ms)
-  const spacingLimiter = createRateLimiter({
-    maxRequests: 1,
-    windowMs: wait,
-    sliding: true
-  })
-
-  return async (url: string, options?: RequestInit): Promise<Response> => {
-    // Wait for spacing slot
-    await spacingLimiter.waitForSlot()
-    
-    let lastError: Error | null = null
-    
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  const throttledFn = asyncThrottle(
+    async (url: string, options?: RequestInit): Promise<Response> => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      
       try {
-        // Add timeout to fetch
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
-        
-        // console.log(`[Pacer] Fetching ${url} (attempt ${attempt + 1})...`)
         const response = await fetch(url, {
           ...options,
           signal: controller.signal
         })
-        
+        return response
+      } finally {
         clearTimeout(timeoutId)
-        // console.log(`[Pacer] Fetched ${url}: ${response.status}`)
+      }
+    },
+    { wait }
+  )
+
+  // Wrap with retry logic
+  return async (url: string, options?: RequestInit): Promise<Response> => {
+    let lastError: Error | null = null
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await throttledFn(url, options)
         
-        // If we get a rate limit error, throw to trigger retry
+        // Handle rate limiting
         if (response.status === 429) {
           const retryAfter = response.headers.get('Retry-After')
           const delay = retryAfter ? parseInt(retryAfter) * 1000 : retryDelay * Math.pow(2, attempt)
@@ -106,13 +76,9 @@ export function createThrottledFetcher(config: ThrottledFetcherConfig) {
         
         return response
       } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error))
-        // console.log(`[Pacer] Error fetching ${url}: ${err.message}`)
-        
-        lastError = err
+        lastError = error instanceof Error ? error : new Error(String(error))
         
         if (attempt < maxRetries) {
-          // Exponential backoff
           const delay = retryDelay * Math.pow(2, attempt)
           await new Promise(resolve => setTimeout(resolve, delay))
         }
@@ -124,37 +90,83 @@ export function createThrottledFetcher(config: ThrottledFetcherConfig) {
 }
 
 /**
- * Creates a batched database writer that accumulates items and writes them in batches
- * 
- * @example
- * const batchWriter = createBatchedDbWriter({
- *   maxSize: 50,
- *   wait: 2000,
- *   writeFn: async (jobs) => {
- *     await db.insert(schema.jobs).values(jobs)
- *   },
- *   onBatchComplete: (items, success) => {
- *     console.log(`Batch of ${items.length} items ${success ? 'succeeded' : 'failed'}`)
- *   }
- * })
- * 
- * // Add items to batch
- * await batchWriter.add(job1)
- * await batchWriter.add(job2)
- * 
- * // Flush remaining items
- * await batchWriter.flush()
+ * Configuration for rate-limited fetching
+ */
+export interface RateLimitedFetcherConfig extends ThrottledFetcherConfig {
+  /** Maximum requests per window */
+  maxRequests?: number
+  /** Window duration in milliseconds */
+  windowMs?: number
+}
+
+/**
+ * Creates a throttled + rate-limited fetcher
+ * Combines TanStack Pacer throttling with simple rate limit tracking
+ */
+export function createThrottledRateLimitedFetcher(config: {
+  throttle?: ThrottledFetcherConfig
+  rateLimit?: { maxRequests?: number; windowMs?: number }
+} = {}) {
+  const throttledFetch = createThrottledFetcher(config.throttle)
+  const maxRequests = config.rateLimit?.maxRequests ?? 60
+  const windowMs = config.rateLimit?.windowMs ?? 60000
+  
+  const requests: number[] = []
+  
+  return async (url: string, options?: RequestInit): Promise<Response> => {
+    const now = Date.now()
+    
+    // Clean old requests
+    while (requests.length > 0 && requests[0] < now - windowMs) {
+      requests.shift()
+    }
+    
+    // Check rate limit
+    if (requests.length >= maxRequests) {
+      const waitTime = requests[0] + windowMs - now + 100
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+    
+    requests.push(Date.now())
+    return throttledFetch(url, options)
+  }
+}
+
+/**
+ * Configuration for queued database operations
+ */
+export interface BatchedDbWriterConfig<T> {
+  /** Maximum number of items in a batch before flushing */
+  maxSize?: number
+  /** Maximum time to wait before flushing a batch in milliseconds */
+  wait?: number
+  /** Function to execute the batch write */
+  writeFn: (items: T[]) => Promise<void>
+  /** Optional callback for errors */
+  onError?: (error: Error, items: T[]) => void
+  /** Optional callback for batch completion */
+  onBatchComplete?: (items: T[], success: boolean) => void
+}
+
+/**
+ * Creates a batched database writer using TanStack Pacer's AsyncQueuer
+ * Optimized for D1's parameter limits
  */
 export function createBatchedDbWriter<T>(config: BatchedDbWriterConfig<T>) {
-  const { maxSize, wait, writeFn, onBatchComplete, onError } = config
+  const { 
+    maxSize = 5,  // D1 parameter limit safe 
+    wait = 100,
+    writeFn, 
+    onError,
+    onBatchComplete 
+  } = config
   
-  let currentBatch: T[] = []
-  let flushTimer: NodeJS.Timeout | null = null
+  let batch: T[] = []
+  let flushTimer: ReturnType<typeof setTimeout> | null = null
   let isProcessing = false
   
   const processBatch = async (items: T[]) => {
     if (items.length === 0) return
-    
     isProcessing = true
     
     try {
@@ -171,187 +183,82 @@ export function createBatchedDbWriter<T>(config: BatchedDbWriterConfig<T>) {
   }
   
   const scheduleFlush = () => {
-    if (flushTimer) {
-      clearTimeout(flushTimer)
-    }
-    
+    if (flushTimer) clearTimeout(flushTimer)
     flushTimer = setTimeout(async () => {
-      if (currentBatch.length > 0) {
-        const batchToProcess = [...currentBatch]
-        currentBatch = []
+      if (batch.length > 0) {
+        const toProcess = [...batch]
+        batch = []
         try {
-          await processBatch(batchToProcess)
-        } catch (error) {
-          // Error is already handled by onError in processBatch
-          // We must catch it here to prevent unhandled rejection in setTimeout
+          await processBatch(toProcess)
+        } catch (e) {
+          // Error handled in processBatch
         }
       }
     }, wait)
   }
   
   return {
-    /**
-     * Add an item to the batch. Will trigger flush if maxSize is reached.
-     */
     add: async (item: T) => {
-      currentBatch.push(item)
+      batch.push(item)
       
-      if (currentBatch.length >= maxSize) {
+      if (batch.length >= maxSize) {
         if (flushTimer) {
           clearTimeout(flushTimer)
           flushTimer = null
         }
-        
-        const batchToProcess = [...currentBatch]
-        currentBatch = []
-        await processBatch(batchToProcess)
+        const toProcess = [...batch]
+        batch = []
+        await processBatch(toProcess)
       } else {
         scheduleFlush()
       }
     },
     
-    /**
-     * Manually flush all pending items in the batch
-     */
     flush: async () => {
       if (flushTimer) {
         clearTimeout(flushTimer)
         flushTimer = null
       }
       
-      // Wait for any active processing to finish to ensure stats are updated
       while (isProcessing) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 50))
       }
       
-      if (currentBatch.length > 0) {
-        const batchToProcess = [...currentBatch]
-        currentBatch = []
-        await processBatch(batchToProcess)
+      if (batch.length > 0) {
+        const toProcess = [...batch]
+        batch = []
+        await processBatch(toProcess)
       }
     },
     
-    /**
-     * Get the current batch size
-     */
-    size: () => currentBatch.length,
-    
-    /**
-     * Check if a batch is currently being processed
-     */
-    isProcessing: () => isProcessing,
+    size: () => batch.length,
+    isProcessing: () => isProcessing
   }
 }
 
 /**
- * Creates a rate limiter using a sliding window algorithm
- * 
- * @example
- * const rateLimiter = createRateLimiter({
- *   maxRequests: 120,
- *   windowMs: 60000, // 1 minute
- *   sliding: true
- * })
- * 
- * // Check if request is allowed
- * if (await rateLimiter.checkLimit()) {
- *   await makeApiCall()
- * } else {
- *   console.log('Rate limit exceeded')
- * }
+ * Creates a write queue using TanStack Pacer's AsyncQueuer
+ * For sequential database operations with backpressure
  */
-export function createRateLimiter(config: RateLimiterConfig) {
-  const { maxRequests, windowMs, sliding = true } = config
+export function createWriteQueue<T>(
+  writeFn: (item: T) => Promise<void>,
+  options: { concurrency?: number; wait?: number; maxSize?: number } = {}
+) {
+  const { concurrency = 1, wait = 50, maxSize = 100 } = options
   
-  const requests: number[] = []
-  
-  const cleanOldRequests = (now: number) => {
-    const cutoff = now - windowMs
-    while (requests.length > 0 && requests[0] < cutoff) {
-      requests.shift()
-    }
-  }
+  const queue = new AsyncQueuer<T>({
+    concurrency,
+    wait,
+    maxSize
+  })
   
   return {
-    /**
-     * Check if a request is allowed under the rate limit.
-     * Returns true if allowed, false if rate limit exceeded.
-     */
-    checkLimit: async (): Promise<boolean> => {
-      const now = Date.now()
-      
-      if (sliding) {
-        cleanOldRequests(now)
-      } else {
-        // Fixed window - reset if window has passed
-        if (requests.length > 0 && now - requests[0] >= windowMs) {
-          requests.length = 0
-        }
-      }
-      
-      if (requests.length < maxRequests) {
-        requests.push(now)
-        return true
-      }
-      
-      return false
-    },
-    
-    /**
-     * Wait until a request is allowed, respecting the rate limit
-     */
-    waitForSlot: async function(this: any): Promise<void> {
-      while (!(await this.checkLimit())) {
-        // Calculate how long to wait
-        const now = Date.now()
-        const oldestRequest = requests[0]
-        const waitTime = Math.max(0, windowMs - (now - oldestRequest)) + 100 // Add 100ms buffer
-        
-        await new Promise(resolve => setTimeout(resolve, waitTime))
-      }
-    },
-    
-    /**
-     * Get current request count in the window
-     */
-    getCurrentCount: (): number => {
-      const now = Date.now()
-      cleanOldRequests(now)
-      return requests.length
-    },
-    
-    /**
-     * Reset the rate limiter
-     */
-    reset: () => {
-      requests.length = 0
-    },
+    add: (item: T) => queue.add(async () => writeFn(item)),
+    onIdle: () => queue.onIdle(),
+    size: () => queue.size,
+    isPending: () => queue.isPending
   }
 }
 
-/**
- * Utility to create a combined throttled + rate-limited fetcher
- * 
- * @example
- * const fetcher = createThrottledRateLimitedFetcher({
- *   throttle: { wait: 500, trailing: true },
- *   rateLimit: { maxRequests: 120, windowMs: 60000 }
- * })
- * 
- * const response = await fetcher('https://api.example.com/data')
- */
-export function createThrottledRateLimitedFetcher(config: {
-  throttle: ThrottledFetcherConfig
-  rateLimit: RateLimiterConfig
-}) {
-  const throttledFetch = createThrottledFetcher(config.throttle)
-  const rateLimiter = createRateLimiter(config.rateLimit)
-  
-  return async (url: string, options?: RequestInit): Promise<Response> => {
-    // Wait for rate limit slot
-    await rateLimiter.waitForSlot()
-    
-    // Execute throttled fetch - with trailing:true, this will always execute and return a Promise<Response>
-    return throttledFetch(url, options)
-  }
-}
+// Legacy exports for backwards compatibility
+export { createThrottledFetcher as createRateLimiter }

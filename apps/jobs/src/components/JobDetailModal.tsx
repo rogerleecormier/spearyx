@@ -38,7 +38,7 @@ export default function JobDetailModal({
             company: job.company || ''
           });
           
-          const response = await fetch(`/api/v2/job-content?${params.toString()}`);
+          const response = await fetch(`/api/v3/job-content?${params.toString()}`);
           if (response.ok) {
             const data = await response.json() as { content?: string };
             if (data.content) {

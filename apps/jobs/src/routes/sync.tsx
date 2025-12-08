@@ -1,17 +1,51 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
-import { RefreshCw, AlertCircle, CheckCircle, Clock, Briefcase, Building2, Search } from 'lucide-react'
+/**
+ * V3 Sync Dashboard
+ * Refactored with TanStack Query for smart caching
+ * Shows worker status, sync logs with errors, and job stats
+ */
 
-export const Route = createFileRoute('/sync')({
-  component: SyncDashboard,
-})
+import { createFileRoute } from '@tanstack/react-router'
+import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState } from 'react'
+import { 
+  RefreshCw, 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  AlertTriangle,
+  Building2,
+  Globe,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Play
+} from 'lucide-react'
+
+// ============================================
+// Types
+// ============================================
+
+interface WorkerStatus {
+  name: string
+  icon: string
+  sources: string[]
+  schedule: string
+  lastSync: string | null
+  status: 'running' | 'completed' | 'failed' | 'never'
+  error?: string
+}
+
+interface SourceStatus {
+  lastSync: string | null
+  status: 'running' | 'completed' | 'failed' | 'never'
+  jobsAdded: number
+  error?: string
+}
 
 interface DashboardStats {
-  totalDiscoveredCompanies: number
-  totalActiveCompanies: number
   totalJobs: number
+  totalDiscoveredCompanies: number
   pendingCompanies: number
-  notDiscoveredCompanies: number
   jobsBySource: {
     greenhouse: number
     lever: number
@@ -19,162 +53,132 @@ interface DashboardStats {
     himalayas: number
   }
   lastSyncAt: string | null
+  sourceSyncStatus: Record<string, SourceStatus>
+  workerStatus: Record<string, WorkerStatus>
 }
 
 interface SyncLog {
-  timestamp: string
-  type: 'info' | 'success' | 'error' | 'warning'
-  message: string
-}
-
-interface SyncRun {
   id: string
-  syncType?: string
+  syncType: string
+  source: string | null
   startedAt: string | null
   completedAt: string | null
-  status: string
+  status: 'running' | 'completed' | 'failed'
   stats: {
     jobsAdded: number
     jobsUpdated: number
     jobsDeleted: number
-    companiesAdded: number
-    companiesDeleted: number
+    company?: string
+    error?: string
   }
-  logs: SyncLog[]
-  totalCompanies: number
-  processedCompanies: number
+  logs: Array<{ timestamp: string; type: string; message: string }>
 }
 
-function SyncDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [syncRuns, setSyncRuns] = useState<SyncRun[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+// ============================================
+// Query Client (singleton for this route)
+// ============================================
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5000,       // 5s before considered stale
+      gcTime: 60000,         // 1 min cache
+      refetchOnWindowFocus: true,
+      retry: 2
+    }
+  }
+})
+
+// ============================================
+// API Functions
+// ============================================
+
+async function fetchStats(): Promise<DashboardStats> {
+  const res = await fetch('/api/v3/stats')
+  const data = await res.json()
+  if (!data.success) throw new Error(data.error)
+  return data.stats
+}
+
+async function fetchLogs(limit = 20): Promise<{ logs: SyncLog[]; meta: { recentErrors: number } }> {
+  const res = await fetch(`/api/v3/logs?limit=${limit}`)
+  const data = await res.json()
+  if (!data.success) throw new Error(data.error)
+  return { logs: data.logs, meta: data.meta }
+}
+
+async function triggerSync(worker: 'ats' | 'aggregator' | 'discovery'): Promise<any> {
+  const res = await fetch(`/api/v3/sync/${worker}`, { method: 'POST' })
+  return res.json()
+}
+
+// ============================================
+// Dashboard Component
+// ============================================
+
+function SyncDashboardContent() {
+  const queryClient = useQueryClient()
+  const [expandedLog, setExpandedLog] = useState<string | null>(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
-  const [selectedRun, setSelectedRun] = useState<string | null>(null)
 
-  const fetchData = async (isAutoRefresh = false) => {
-    if (!isAutoRefresh) {
-      setIsRefreshing(true)
+  // Stats query
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
+    queryKey: ['sync-stats'],
+    queryFn: fetchStats,
+    refetchInterval: autoRefresh ? 10000 : false  // 10s refresh
+  })
+
+  // Logs query
+  const { data: logsData, isLoading: logsLoading } = useQuery({
+    queryKey: ['sync-logs'],
+    queryFn: () => fetchLogs(30),
+    refetchInterval: autoRefresh ? 10000 : false
+  })
+
+  // Manual sync mutation
+  const syncMutation = useMutation({
+    mutationFn: triggerSync,
+    onSuccess: () => {
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
     }
+  })
 
-    try {
-      // Fetch stats
-      const statsResponse = await fetch('/api/v2/stats')
-      const statsData = await statsResponse.json() as { success: boolean; stats: DashboardStats }
-      if (statsData.success) {
-        setStats(statsData.stats)
-      }
-
-      // Fetch sync logs
-      const logsResponse = await fetch('/api/v2/sync-logs')
-      const logsData = await logsResponse.json() as { success: boolean; syncs: SyncRun[] }
-      if (logsData.success) {
-        setSyncRuns(logsData.syncs)
-      }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-    } finally {
-      setIsLoading(false)
-      setIsRefreshing(false)
-    }
+  // Helpers
+  const formatTime = (iso: string | null) => {
+    if (!iso) return 'Never'
+    const date = new Date(iso)
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
   }
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    if (!autoRefresh) return
-
-    const interval = setInterval(() => {
-      fetchData(true)
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [autoRefresh])
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never'
-    const date = new Date(dateString)
-    return date.toLocaleString('en-US', { 
-      timeZone: 'America/New_York',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
-
-  const formatTime = (dateString: string | null) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toLocaleTimeString('en-US', { 
-      timeZone: 'America/New_York',
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    })
+  const formatDate = (iso: string | null) => {
+    if (!iso) return 'Never'
+    const date = new Date(iso)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + 
+           ', ' + formatTime(iso)
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />
-      case 'failed':
-        return <AlertCircle className="w-5 h-5 text-red-600" />
-      case 'running':
-        return <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
-      default:
-        return <Clock className="w-5 h-5 text-slate-400" />
+      case 'running': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+      case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'failed': return <XCircle className="w-4 h-4 text-red-500" />
+      default: return <Clock className="w-4 h-4 text-slate-400" />
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-50 border-green-200'
-      case 'failed':
-        return 'bg-red-50 border-red-200'
-      case 'running':
-        return 'bg-blue-50 border-blue-200'
-      default:
-        return 'bg-slate-50 border-slate-200'
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      running: 'bg-blue-100 text-blue-700',
+      completed: 'bg-green-100 text-green-700',
+      failed: 'bg-red-100 text-red-700',
+      never: 'bg-slate-100 text-slate-600'
     }
+    return styles[status] || styles.never
   }
 
-  const getLogTypeColor = (type: string) => {
-    switch (type) {
-      case 'error':
-        return 'text-red-600'
-      case 'warning':
-        return 'text-orange-600'
-      case 'success':
-        return 'text-green-600'
-      default:
-        return 'text-slate-600'
-    }
-  }
-
-  const getSyncTypeIcon = (syncType?: string) => {
-    if (syncType === 'discovery') {
-      return <Search className="w-5 h-5 text-purple-600" />
-    }
-    return <Briefcase className="w-5 h-5 text-blue-600" />
-  }
-
-  const getSyncTypeLabel = (syncType?: string) => {
-    if (syncType === 'discovery') {
-      return 'Discovery'
-    }
-    return 'Job Sync'
-  }
-
-  if (isLoading) {
+  if (statsLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
@@ -185,264 +189,126 @@ function SyncDashboard() {
     )
   }
 
-  const selectedRunData = syncRuns.find(run => run.id === selectedRun)
+  if (statsError) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <XCircle className="w-8 h-8 mx-auto mb-2" />
+          <p>Error loading dashboard</p>
+          <p className="text-sm">{String(statsError)}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const logs = logsData?.logs || []
+  const recentErrors = logsData?.meta?.recentErrors || 0
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Sync Dashboard</h1>
-            <p className="text-sm text-muted-foreground pr-4">
-              Runs every 1 min. Priority: Aggregators (every 4 runs). 1 item/batch. Max 20 jobs/item. Discovery every 5m.
-              <span className="ml-2 text-xs text-slate-500">(All times in Eastern Time)</span>
-            </p>
+            <h1 className="text-2xl font-bold text-slate-900">Sync Dashboard</h1>
+            <p className="text-slate-600 text-sm">V3 API • TanStack Query</p>
           </div>
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                checked={autoRefresh}
+            {recentErrors > 0 && (
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <AlertTriangle className="w-4 h-4" />
+                {recentErrors} errors (last hour)
+              </div>
+            )}
+            <label className="flex items-center gap-2 text-sm">
+              <input 
+                type="checkbox" 
+                checked={autoRefresh} 
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className="rounded"
               />
               Auto-refresh
             </label>
             <button
-              onClick={() => fetchData()}
-              disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold rounded-lg transition-colors"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
+                queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
+              }}
+              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className="w-4 h-4" />
               Refresh
             </button>
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="space-y-8 mb-8">
-          {/* Row 1: Company Metrics */}
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Company Discovery</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Building2 className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Discovered ATS Companies</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.totalDiscoveredCompanies || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Directly tracked via ATS platforms</p>
-              </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <StatCard label="Total Jobs" value={stats?.totalJobs || 0} />
+          <StatCard label="Discovered Companies" value={stats?.totalDiscoveredCompanies || 0} />
+          <StatCard label="Pending Discovery" value={stats?.pendingCompanies || 0} />
+          <StatCard 
+            label="Last Sync" 
+            value={stats?.lastSyncAt ? formatDate(stats.lastSyncAt) : 'Never'} 
+            isText 
+          />
+        </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Building2 className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Companies with Jobs</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.totalActiveCompanies || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Total companies with active jobs</p>
+        {/* Jobs by Source */}
+        <div className="bg-white rounded-lg border p-4 mb-6">
+          <h2 className="text-sm font-semibold text-slate-700 mb-3">Jobs by Source</h2>
+          <div className="grid grid-cols-4 gap-4">
+            {Object.entries(stats?.jobsBySource || {}).map(([source, count]) => (
+              <div key={source} className="text-center">
+                <div className="text-2xl font-bold text-slate-900">{count}</div>
+                <div className="text-xs text-slate-500 capitalize">{source}</div>
               </div>
-
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Search className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Companies Pending Discovery</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.pendingCompanies || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Pending discovery check</p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Search className="w-6 h-6 text-slate-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Companies Not Discovered</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.notDiscoveredCompanies || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">Tried but not found on any source</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Row 2: Job Metrics by Source */}
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Jobs by Source</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Briefcase className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Greenhouse Jobs</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.greenhouse || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.greenhouse || 0) / stats.totalJobs) * 100) : 0}% of total jobs
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Briefcase className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Lever Jobs</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.lever || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.lever || 0) / stats.totalJobs) * 100) : 0}% of total jobs
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <Briefcase className="w-6 h-6 text-red-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">RemoteOK Jobs</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.remoteok || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.remoteok || 0) / stats.totalJobs) * 100) : 0}% of total jobs
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <Briefcase className="w-6 h-6 text-indigo-600" />
-                  </div>
-                  <h3 className="text-sm font-medium text-slate-600">Himalayas Jobs</h3>
-                </div>
-                <p className="text-3xl font-bold text-slate-900">{stats?.jobsBySource?.himalayas || 0}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats?.totalJobs ? Math.round(((stats?.jobsBySource?.himalayas || 0) / stats.totalJobs) * 100) : 0}% of total jobs
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Last Sync Info */}
-        {stats?.lastSyncAt && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-blue-800">
-              <strong>Last sync completed:</strong> {formatDate(stats.lastSyncAt)}
-            </p>
+        {/* Worker Status */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Sync Workers</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Ordered: Discovery, ATS, Aggregator */}
+            {['discovery', 'ats', 'aggregator'].map((id) => {
+              const worker = stats?.workerStatus?.[id]
+              if (!worker) return null
+              return (
+                <WorkerCard 
+                  key={id}
+                  workerId={id as 'ats' | 'aggregator' | 'discovery'}
+                  worker={worker}
+                  onTrigger={() => syncMutation.mutate(id as any)}
+                  isTriggering={syncMutation.isPending}
+                  formatDate={formatDate}
+                />
+              )
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Sync Runs */}
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-200">
-            <h2 className="text-xl font-semibold text-slate-900">Recent Sync Runs</h2>
-            <p className="text-sm text-slate-600 mt-1">Last 20 automated sync runs</p>
+        {/* Recent Sync Logs */}
+        <div className="bg-white rounded-lg border">
+          <div className="p-4 border-b flex items-center justify-between">
+            <h2 className="font-semibold text-slate-900">Recent Sync Runs</h2>
+            <span className="text-xs text-slate-500">{logs.length} logs</span>
           </div>
-
-          <div className="divide-y divide-slate-200">
-            {syncRuns.length === 0 ? (
+          <div className="divide-y max-h-[500px] overflow-y-auto">
+            {logs.map((log) => (
+              <LogEntry 
+                key={log.id}
+                log={log}
+                isExpanded={expandedLog === log.id}
+                onToggle={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                formatTime={formatTime}
+              />
+            ))}
+            {logs.length === 0 && (
               <div className="p-8 text-center text-slate-500">
-                <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                <p>No sync runs yet. Waiting for first automated sync...</p>
+                No sync logs yet
               </div>
-            ) : (
-              syncRuns.map((run) => (
-                <div key={run.id}>
-                  <button
-                    onClick={() => setSelectedRun(selectedRun === run.id ? null : run.id)}
-                    className={`w-full p-4 hover:bg-slate-50 transition-colors text-left ${getStatusColor(run.status)}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-center gap-1">
-                          {getStatusIcon(run.status)}
-                          {getSyncTypeIcon(run.syncType)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-slate-900">
-                            {formatTime(run.startedAt)} - {getSyncTypeLabel(run.syncType)} - {run.status === 'completed' ? 'Completed' : run.status === 'failed' ? 'Failed' : 'Running'}
-                          </div>
-                          <div className="text-sm text-slate-600">
-                            {run.syncType === 'discovery' ? (
-                              <>
-                                {run.processedCompanies > 0 && (
-                                  <>
-                                    {`${run.processedCompanies} companies processed`}
-                                    {' • '}
-                                    {`${run.stats.companiesAdded} discovered`}
-                                  </>
-                                )}
-                                {run.processedCompanies === 0 && run.stats.companiesAdded === 0 && 'No changes'}
-                              </>
-                            ) : (
-                              <>
-                                {run.processedCompanies > 0 && (
-                                  <>
-                                    {`${run.processedCompanies} companies processed`}
-                                    {' • '}
-                                    {`${run.stats.jobsAdded} added`}
-                                    {' • '}
-                                    {`${run.stats.jobsUpdated} updated`}
-                                  </>
-                                )}
-                                {run.processedCompanies === 0 && run.stats.jobsAdded === 0 && run.stats.jobsUpdated === 0 && 'No changes'}
-                              </>
-                            )}
-                          </div>
-                          {/* Progress bar - only for sync jobs */}
-                          {run.syncType !== 'discovery' && run.totalCompanies > 0 && run.processedCompanies > 0 && (
-                            <div className="mt-2">
-                              <div className="w-full bg-slate-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full transition-all ${
-                                    run.status === 'completed' ? 'bg-green-600' : 
-                                    run.status === 'failed' ? 'bg-red-600' : 
-                                    'bg-blue-600'
-                                  }`}
-                                  style={{ width: `${Math.min(100, (run.processedCompanies / run.totalCompanies) * 100)}%` }}
-                                />
-                              </div>
-                              <div className="flex justify-between text-xs text-slate-500 mt-0.5">
-                                <span>{run.processedCompanies} / {run.totalCompanies}</span>
-                                <span>{Math.round((run.processedCompanies / run.totalCompanies) * 100)}%</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {run.completedAt && formatDate(run.completedAt)}
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Expanded Log Details */}
-                  {selectedRun === run.id && selectedRunData && (
-                    <div className="bg-slate-900 p-4 font-mono text-sm">
-                      {selectedRunData.logs.length === 0 ? (
-                        <p className="text-slate-400">No logs available</p>
-                      ) : (
-                        <div className="space-y-1">
-                          {selectedRunData.logs.map((log, idx) => (
-                            <div key={idx} className={getLogTypeColor(log.type)}>
-                              <span className="text-slate-500">[{formatTime(log.timestamp)}]</span>{' '}
-                              {log.message}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))
             )}
           </div>
         </div>
@@ -450,3 +316,178 @@ function SyncDashboard() {
     </div>
   )
 }
+
+// ============================================
+// Sub-components
+// ============================================
+
+function StatCard({ label, value, isText = false }: { label: string; value: string | number; isText?: boolean }) {
+  return (
+    <div className="bg-white rounded-lg border p-4">
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className={`font-bold ${isText ? 'text-sm text-slate-700' : 'text-2xl text-slate-900'}`}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function WorkerCard({ 
+  workerId, 
+  worker, 
+  onTrigger, 
+  isTriggering,
+  formatDate 
+}: { 
+  workerId: 'ats' | 'aggregator' | 'discovery'
+  worker: WorkerStatus
+  onTrigger: () => void
+  isTriggering: boolean
+  formatDate: (iso: string | null) => string
+}) {
+  const bgColors: Record<string, string> = {
+    ats: 'bg-green-50 border-green-200',
+    aggregator: 'bg-blue-50 border-blue-200',
+    discovery: 'bg-purple-50 border-purple-200'
+  }
+
+  return (
+    <div className={`rounded-lg border p-4 ${bgColors[workerId] || 'bg-slate-50'}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xl">{worker.icon}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">{worker.schedule}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${
+            worker.status === 'running' ? 'bg-blue-100 text-blue-700' :
+            worker.status === 'failed' ? 'bg-red-100 text-red-700' :
+            worker.status === 'completed' ? 'bg-green-100 text-green-700' :
+            'bg-slate-100 text-slate-600'
+          }`}>
+            {worker.status}
+          </span>
+        </div>
+      </div>
+      <h3 className="font-semibold text-slate-900">{worker.name}</h3>
+      <p className="text-xs text-slate-500 mt-1">{worker.sources.join(' • ')}</p>
+      <p className="text-xs text-slate-500 mt-1">
+        Last: {worker.lastSync ? formatDate(worker.lastSync) : 'Never'}
+      </p>
+      {worker.error && (
+        <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+          <XCircle className="w-3 h-3" />
+          {worker.error}
+        </p>
+      )}
+      <button
+        onClick={onTrigger}
+        disabled={isTriggering || worker.status === 'running'}
+        className="mt-3 w-full px-3 py-1.5 text-xs bg-white border rounded hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center gap-1"
+      >
+        <Play className="w-3 h-3" />
+        Trigger Now
+      </button>
+    </div>
+  )
+}
+
+function LogEntry({ 
+  log, 
+  isExpanded, 
+  onToggle,
+  formatTime 
+}: { 
+  log: SyncLog
+  isExpanded: boolean
+  onToggle: () => void
+  formatTime: (iso: string | null) => string
+}) {
+  const getSourceIcon = (source: string | null) => {
+    switch (source?.toLowerCase()) {
+      case 'greenhouse': return <Building2 className="w-4 h-4 text-green-600" />
+      case 'lever': return <Building2 className="w-4 h-4 text-blue-600" />
+      case 'remoteok': return <Globe className="w-4 h-4 text-red-600" />
+      case 'himalayas': return <Globe className="w-4 h-4 text-indigo-600" />
+      default: return <Search className="w-4 h-4 text-purple-600" />
+    }
+  }
+
+  const getSourceLabel = (log: SyncLog) => {
+    if (log.syncType === 'discovery') return '🔍 Discovery'
+    if (!log.source) return log.syncType
+    const icons: Record<string, string> = {
+      greenhouse: '🏢',
+      lever: '🔧',
+      remoteok: '🌐',
+      himalayas: '🏔️'
+    }
+    const icon = icons[log.source.toLowerCase()] || ''
+    return `${icon} ${log.source}${log.stats.company ? ` / ${log.stats.company}` : ''}`
+  }
+
+  return (
+    <div className={`${log.status === 'failed' ? 'bg-red-50' : ''}`}>
+      <button
+        onClick={onToggle}
+        className="w-full p-4 text-left hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {log.status === 'running' ? (
+              <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+            ) : log.status === 'failed' ? (
+              <XCircle className="w-4 h-4 text-red-500" />
+            ) : (
+              <CheckCircle className="w-4 h-4 text-green-500" />
+            )}
+            <div>
+              <div className="font-medium text-sm text-slate-900">
+                {formatTime(log.startedAt)} - {getSourceLabel(log)}
+              </div>
+              <div className="text-xs text-slate-500">
+                {log.status === 'failed' && log.stats.error ? (
+                  <span className="text-red-600">{log.stats.error}</span>
+                ) : (
+                  `+${log.stats.jobsAdded} added, ${log.stats.jobsUpdated} updated`
+                )}
+              </div>
+            </div>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
+        </div>
+      </button>
+      
+      {isExpanded && log.logs.length > 0 && (
+        <div className="px-4 pb-4">
+          <div className="bg-slate-900 rounded-lg p-3 text-xs font-mono max-h-48 overflow-y-auto">
+            {log.logs.map((entry, i) => (
+              <div key={i} className={`${
+                entry.type === 'error' ? 'text-red-400' :
+                entry.type === 'warning' ? 'text-yellow-400' :
+                entry.type === 'success' ? 'text-green-400' :
+                'text-slate-300'
+              }`}>
+                [{new Date(entry.timestamp).toLocaleTimeString()}] {entry.message}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================
+// Route Export with QueryClientProvider
+// ============================================
+
+export const Route = createFileRoute('/sync')({
+  component: () => (
+    <QueryClientProvider client={queryClient}>
+      <SyncDashboardContent />
+    </QueryClientProvider>
+  )
+})

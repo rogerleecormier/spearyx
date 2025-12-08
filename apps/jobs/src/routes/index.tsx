@@ -53,7 +53,7 @@ function HomePage() {
 
   // Fetch categories on mount
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/v3/categories")
       .then((res) => res.json() as unknown)
       .then((data) => {
         const typedData = data as CategoriesResponse;
@@ -77,7 +77,7 @@ function HomePage() {
     params.set("sortBy", sortBy);
     params.set("limit", "50");
 
-    fetch(`/api/jobs?${params.toString()}`)
+    fetch(`/api/v3/jobs?${params.toString()}`)
       .then((res) => res.json() as unknown)
       .then((data) => {
         const typedData = data as JobsResponse;

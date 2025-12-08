@@ -16,7 +16,9 @@ export const jobs = sqliteTable('jobs', {
   title: text('title').notNull(),
   company: text('company'),
   description: text('description'),
+  descriptionRaw: text('description_raw'), // Raw/dirty data from source
   fullDescription: text('full_description'),
+  isCleansed: integer('is_cleansed').default(0), // 0 = needs cleansing, 1 = cleansed
   payRange: text('pay_range'),
   postDate: integer('post_date', { mode: 'timestamp' }),
   sourceUrl: text('source_url').notNull(),
@@ -32,6 +34,7 @@ export const jobs = sqliteTable('jobs', {
     .notNull()
     .default(sql`(unixepoch())`),
 })
+
 
 export const discoveredCompanies = sqliteTable('discovered_companies', {
   slug: text('slug').primaryKey(),
@@ -54,6 +57,7 @@ export const discoveredCompanies = sqliteTable('discovered_companies', {
 export const syncHistory = sqliteTable('sync_history', {
   id: text('id').primaryKey(),
   syncType: text('sync_type').notNull().default('job_sync'), // 'job_sync' or 'discovery'
+  source: text('source'), // 'greenhouse', 'lever', 'remoteok', 'himalayas' for micro-cron tracking
   startedAt: integer('started_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),

@@ -13,6 +13,10 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:prod": "wrangler d1 migrations apply DB --remote",
     "deploy:sync": "wrangler deploy --config wrangler.sync.toml",
+    "deploy:ats": "wrangler deploy --config wrangler.ats.toml",
+    "deploy:aggregator": "wrangler deploy --config wrangler.aggregator.toml",
+    "deploy:discovery": "wrangler deploy --config wrangler.discovery.toml",
+    "deploy:workers": "npm run deploy:ats && npm run deploy:aggregator && npm run deploy:discovery",
     "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
@@ -28,6 +32,7 @@
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/pacer": "^0.16.3",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-router-ssr-query": "^1.131.7",

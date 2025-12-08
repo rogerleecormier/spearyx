@@ -1,0 +1,15 @@
+name = "spearyx-sync-ats"
+main = "src/workers/ats-sync.ts"
+compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["1,4,7,10,13,16,19,22,25,28,31,34,37,40,43,46,49,52,55,58 * * * *"]  # Every 3 min at :01
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+
+[observability]
+enabled = true

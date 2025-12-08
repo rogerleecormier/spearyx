@@ -1,0 +1,15 @@
+name = "spearyx-sync-discovery"
+main = "src/workers/discovery-sync.ts"
+compatibility_date = "2025-11-30"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57 * * * *"]  # Every 3 min at :00
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+
+[observability]
+enabled = true
