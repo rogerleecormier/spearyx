@@ -21,10 +21,17 @@ async function fetchWithRetry(url: string, options: RequestInit, timeStr: string
     try {
       const response = await fetch(url, options);
       
+      // Log status for debugging
+      console.log(`[${timeStr}] Attempt ${attempt}: HTTP ${response.status} ${response.statusText}`);
+      
       // Check content-type before parsing
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        throw new Error(`Invalid response type: ${contentType.substring(0, 50)}`);
+        // Capture the actual response body for debugging
+        const bodyText = await response.text();
+        const preview = bodyText.substring(0, 200);
+        console.error(`[${timeStr}] Non-JSON response (${response.status}): ${preview}`);
+        throw new Error(`Invalid response type: ${contentType.substring(0, 50)} (HTTP ${response.status})`);
       }
       
       const result = await response.json();
@@ -33,7 +40,7 @@ async function fetchWithRetry(url: string, options: RequestInit, timeStr: string
       lastError = error instanceof Error ? error : new Error(String(error));
       
       if (attempt < MAX_RETRIES) {
-        console.log(`[${timeStr}] ⚠️ Attempt ${attempt} failed, retrying in ${RETRY_DELAY_MS}ms...`);
+        console.log(`[${timeStr}] ⚠️ Attempt ${attempt} failed, retrying in ${RETRY_DELAY_MS * attempt}ms...`);
         await sleep(RETRY_DELAY_MS * attempt); // Exponential backoff
       }
     }

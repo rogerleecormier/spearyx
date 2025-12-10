@@ -42,7 +42,20 @@ export const Route = createFileRoute('/api/v3/sync/ats')({
         
         try {
           const ctx = context as any
-          const db = await getDbFromContext(ctx)
+          let db;
+          
+          // Try to get DB connection with explicit error handling
+          try {
+            db = await getDbFromContext(ctx)
+          } catch (dbError) {
+            const dbErrorMsg = dbError instanceof Error ? dbError.message : String(dbError)
+            console.error('[ATS Sync] DB connection failed:', dbErrorMsg)
+            return json({
+              success: false,
+              error: `Database connection failed: ${dbErrorMsg}`,
+              duration: Date.now() - startTime
+            }, { status: 500 })
+          }
           
           // Get or create batch state
           let batchState = await db.select()
@@ -211,7 +224,7 @@ export const Route = createFileRoute('/api/v3/sync/ats')({
               completedAt: new Date(),
               logs: syncQueue.getLogs().slice(0, 20),
               stats: { jobsAdded, jobsUpdated, jobsDeleted: 0, company, error: errorMsg }
-            }).where(sql`id = ${syncId}`)
+            }).where(eq(schema.syncHistory.id, syncId))
             
             // Still update batch state to move forward
             await updateBatchState(db, source, nextIndex)
@@ -239,7 +252,7 @@ export const Route = createFileRoute('/api/v3/sync/ats')({
               totalCompanies: companies.length,
               durationMs: Date.now() - startTime
             }
-          }).where(sql`id = ${syncId}`)
+          }).where(eq(schema.syncHistory.id, syncId))
           
           // Update batch state
           await updateBatchState(db, source, nextIndex)

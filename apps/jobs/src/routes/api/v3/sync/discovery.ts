@@ -18,7 +18,20 @@ export const Route = createFileRoute('/api/v3/sync/discovery')({
         
         try {
           const ctx = context as any
-          const db = await getDbFromContext(ctx)
+          let db;
+          
+          // Try to get DB connection with explicit error handling
+          try {
+            db = await getDbFromContext(ctx)
+          } catch (dbError) {
+            const dbErrorMsg = dbError instanceof Error ? dbError.message : String(dbError)
+            console.error('[Discovery Sync] DB connection failed:', dbErrorMsg)
+            return json({
+              success: false,
+              error: `Database connection failed: ${dbErrorMsg}`,
+              duration: Date.now() - startTime
+            }, { status: 500 })
+          }
           
           // Clear logs for this sync run
           syncQueue.clearLogs()
@@ -141,7 +154,7 @@ export const Route = createFileRoute('/api/v3/sync/discovery')({
             completedAt: new Date(),
             logs: syncQueue.getLogs().slice(0, 20),
             stats: { companiesAdded, companiesChecked }
-          }).where(sql`id = ${syncId}`)
+          }).where(eq(schema.syncHistory.id, syncId))
           
           return json({
             success: true,
@@ -163,7 +176,7 @@ export const Route = createFileRoute('/api/v3/sync/discovery')({
               status: 'failed',
               completedAt: new Date(),
               logs: syncQueue.getLogs().slice(0, 20)
-            }).where(sql`id = ${syncId}`)
+            }).where(eq(schema.syncHistory.id, syncId))
           } catch {}
           
           return json({
