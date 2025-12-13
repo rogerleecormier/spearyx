@@ -50,7 +50,7 @@ export const Route = createFileRoute('/api/v3/stats')({
           const pendingCompanies = Number(pendingResult[0]?.count) || 0
 
           // Per-source sync status (last successful sync)
-          const sources = ['greenhouse', 'lever', 'remoteok', 'himalayas'] as const
+          const sources = ['greenhouse', 'lever', 'workable', 'remoteok', 'himalayas'] as const
           const sourceSyncStatus: Record<string, {
             lastSync: string | null
             status: 'running' | 'completed' | 'failed' | 'never'
@@ -98,11 +98,11 @@ export const Route = createFileRoute('/api/v3/stats')({
             ats: {
               name: 'ATS Sync',
               icon: '🏢',
-              sources: ['Greenhouse', 'Lever'],
+              sources: ['Greenhouse', 'Lever', 'Workable'],
               schedule: '*/3 min :01',
               lastSync: getLatestSync(sourceSyncStatus.greenhouse, sourceSyncStatus.lever),
-              status: getAggregatedStatus(sourceSyncStatus.greenhouse, sourceSyncStatus.lever),
-              error: sourceSyncStatus.greenhouse?.error || sourceSyncStatus.lever?.error
+              status: getAggregatedStatus(sourceSyncStatus.greenhouse, sourceSyncStatus.lever, sourceSyncStatus.workable),
+              error: sourceSyncStatus.greenhouse?.error || sourceSyncStatus.lever?.error || sourceSyncStatus.workable?.error
             },
             aggregator: {
               name: 'Aggregator Sync',
@@ -134,6 +134,7 @@ export const Route = createFileRoute('/api/v3/stats')({
               jobsBySource: {
                 greenhouse: sourceMap['greenhouse'] || 0,
                 lever: sourceMap['lever'] || 0,
+                workable: sourceMap['workable'] || 0,
                 remoteok: sourceMap['remoteok'] || 0,
                 himalayas: sourceMap['himalayas'] || 0
               },
@@ -164,10 +165,10 @@ function getLatestSync(a: any, b: any): string | null {
   return new Date(a.lastSync) > new Date(b.lastSync) ? a.lastSync : b.lastSync
 }
 
-function getAggregatedStatus(a: any, b: any): string {
-  if (a?.status === 'running' || b?.status === 'running') return 'running'
-  if (a?.status === 'failed' && b?.status === 'failed') return 'failed'
-  if (a?.status === 'completed' || b?.status === 'completed') return 'completed'
+function getAggregatedStatus(a: any, b: any, c?: any): string {
+  if (a?.status === 'running' || b?.status === 'running' || c?.status === 'running') return 'running'
+  if (a?.status === 'failed' && b?.status === 'failed' && (!c || c?.status === 'failed')) return 'failed'
+  if (a?.status === 'completed' || b?.status === 'completed' || c?.status === 'completed') return 'completed'
   return 'never'
 }
 

@@ -73,6 +73,7 @@ export const syncHistory = sqliteTable('sync_history', {
     jobsUpdated: number
     jobsDeleted: number
     companiesAdded: number
+    companiesUpdated?: number
     companiesDeleted: number
   }>(),
   logs: text('logs', { mode: 'json' }).$type<Array<{

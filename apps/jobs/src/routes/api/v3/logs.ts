@@ -20,6 +20,7 @@ export interface SyncLogResponse {
     jobsUpdated: number
     jobsDeleted: number
     companiesAdded?: number
+    companiesChecked?: number
     company?: string
     error?: string
   }
@@ -78,6 +79,7 @@ export const Route = createFileRoute('/api/v3/logs')({
               jobsUpdated: (sync.stats as any)?.jobsUpdated || 0,
               jobsDeleted: (sync.stats as any)?.jobsDeleted || 0,
               companiesAdded: (sync.stats as any)?.companiesAdded,
+              companiesChecked: (sync.stats as any)?.companiesChecked,
               company: (sync.stats as any)?.company,
               error: (sync.stats as any)?.error
             },

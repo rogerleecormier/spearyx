@@ -269,6 +269,7 @@ function HomePage() {
                   { id: "RemoteOK", label: "RemoteOK" },
                   { id: "Greenhouse", label: "Greenhouse" },
                   { id: "Lever", label: "Lever" },
+                  { id: "Workable", label: "Workable" },
                   { id: "Himalayas", label: "Himalayas" },
                 ]}
                 onChange={handleSourceSelect}

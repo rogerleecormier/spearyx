@@ -2,6 +2,7 @@ import type { JobSource } from './types'
 import { fetchRemoteOKJobs } from './remoteok'
 import { fetchGreenhouseJobs } from './greenhouse'
 import { fetchLeverJobs } from './lever'
+import { fetchWorkableJobs } from './workable'
 import { himalayasSource } from './himalayas'
 
 export const jobSources: JobSource[] = [
@@ -17,12 +18,18 @@ export const jobSources: JobSource[] = [
     name: 'Lever',
     fetch: fetchLeverJobs
   },
+  {
+    name: 'Workable',
+    fetch: fetchWorkableJobs
+  },
   himalayasSource
 ]
 
 export { fetchRemoteOKJobs } from './remoteok'
 export { fetchGreenhouseJobs } from './greenhouse'
 export { fetchLeverJobs } from './lever'
+export { fetchWorkableJobs } from './workable'
 export { himalayasSource } from './himalayas'
 export { determineCategoryId } from './categorization'
 export type { RawJobListing, JobSource } from './types'
+

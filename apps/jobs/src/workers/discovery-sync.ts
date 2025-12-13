@@ -27,7 +27,7 @@ export default {
       const result = await syncDiscovery(db, timeStr)
       
       if (result.success) {
-        console.log(`[${timeStr}] ✅ Discovery: checked ${result.companiesChecked}, discovered ${result.companiesAdded} (${result.duration}ms)`)
+        console.log(`[${timeStr}] ✅ Discovery: checked ${result.companiesChecked}, discovered ${result.companiesAdded}, updated ${result.companiesUpdated} (${result.duration}ms)`)
       } else {
         console.log(`[${timeStr}] ⚠️ Discovery returned: ${result.error || 'no error message'}`)
       }

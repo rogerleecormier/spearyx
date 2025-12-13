@@ -49,6 +49,7 @@ interface DashboardStats {
   jobsBySource: {
     greenhouse: number
     lever: number
+    workable: number
     remoteok: number
     himalayas: number
   }
@@ -257,13 +258,37 @@ function SyncDashboardContent() {
         {/* Jobs by Source */}
         <div className="bg-white rounded-lg border p-4 mb-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Jobs by Source</h2>
-          <div className="grid grid-cols-4 gap-4">
-            {Object.entries(stats?.jobsBySource || {}).map(([source, count]) => (
-              <div key={source} className="text-center">
-                <div className="text-2xl font-bold text-slate-900">{count}</div>
-                <div className="text-xs text-slate-500 capitalize">{source}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <SourceCard 
+              source="greenhouse" 
+              count={stats?.jobsBySource?.greenhouse || 0} 
+              icon="🌱" 
+              accentColor="border-l-green-500"
+            />
+            <SourceCard 
+              source="lever" 
+              count={stats?.jobsBySource?.lever || 0} 
+              icon="⚙️"
+              accentColor="border-l-blue-500"
+            />
+            <SourceCard 
+              source="workable" 
+              count={stats?.jobsBySource?.workable || 0} 
+              icon="💼"
+              accentColor="border-l-purple-500"
+            />
+            <SourceCard 
+              source="remoteok" 
+              count={stats?.jobsBySource?.remoteok || 0} 
+              icon="🌐"
+              accentColor="border-l-red-500"
+            />
+            <SourceCard 
+              source="himalayas" 
+              count={stats?.jobsBySource?.himalayas || 0} 
+              icon="🏔️"
+              accentColor="border-l-indigo-500"
+            />
           </div>
         </div>
 
@@ -327,6 +352,30 @@ function StatCard({ label, value, isText = false }: { label: string; value: stri
       <div className="text-xs text-slate-500 mb-1">{label}</div>
       <div className={`font-bold ${isText ? 'text-sm text-slate-700' : 'text-2xl text-slate-900'}`}>
         {value}
+      </div>
+    </div>
+  )
+}
+
+function SourceCard({ 
+  source, 
+  count, 
+  icon, 
+  accentColor
+}: { 
+  source: string
+  count: number
+  icon: string
+  gradient?: string
+  bgLight?: string
+  borderColor?: string
+  accentColor: string
+}) {
+  return (
+    <div className={`bg-white rounded-lg border border-l-4 ${accentColor} p-4`}>
+      <div className="text-xs text-slate-500 mb-1 capitalize">{source}</div>
+      <div className="text-2xl font-bold text-slate-900">
+        {count.toLocaleString()}
       </div>
     </div>
   )
@@ -405,6 +454,7 @@ function LogEntry({
     switch (source?.toLowerCase()) {
       case 'greenhouse': return <Building2 className="w-4 h-4 text-green-600" />
       case 'lever': return <Building2 className="w-4 h-4 text-blue-600" />
+      case 'workable': return <Building2 className="w-4 h-4 text-purple-600" />
       case 'remoteok': return <Globe className="w-4 h-4 text-red-600" />
       case 'himalayas': return <Globe className="w-4 h-4 text-indigo-600" />
       default: return <Search className="w-4 h-4 text-purple-600" />
@@ -417,6 +467,7 @@ function LogEntry({
     const icons: Record<string, string> = {
       greenhouse: '🏢',
       lever: '🔧',
+      workable: '💼',
       remoteok: '🌐',
       himalayas: '🏔️'
     }
@@ -446,6 +497,8 @@ function LogEntry({
               <div className="text-xs text-slate-500">
                 {log.status === 'failed' && log.stats.error ? (
                   <span className="text-red-600">{log.stats.error}</span>
+                ) : log.syncType === 'discovery' ? (
+                  `Checked ${(log.stats as any).companiesChecked || 0}: ${(log.stats as any).companiesAdded || 0} new, ${(log.stats as any).companiesUpdated || 0} updated`
                 ) : (
                   `+${log.stats.jobsAdded} added, ${log.stats.jobsUpdated} updated`
                 )}

@@ -214,6 +214,69 @@ async function searchHimalayasCompany(query: string): Promise<CompanySearchResul
 }
 
 /**
+ * Search for a company on Workable
+ */
+async function searchWorkableCompany(query: string): Promise<CompanySearchResult> {
+  const slug = query.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  
+  try {
+    const url = `https://apply.workable.com/api/v1/widget/accounts/${slug}`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return { found: false, error: 'Company not found on Workable' }
+      }
+      return { found: false, error: `HTTP ${response.status}` }
+    }
+
+    const data = await response.json() as any
+
+    if (!data.jobs || !Array.isArray(data.jobs)) {
+      return { found: false, error: 'No jobs data in response' }
+    }
+
+    // Filter for remote positions (telecommuting = true or title includes 'remote')
+    const remoteJobs = data.jobs.filter((job: any) => {
+      const isRemote = job.telecommuting === true
+      const titleLower = job.title?.toLowerCase() || ''
+      return isRemote || titleLower.includes('remote')
+    })
+
+    return {
+      found: true,
+      company: {
+        slug,
+        name: data.name || slug,
+        jobCount: data.jobs.length,
+        remoteJobCount: remoteJobs.length
+      },
+      jobs: remoteJobs.slice(0, 10).map((job: any) => {
+        // Build location from city/country
+        let location = 'Remote'
+        if (job.city && job.country) {
+          location = `${job.city}, ${job.country}`
+        } else if (job.country) {
+          location = job.country
+        }
+        return {
+          id: `workable-${job.shortcode || job.id}`,
+          title: job.title,
+          location,
+          departments: job.department ? [job.department] : [],
+          url: job.url || job.application_url
+        }
+      })
+    }
+  } catch (error) {
+    return {
+      found: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
  * Search for a company across all supported sources
  */
 export async function searchCompany(
@@ -226,13 +289,15 @@ export async function searchCompany(
     return searchGreenhouseCompany(query)
   } else if (sourceLower === 'lever') {
     return searchLeverCompany(query)
+  } else if (sourceLower === 'workable') {
+    return searchWorkableCompany(query)
   } else if (sourceLower === 'remoteok') {
     return searchRemoteOKCompany(query)
   } else if (sourceLower === 'himalayas') {
     return searchHimalayasCompany(query)
   } else if (sourceLower === 'all') {
     // Try all sources in order
-    const sources = ['greenhouse', 'lever', 'remoteok', 'himalayas']
+    const sources = ['greenhouse', 'lever', 'workable', 'remoteok', 'himalayas']
     for (const src of sources) {
       const result = await searchCompany(src, query)
       if (result.found) {
@@ -246,7 +311,7 @@ export async function searchCompany(
   } else {
     return {
       found: false,
-      error: `Unsupported source: ${source}. Supported sources: Greenhouse, Lever, RemoteOK, Himalayas, All`
+      error: `Unsupported source: ${source}. Supported sources: Greenhouse, Lever, Workable, RemoteOK, Himalayas, All`
     }
   }
 }

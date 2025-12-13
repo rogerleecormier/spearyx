@@ -11,7 +11,7 @@ import { asyncThrottle, AsyncThrottler } from '@tanstack/pacer'
 
 export interface SyncWorkItem {
   id: string
-  source: 'greenhouse' | 'lever' | 'remoteok' | 'himalayas'
+  source: 'greenhouse' | 'lever' | 'workable' | 'remoteok' | 'himalayas'
   company?: string  // For ATS sources
   priority: number  // Higher = process first
   retryCount: number
@@ -61,6 +61,7 @@ const createSourceFetcher = (sourceId: string, waitMs: number = 500) => {
 export const sourceFetchers = {
   greenhouse: createSourceFetcher('greenhouse', 1000),  // 1 req/sec
   lever: createSourceFetcher('lever', 1000),
+  workable: createSourceFetcher('workable', 1000),     // 1 req/sec for Workable
   remoteok: createSourceFetcher('remoteok', 2000),      // Slower for aggregators
   himalayas: createSourceFetcher('himalayas', 2000)
 }
@@ -114,13 +115,18 @@ export const syncQueue = new SyncQueueManager()
 
 export interface BatchState {
   atsIndex: number        // Current index in ATS companies
-  lastAtsSource: 'greenhouse' | 'lever'
+  lastAtsSource: 'greenhouse' | 'lever' | 'workable'
   lastAggregatorSource: 'remoteok' | 'himalayas'
   lastUpdated: Date
 }
 
-export function getNextAtsSource(lastSource: 'greenhouse' | 'lever'): 'greenhouse' | 'lever' {
-  return lastSource === 'greenhouse' ? 'lever' : 'greenhouse'
+// ATS sources rotate in order: greenhouse -> lever -> workable -> greenhouse...
+const ATS_SOURCE_ORDER = ['greenhouse', 'lever', 'workable'] as const
+
+export function getNextAtsSource(lastSource: 'greenhouse' | 'lever' | 'workable'): 'greenhouse' | 'lever' | 'workable' {
+  const currentIndex = ATS_SOURCE_ORDER.indexOf(lastSource)
+  const nextIndex = (currentIndex + 1) % ATS_SOURCE_ORDER.length
+  return ATS_SOURCE_ORDER[nextIndex]
 }
 
 export function getNextAggregatorSource(lastSource: 'remoteok' | 'himalayas'): 'remoteok' | 'himalayas' {

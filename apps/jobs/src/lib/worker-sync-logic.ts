@@ -14,6 +14,7 @@ import { determineCategoryId } from './job-sources'
 // Import company lists
 import greenhouseCompanies from './job-sources/greenhouse-companies.json'
 import leverCompanies from './job-sources/lever-companies.json'
+import workableCompanies from './job-sources/workable-companies.json'
 
 // ============================================
 // Types
@@ -58,6 +59,32 @@ function getLeverCompanies(): string[] {
   return [...new Set(all)]
 }
 
+function getWorkableCompanies(): string[] {
+  const data = workableCompanies as CompanyDatabase
+  const all: string[] = []
+  Object.values(data.categories).forEach(cat => all.push(...cat.companies))
+  return [...new Set(all)]
+}
+
+// ATS source rotation order
+const ATS_SOURCES = ['greenhouse', 'lever', 'workable'] as const
+type AtsSource = typeof ATS_SOURCES[number]
+
+function getNextAtsSource(lastSource: AtsSource): AtsSource {
+  const currentIndex = ATS_SOURCES.indexOf(lastSource)
+  const nextIndex = (currentIndex + 1) % ATS_SOURCES.length
+  return ATS_SOURCES[nextIndex]
+}
+
+function getCompaniesForSource(source: AtsSource): string[] {
+  switch (source) {
+    case 'greenhouse': return getGreenhouseCompanies()
+    case 'lever': return getLeverCompanies()
+    case 'workable': return getWorkableCompanies()
+  }
+}
+
+
 function createLog(type: LogEntry['type'], message: string): LogEntry {
   return {
     timestamp: new Date().toISOString(),
@@ -65,6 +92,8 @@ function createLog(type: LogEntry['type'], message: string): LogEntry {
     message
   }
 }
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // RemoteOK tags for rotation
 const REMOTEOK_TAGS = [
@@ -127,17 +156,17 @@ export async function syncAtsCompany(
       .limit(1)
     
     let atsIndex = 0
-    let lastSource: 'greenhouse' | 'lever' = 'lever'
+    let lastSource: AtsSource = 'workable' // Start with workable so first run goes to greenhouse
     
     if (batchState.length > 0 && batchState[0].stats) {
       const state = batchState[0].stats as any
       atsIndex = state.atsIndex || 0
-      lastSource = state.lastSource || 'lever'
+      lastSource = state.lastSource || 'workable'
     }
     
-    // Alternate between sources
-    const source = lastSource === 'greenhouse' ? 'lever' : 'greenhouse'
-    const companies = source === 'greenhouse' ? getGreenhouseCompanies() : getLeverCompanies()
+    // Rotate through 3 sources: greenhouse -> lever -> workable -> greenhouse...
+    const source = getNextAtsSource(lastSource)
+    const companies = getCompaniesForSource(source)
     
     // Get next company
     if (atsIndex >= companies.length) {
@@ -172,9 +201,18 @@ export async function syncAtsCompany(
     let jobsUpdated = 0
     
     // Fetch jobs from source
-    const apiUrl = source === 'greenhouse'
-      ? `https://boards-api.greenhouse.io/v1/boards/${company}/jobs`
-      : `https://api.lever.co/v0/postings/${company}`
+    let apiUrl: string
+    switch (source) {
+      case 'greenhouse':
+        apiUrl = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs`
+        break
+      case 'lever':
+        apiUrl = `https://api.lever.co/v0/postings/${company}`
+        break
+      case 'workable':
+        apiUrl = `https://apply.workable.com/api/v1/widget/accounts/${company}`
+        break
+    }
     
     log('info', `API: ${apiUrl}`)
     
@@ -195,7 +233,20 @@ export async function syncAtsCompany(
         log('warning', `${company}: Invalid content-type: ${contentType.substring(0, 50)}`)
       } else {
         const data = await response.json() as any
-        const jobs = source === 'greenhouse' ? (data.jobs || []) : (data || [])
+        let jobs: any[]
+        
+        // Parse jobs based on source format
+        switch (source) {
+          case 'greenhouse':
+            jobs = data.jobs || []
+            break
+          case 'lever':
+            jobs = data || []
+            break
+          case 'workable':
+            jobs = data.jobs || []
+            break
+        }
         
         log('info', `Total jobs from API: ${jobs.length}`)
         
@@ -204,11 +255,16 @@ export async function syncAtsCompany(
           if (source === 'greenhouse') {
             const loc = job.location?.name?.toLowerCase() || ''
             return loc.includes('remote') || loc.includes('anywhere')
-          } else {
+          } else if (source === 'lever') {
             const cats = job.categories || {}
             const loc = cats.location?.toLowerCase() || ''
             const commitment = cats.commitment?.toLowerCase() || ''
             return loc.includes('remote') || commitment.includes('remote')
+          } else {
+            // Workable uses telecommuting: true at job level
+            const isRemote = job.telecommuting === true
+            const titleLower = job.title?.toLowerCase() || ''
+            return isRemote || titleLower.includes('remote')
           }
         })
         
@@ -216,9 +272,18 @@ export async function syncAtsCompany(
         
         // Process jobs
         for (const job of remoteJobs) {
-          const sourceUrl = source === 'greenhouse'
-            ? job.absolute_url
-            : job.hostedUrl
+          let sourceUrl: string | undefined
+          switch (source) {
+            case 'greenhouse':
+              sourceUrl = job.absolute_url
+              break
+            case 'lever':
+              sourceUrl = job.hostedUrl
+              break
+            case 'workable':
+              sourceUrl = job.url || job.application_url || `https://apply.workable.com/${company}/j/${job.shortcode}/`
+              break
+          }
           
           if (!sourceUrl) continue
           
@@ -228,10 +293,23 @@ export async function syncAtsCompany(
             .where(eq(schema.jobs.sourceUrl, sourceUrl))
             .limit(1)
           
-          const title = source === 'greenhouse' ? job.title : job.text
-          const description = source === 'greenhouse'
-            ? job.content || ''
-            : job.descriptionPlain || job.description || ''
+          let title: string
+          let description: string
+          
+          switch (source) {
+            case 'greenhouse':
+              title = job.title
+              description = job.content || ''
+              break
+            case 'lever':
+              title = job.text
+              description = job.descriptionPlain || job.description || ''
+              break
+            case 'workable':
+              title = job.title
+              description = '' // Workable widget API doesn't include description
+              break
+          }
           
           // Extract post date from API response
           let postDate: Date | null = null
@@ -241,6 +319,9 @@ export async function syncAtsCompany(
           } else if (source === 'lever' && job.createdAt) {
             // Lever uses Unix timestamp in milliseconds
             postDate = new Date(job.createdAt)
+          } else if (source === 'workable' && job.created_at) {
+            // Workable uses ISO-8601 format
+            postDate = new Date(job.created_at)
           }
           
           const categoryId = determineCategoryId(title, description, [])
@@ -263,7 +344,7 @@ export async function syncAtsCompany(
               descriptionRaw: description,
               isCleansed: 0,
               sourceUrl,
-              sourceName: source === 'greenhouse' ? 'Greenhouse' : 'Lever',
+              sourceName: source === 'greenhouse' ? 'Greenhouse' : source === 'lever' ? 'Lever' : 'Workable',
               postDate: postDate || new Date(),  // Use current date as fallback
               categoryId,
               remoteType: 'fully_remote'
@@ -304,7 +385,23 @@ export async function syncAtsCompany(
       duration: Date.now() - startTime
     }
     
-  } catch (error) {
+  } catch (error: any) {
+    // Handle rate limits gracefully
+    if (error.message.includes('429') || (error.cause && String(error.cause).includes('429'))) {
+        log('warning', `Rate limit hit (429) for ${source}. Skipping and rotating.`)
+        // Force rotation so we don't get stuck on this source
+        await updateAtsBatchState(db, source, nextIndex)
+        return {
+            success: false,
+            source,
+            company,
+            jobsAdded: 0,
+            jobsUpdated: 0,
+            error: 'Rate limit hit (429)',
+            duration: Date.now() - startTime
+        }
+    }
+
     await markSyncFailed(db, syncId, error, logs)
     throw error
   }
@@ -441,8 +538,8 @@ export async function syncAggregator(
     
     log('info', `Total jobs from API: ${jobs.length}`)
     
-    // Limit to first 100 for performance
-    const jobsToProcess = jobs.slice(0, 100)
+    // Limit to first 10 for performance to avoid CPU limits
+    const jobsToProcess = jobs.slice(0, 10)
     log('info', `Processing ${jobsToProcess.length} jobs`)
     
     for (const job of jobsToProcess) {
@@ -516,7 +613,7 @@ export async function syncAggregator(
     await db.update(schema.syncHistory).set({
       status: 'completed',
       completedAt: new Date(),
-      logs: logs.slice(0, 20),
+      logs: logs.slice(0, 100),
       stats: { jobsAdded, jobsUpdated, jobsDeleted: 0 } as any
     }).where(eq(schema.syncHistory.id, syncId))
     
@@ -579,7 +676,7 @@ async function updateAggregatorBatchState(db: DrizzleD1Database, source: string,
 export async function syncDiscovery(
   db: DrizzleD1Database,
   timeStr: string
-): Promise<{ success: boolean; companiesChecked: number; companiesAdded: number; duration: number; error?: string }> {
+): Promise<{ success: boolean; companiesChecked: number; companiesAdded: number; companiesUpdated: number; duration: number; error?: string }> {
   const syncId = crypto.randomUUID()
   const startTime = Date.now()
   const logs: LogEntry[] = []
@@ -612,106 +709,227 @@ export async function syncDiscovery(
     
     let companiesChecked = 0
     let companiesAdded = 0
+    let companiesUpdated = 0
     const discovered: string[] = []
     
+    // Generate slug variations
+    const generateSlugVariations = (slug: string): string[] => {
+      const variations = new Set<string>()
+      variations.add(slug.toLowerCase())
+      
+      if (slug.includes('-')) {
+        variations.add(slug.replace(/-/g, '_').toLowerCase())
+        variations.add(slug.replace(/-/g, '').toLowerCase())
+        const camel = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')
+        variations.add(camel)
+        variations.add(camel.toLowerCase())
+      }
+      
+      if (slug.includes('_')) {
+        variations.add(slug.replace(/_/g, '-').toLowerCase())
+        variations.add(slug.replace(/_/g, '').toLowerCase())
+        const camel = slug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')
+        variations.add(camel)
+        variations.add(camel.toLowerCase())
+      }
+      
+      if (!slug.includes('-') && !slug.includes('_') && /[A-Z]/.test(slug)) {
+        const words = slug.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
+        variations.add(words)
+        variations.add(words.replace(/-/g, '_'))
+        variations.add(words.replace(/-/g, ''))
+      }
+      
+      return Array.from(variations)
+    }
+
     for (const potential of potentialCompanies) {
       companiesChecked++
-      const slug = potential.slug
+      const baseSlug = potential.slug
+      const slugVariations = generateSlugVariations(baseSlug)
+      let foundOnAnySource = false
       
       try {
-        // Try Greenhouse first
-        const ghUrl = `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`
-        log('info', `Checking ${slug} - Greenhouse API`)
-        const ghResponse = await fetch(ghUrl)
-        
-        if (ghResponse.ok) {
-          const data = await ghResponse.json() as any
-          const jobs = data.jobs || []
-          log('info', `${slug}: Greenhouse HTTP ${ghResponse.status}, ${jobs.length} total jobs`)
+        slugLoop: for (const slug of slugVariations) {
+          if (foundOnAnySource) break
           
-          const remoteJobs = jobs.filter((j: any) => {
-            const loc = j.location?.name?.toLowerCase() || ''
-            return loc.includes('remote') || loc.includes('anywhere')
-          })
+          // Try Greenhouse
+          const ghUrl = `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`
+          const ghResponse = await fetch(ghUrl)
           
-          log('info', `${slug}: ${remoteJobs.length}/${jobs.length} remote jobs`)
-          
-          if (remoteJobs.length > 0) {
+            if (ghResponse.ok) {
+            const data = await ghResponse.json() as any
+            const jobs = data.jobs || []
+            const remoteJobs = jobs.filter((j: any) => {
+              const loc = j.location?.name?.toLowerCase() || ''
+              return loc.includes('remote') || loc.includes('anywhere')
+            })
+            
+            // Check if exists
+            const existing = await db.select().from(schema.discoveredCompanies).where(eq(schema.discoveredCompanies.slug, slug)).limit(1)
+            const isNew = existing.length === 0
+
             await db.insert(schema.discoveredCompanies).values({
               slug,
-              name: slug,
+              name: baseSlug,
               source: 'Greenhouse',
+              jobCount: jobs.length,
               remoteJobCount: remoteJobs.length
-            }).onConflictDoNothing()
+            }).onConflictDoUpdate({
+              target: schema.discoveredCompanies.slug,
+              set: {
+                source: 'Greenhouse',
+                jobCount: jobs.length,
+                remoteJobCount: remoteJobs.length,
+                updatedAt: new Date()
+              }
+            })
             
-            companiesAdded++
-            discovered.push(slug)
-            log('success', `✓ Discovered ${slug} (Greenhouse, ${remoteJobs.length} remote jobs)`)
+            if (isNew) {
+              companiesAdded++
+              log('success', `✓ Discovered ${baseSlug} as ${slug} (Greenhouse, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
+            } else {
+              companiesUpdated++
+              log('success', `↻ Updated ${baseSlug} as ${slug} (Greenhouse, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
+            }
+            
+            discovered.push(baseSlug)
+            foundOnAnySource = true
+            break slugLoop
+          } else {
+             log('info', `${slug}: Greenhouse HTTP ${ghResponse.status}`)
           }
-        } else {
-          log('info', `${slug}: Greenhouse HTTP ${ghResponse.status}`)
-        }
-        
-        // Try Lever if Greenhouse didn't work
-        if (!ghResponse.ok) {
+          
+          // Try Lever
           const lvUrl = `https://api.lever.co/v0/postings/${slug}`
-          log('info', `Checking ${slug} - Lever API`)
           const lvResponse = await fetch(lvUrl)
           
           if (lvResponse.ok) {
             const jobs = await lvResponse.json() as any[]
-            log('info', `${slug}: Lever HTTP ${lvResponse.status}, ${jobs.length} total jobs`)
-            
             const remoteJobs = jobs.filter((j: any) => {
               const loc = j.categories?.location?.toLowerCase() || ''
               return loc.includes('remote')
             })
             
-            log('info', `${slug}: ${remoteJobs.length}/${jobs.length} remote jobs`)
-            
-            if (remoteJobs.length > 0) {
-              await db.insert(schema.discoveredCompanies).values({
-                slug,
-                name: slug,
+            // Check if exists
+            const existing = await db.select().from(schema.discoveredCompanies).where(eq(schema.discoveredCompanies.slug, slug)).limit(1)
+            const isNew = existing.length === 0
+
+            await db.insert(schema.discoveredCompanies).values({
+              slug,
+              name: baseSlug,
+              source: 'Lever',
+              jobCount: jobs.length,
+              remoteJobCount: remoteJobs.length
+            }).onConflictDoUpdate({
+              target: schema.discoveredCompanies.slug,
+              set: {
                 source: 'Lever',
-                remoteJobCount: remoteJobs.length
-              }).onConflictDoNothing()
-              
+                jobCount: jobs.length,
+                remoteJobCount: remoteJobs.length,
+                updatedAt: new Date()
+              }
+            })
+            
+            if (isNew) {
               companiesAdded++
-              discovered.push(slug)
-              log('success', `✓ Discovered ${slug} (Lever, ${remoteJobs.length} remote jobs)`)
+              log('success', `✓ Discovered ${baseSlug} as ${slug} (Lever, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
+            } else {
+              companiesUpdated++
+              log('success', `↻ Updated ${baseSlug} as ${slug} (Lever, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
             }
+            
+            discovered.push(baseSlug)
+            foundOnAnySource = true
+            break slugLoop
           } else {
-            log('info', `${slug}: Lever HTTP ${lvResponse.status}`)
+             log('info', `${slug}: Lever HTTP ${lvResponse.status}`)
           }
+          
+          // Try Workable
+          const wkUrl = `https://apply.workable.com/api/v1/widget/accounts/${slug}`
+          const wkResponse = await fetch(wkUrl)
+          
+          if (wkResponse.ok) {
+            const data = await wkResponse.json() as any
+            const jobs = data.jobs || []
+            const remoteJobs = jobs.filter((j: any) => {
+              const isRemote = j.telecommuting === true
+              const titleLower = j.title?.toLowerCase() || ''
+              return isRemote || titleLower.includes('remote')
+            })
+            
+            // Check if exists
+            const existing = await db.select().from(schema.discoveredCompanies).where(eq(schema.discoveredCompanies.slug, slug)).limit(1)
+            const isNew = existing.length === 0
+
+            await db.insert(schema.discoveredCompanies).values({
+              slug,
+              name: data.name || baseSlug,
+              source: 'Workable',
+              jobCount: jobs.length,
+              remoteJobCount: remoteJobs.length
+            }).onConflictDoUpdate({
+              target: schema.discoveredCompanies.slug,
+              set: {
+                source: 'Workable',
+                jobCount: jobs.length,
+                remoteJobCount: remoteJobs.length,
+                updatedAt: new Date()
+              }
+            })
+            
+            if (isNew) {
+              companiesAdded++
+              log('success', `✓ Discovered ${baseSlug} as ${slug} (Workable, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
+            } else {
+              companiesUpdated++
+              log('success', `↻ Updated ${baseSlug} as ${slug} (Workable, ${jobs.length} jobs, ${remoteJobs.length} remote)`)
+            }
+
+            discovered.push(baseSlug)
+            foundOnAnySource = true
+            break slugLoop
+          } else {
+            log('info', `${slug}: Workable HTTP ${wkResponse.status}`)
+          }
+          
+          // Rate limit protection for Workable discovery
+          await sleep(1000)
         }
         
         // Mark as checked
         await db.update(schema.potentialCompanies).set({
-          status: discovered.includes(slug) ? 'discovered' : 'not_found',
+          status: foundOnAnySource ? 'discovered' : 'not_found',
           lastCheckedAt: new Date(),
           checkCount: (potential.checkCount || 0) + 1
         }).where(eq(schema.potentialCompanies.id, potential.id))
         
+        if (!foundOnAnySource) {
+           // Only log not found if none of the variations worked
+           // log('info', `${baseSlug}: Not found on any ATS`) 
+        }
+
       } catch (checkError) {
-        log('warning', `Error checking ${slug}: ${checkError}`)
+        log('warning', `Error checking ${baseSlug}: ${checkError}`)
       }
     }
     
-    log('success', `Checked ${companiesChecked}, discovered ${companiesAdded}`)
+    log('success', `Checked ${companiesChecked}, discovered ${companiesAdded}, updated ${companiesUpdated}`)
     
     // Update sync history
     await db.update(schema.syncHistory).set({
       status: 'completed',
       completedAt: new Date(),
       logs: logs.slice(0, 20),
-      stats: { companiesAdded, companiesChecked } as any
+      stats: { companiesAdded, companiesUpdated, companiesChecked } as any
     }).where(eq(schema.syncHistory.id, syncId))
     
     return {
       success: true,
       companiesChecked,
       companiesAdded,
+      companiesUpdated,
       duration: Date.now() - startTime
     }
     
