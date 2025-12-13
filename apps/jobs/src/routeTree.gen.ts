@@ -19,6 +19,7 @@ import { Route as ApiV3CategoriesRouteImport } from './routes/api/v3/categories'
 import { Route as ApiV3SyncDiscoveryRouteImport } from './routes/api/v3/sync/discovery'
 import { Route as ApiV3SyncAtsRouteImport } from './routes/api/v3/sync/ats'
 import { Route as ApiV3SyncAggregatorRouteImport } from './routes/api/v3/sync/aggregator'
+import { Route as ApiV3JobsPruneRouteImport } from './routes/api/v3/jobs/prune'
 
 const SyncRoute = SyncRouteImport.update({
   id: '/sync',
@@ -70,15 +71,21 @@ const ApiV3SyncAggregatorRoute = ApiV3SyncAggregatorRouteImport.update({
   path: '/api/v3/sync/aggregator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV3JobsPruneRoute = ApiV3JobsPruneRouteImport.update({
+  id: '/prune',
+  path: '/prune',
+  getParentRoute: () => ApiV3JobsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
-  '/api/v3/jobs': typeof ApiV3JobsRoute
+  '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
   '/api/v3/logs': typeof ApiV3LogsRoute
   '/api/v3/stats': typeof ApiV3StatsRoute
+  '/api/v3/jobs/prune': typeof ApiV3JobsPruneRoute
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
@@ -88,9 +95,10 @@ export interface FileRoutesByTo {
   '/sync': typeof SyncRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
-  '/api/v3/jobs': typeof ApiV3JobsRoute
+  '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
   '/api/v3/logs': typeof ApiV3LogsRoute
   '/api/v3/stats': typeof ApiV3StatsRoute
+  '/api/v3/jobs/prune': typeof ApiV3JobsPruneRoute
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
@@ -101,9 +109,10 @@ export interface FileRoutesById {
   '/sync': typeof SyncRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
-  '/api/v3/jobs': typeof ApiV3JobsRoute
+  '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
   '/api/v3/logs': typeof ApiV3LogsRoute
   '/api/v3/stats': typeof ApiV3StatsRoute
+  '/api/v3/jobs/prune': typeof ApiV3JobsPruneRoute
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/api/v3/jobs'
     | '/api/v3/logs'
     | '/api/v3/stats'
+    | '/api/v3/jobs/prune'
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/api/v3/jobs'
     | '/api/v3/logs'
     | '/api/v3/stats'
+    | '/api/v3/jobs/prune'
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/api/v3/jobs'
     | '/api/v3/logs'
     | '/api/v3/stats'
+    | '/api/v3/jobs/prune'
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
@@ -152,7 +164,7 @@ export interface RootRouteChildren {
   SyncRoute: typeof SyncRoute
   ApiV3CategoriesRoute: typeof ApiV3CategoriesRoute
   ApiV3JobContentRoute: typeof ApiV3JobContentRoute
-  ApiV3JobsRoute: typeof ApiV3JobsRoute
+  ApiV3JobsRoute: typeof ApiV3JobsRouteWithChildren
   ApiV3LogsRoute: typeof ApiV3LogsRoute
   ApiV3StatsRoute: typeof ApiV3StatsRoute
   ApiV3SyncAggregatorRoute: typeof ApiV3SyncAggregatorRoute
@@ -232,15 +244,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV3SyncAggregatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v3/jobs/prune': {
+      id: '/api/v3/jobs/prune'
+      path: '/prune'
+      fullPath: '/api/v3/jobs/prune'
+      preLoaderRoute: typeof ApiV3JobsPruneRouteImport
+      parentRoute: typeof ApiV3JobsRoute
+    }
   }
 }
+
+interface ApiV3JobsRouteChildren {
+  ApiV3JobsPruneRoute: typeof ApiV3JobsPruneRoute
+}
+
+const ApiV3JobsRouteChildren: ApiV3JobsRouteChildren = {
+  ApiV3JobsPruneRoute: ApiV3JobsPruneRoute,
+}
+
+const ApiV3JobsRouteWithChildren = ApiV3JobsRoute._addFileChildren(
+  ApiV3JobsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SyncRoute: SyncRoute,
   ApiV3CategoriesRoute: ApiV3CategoriesRoute,
   ApiV3JobContentRoute: ApiV3JobContentRoute,
-  ApiV3JobsRoute: ApiV3JobsRoute,
+  ApiV3JobsRoute: ApiV3JobsRouteWithChildren,
   ApiV3LogsRoute: ApiV3LogsRoute,
   ApiV3StatsRoute: ApiV3StatsRoute,
   ApiV3SyncAggregatorRoute: ApiV3SyncAggregatorRoute,

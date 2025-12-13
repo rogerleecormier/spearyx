@@ -12,6 +12,7 @@ import JobDetailModal from "./JobDetailModal";
 
 interface JobCardProps {
   job: JobWithCategory;
+  onCompanyClick?: (company: string) => void;
 }
 
 // Helper to truncate and strip HTML for preview
@@ -55,7 +56,7 @@ function getTruncatedDescription(
   return text.substring(0, maxLength).trim() + "...";
 }
 
-export default function JobCard({ job }: JobCardProps) {
+export default function JobCard({ job, onCompanyClick }: JobCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const formattedDate = job.postDate
@@ -84,7 +85,19 @@ export default function JobCard({ job }: JobCardProps) {
           {job.company && (
             <div className="flex items-center gap-2 text-slate-600 mb-4 text-sm font-medium">
               <Building2 size={16} className="text-slate-400" />
-              <span>{job.company}</span>
+              {onCompanyClick ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCompanyClick(job.company!);
+                  }}
+                  className="hover:text-primary-600 hover:underline transition-colors text-left"
+                >
+                  {job.company}
+                </button>
+              ) : (
+                <span>{job.company}</span>
+              )}
             </div>
           )}
 

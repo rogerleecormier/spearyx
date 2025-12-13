@@ -1,18 +1,20 @@
 /**
- * Job Pruning API Endpoint
- * Removes jobs that no longer exist on their source platforms
+ * Job Pruning API Endpoint (Lightweight)
+ * Removes jobs that haven't been updated in X days (stale jobs)
+ * 
+ * This uses a timestamp-based approach instead of fetching from external APIs
+ * to avoid Worker resource limits.
  * 
  * Usage:
- * - POST /api/v3/jobs/prune (prune all sources)
- * - POST /api/v3/jobs/prune?source=Greenhouse (prune specific source)
- * - POST /api/v3/jobs/prune?source=Lever,RemoteOK (prune multiple sources)
- * - POST /api/v3/jobs/prune?dryRun=true (preview what would be deleted)
+ * - POST /api/v3/jobs/prune?source=Greenhouse&days=30&dryRun=true
  */
 
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
-import { getDbFromContext } from '../../../../db/db'
-import { pruneJobs } from '../../../../lib/job-prune'
+import { getDbFromContext, schema } from '../../../../db/db'
+import { sql, eq, and, lt } from 'drizzle-orm'
+
+const DEFAULT_STALE_DAYS = 30
 
 export const Route = createFileRoute('/api/v3/jobs/prune')({
   server: {
@@ -40,42 +42,70 @@ export const Route = createFileRoute('/api/v3/jobs/prune')({
           // Parse query parameters
           const url = new URL(request.url)
           const sourceParam = url.searchParams.get('source')
+          const daysParam = url.searchParams.get('days')
           const dryRunParam = url.searchParams.get('dryRun')
           
-          // Parse sources (comma-separated)
-          const sources = sourceParam 
-            ? sourceParam.split(',').map(s => s.trim()).filter(Boolean)
-            : undefined
+          const staleDays = daysParam ? parseInt(daysParam) : DEFAULT_STALE_DAYS
+          const dryRun = dryRunParam === 'true' || dryRunParam === '1' || !dryRunParam // Default to dry run
           
-          const dryRun = dryRunParam === 'true' || dryRunParam === '1'
+          // Calculate cutoff date
+          const cutoffDate = new Date()
+          cutoffDate.setDate(cutoffDate.getDate() - staleDays)
           
           console.log('[Job Prune] Starting prune operation', {
-            sources: sources || 'all',
+            source: sourceParam || 'all',
+            staleDays,
+            cutoffDate: cutoffDate.toISOString(),
             dryRun,
             timestamp: new Date().toISOString()
           })
           
-          // Collect logs
-          const logs: string[] = []
-          const onLog = (message: string, level?: 'info' | 'success' | 'error' | 'warning') => {
-            const logEntry = `[${level || 'info'}] ${message}`
-            logs.push(logEntry)
-            console.log(`[Job Prune] ${logEntry}`)
+          // Build query conditions
+          const conditions = [
+            lt(schema.jobs.updatedAt, cutoffDate)
+          ]
+          
+          if (sourceParam) {
+            conditions.push(eq(schema.jobs.sourceName, sourceParam))
           }
           
-          // Run pruning
-          const result = await pruneJobs({
-            db,
-            sources,
-            dryRun,
-            onLog
+          // Find stale jobs
+          const staleJobs = await db.select({
+            id: schema.jobs.id,
+            title: schema.jobs.title,
+            company: schema.jobs.company,
+            sourceName: schema.jobs.sourceName,
+            sourceUrl: schema.jobs.sourceUrl,
+            updatedAt: schema.jobs.updatedAt
           })
+          .from(schema.jobs)
+          .where(and(...conditions))
+          .limit(500) // Limit to prevent resource exhaustion
+          
+          const jobsToDelete = staleJobs.length
+          let jobsDeleted = 0
+          
+          // Delete if not dry run
+          if (!dryRun && staleJobs.length > 0) {
+            const jobIds = staleJobs.map(j => j.id)
+            
+            // Delete in batches to avoid hitting limits
+            const batchSize = 100
+            for (let i = 0; i < jobIds.length; i += batchSize) {
+              const batch = jobIds.slice(i, i + batchSize)
+              await db.delete(schema.jobs)
+                .where(sql`id IN (${sql.join(batch.map(id => sql`${id}`), sql`, `)})`)
+              jobsDeleted += batch.length
+            }
+            
+            console.log('[Job Prune] Deleted', jobsDeleted, 'jobs')
+          }
           
           const duration = Date.now() - startTime
           
           console.log('[Job Prune] Completed', {
-            jobsToDelete: result.jobsToDelete,
-            jobsDeleted: result.jobsDeleted,
+            jobsToDelete,
+            jobsDeleted,
             dryRun,
             duration
           })
@@ -83,17 +113,26 @@ export const Route = createFileRoute('/api/v3/jobs/prune')({
           return json({
             success: true,
             dryRun,
-            sources: sources || 'all',
-            jobsToDelete: result.jobsToDelete,
-            jobsDeleted: result.jobsDeleted,
-            orphanedJobs: result.orphanedJobs.map(job => ({
+            sources: sourceParam || 'all',
+            staleDays,
+            cutoffDate: cutoffDate.toISOString(),
+            jobsToDelete,
+            jobsDeleted,
+            orphanedJobs: staleJobs.slice(0, 100).map(job => ({ // Limit response size
               id: job.id,
               title: job.title,
               company: job.company,
               source: job.sourceName,
-              url: job.sourceUrl
+              url: job.sourceUrl,
+              lastUpdated: job.updatedAt
             })),
-            logs,
+            logs: [
+              `[info] Checking jobs not updated since ${cutoffDate.toISOString()}`,
+              `[info] Found ${jobsToDelete} stale jobs`,
+              dryRun 
+                ? `[warning] DRY RUN - No jobs deleted`
+                : `[success] Deleted ${jobsDeleted} jobs`
+            ],
             duration
           })
           
