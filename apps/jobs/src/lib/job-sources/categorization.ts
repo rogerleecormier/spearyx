@@ -80,7 +80,9 @@ export const categoryKeywords: CategoryKeywords[] = [
 
 export function determineCategoryId(title: string | null | undefined, description: string | null | undefined, tags: string[] = []): number {
   const titleLower = (title || '').toLowerCase()
-  const descriptionLower = (description || '').toLowerCase()
+
+  // Truncate description to 2000 chars to save CPU time on regex/scanning
+  const descriptionLower = (description || '').slice(0, 2000).toLowerCase()
   const tagsLower = tags.map(t => t.toLowerCase())
   
   // Score each category based on keyword matches

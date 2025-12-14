@@ -8,7 +8,7 @@
 
 import type { DrizzleD1Database } from '../db/db'
 import * as schema from '../db/schema'
-import { sql, eq } from 'drizzle-orm'
+import { sql, eq, inArray } from 'drizzle-orm'
 import { determineCategoryId } from './job-sources'
 
 // Import company lists
@@ -553,14 +553,16 @@ export async function syncAggregator(
     const jobsToProcess = jobs.slice(0, 10)
     log('info', `Processing ${jobsToProcess.length} jobs`)
     
-    for (const job of jobsToProcess) {
-      try {
+    // Batch Process jobs
+    if (jobsToProcess.length > 0) {
+      // 1. Prepare all jobs
+      const jobsWithMetadata = jobsToProcess.map(job => {
         const sourceUrl = source === 'remoteok'
           ? `https://remoteok.com/l/${job.id}`
           : job.applicationLink || job.url
         
-        if (!sourceUrl) continue
-        
+        if (!sourceUrl) return null
+
         const title = source === 'remoteok' ? job.position : job.title
         const company = source === 'remoteok' ? job.company : job.companyName
         const description = source === 'remoteok'
@@ -576,44 +578,67 @@ export async function syncAggregator(
           // Himalayas uses ISO date string
           postDate = new Date(job.pubDate)
         }
-        
-        // Check if exists
-        const existing = await db.select()
-          .from(schema.jobs)
-          .where(eq(schema.jobs.sourceUrl, sourceUrl))
-          .limit(1)
-        
+
         const categoryId = determineCategoryId(title, description, job.tags || [])
-        
-        if (existing.length > 0) {
-          await db.update(schema.jobs).set({
-            title,
-            company,
-            descriptionRaw: description,
-            isCleansed: 0,
-            updatedAt: new Date(),
-            postDate: postDate || existing[0].postDate,  // Keep existing if no new date
-            categoryId
-          }).where(eq(schema.jobs.id, existing[0].id))
-          jobsUpdated++
-        } else {
-          await db.insert(schema.jobs).values({
-            title,
-            company,
-            descriptionRaw: description,
-            isCleansed: 0,
-            sourceUrl,
-            sourceName,
-            postDate: postDate || new Date(),  // Use current date as fallback
-            categoryId,
-            remoteType: 'fully_remote'
-          })
-          jobsAdded++
+
+        return {
+          title,
+          company,
+          descriptionRaw: description,
+          isCleansed: 0,
+          sourceUrl,
+          sourceName,
+          postDate: postDate || new Date(),
+          categoryId,
+          remoteType: 'fully_remote',
+          updatedAt: new Date() // For updates
         }
-      } catch (jobError) {
-        // Skip individual job errors (like UNIQUE constraint)
-        if (!(jobError instanceof Error && jobError.message.includes('UNIQUE'))) {
-          console.error('Job processing error:', jobError)
+      }).filter(Boolean) as any[]
+
+      if (jobsWithMetadata.length > 0) {
+        // 2. Check existing jobs in one query
+        const sourceUrls = jobsWithMetadata.map(j => j.sourceUrl)
+        const existingJobs = await db.select({
+          sourceUrl: schema.jobs.sourceUrl
+        })
+          .from(schema.jobs)
+          .where(inArray(schema.jobs.sourceUrl, sourceUrls))
+        
+        const existingUrls = new Set(existingJobs.map(j => j.sourceUrl))
+        
+        // Calculate stats
+        jobsAdded = jobsWithMetadata.filter(j => !existingUrls.has(j.sourceUrl)).length
+        jobsUpdated = jobsWithMetadata.filter(j => existingUrls.has(j.sourceUrl)).length
+
+        // 3. Perform batch upsert
+        // D1/SQLite supports ON CONFLICT for batch inserts
+        try {
+          await db.insert(schema.jobs)
+            .values(jobsWithMetadata)
+            .onConflictDoUpdate({
+              target: schema.jobs.sourceUrl,
+              set: {
+                title: sql`excluded.title`,
+                company: sql`excluded.company`,
+                descriptionRaw: sql`excluded.description_raw`, // Note: snake_case for SQL column
+                updatedAt: sql`excluded.updated_at`,
+                categoryId: sql`excluded.category_id`
+              }
+            })
+        } catch (batchError: any) {
+           console.error('Batch upsert failed:', batchError)
+           // Fallback to individual processing if batch fails (e.g. too big query)
+           for (const job of jobsWithMetadata) {
+             try {
+                // Try simpler upsert or ignore
+                await db.insert(schema.jobs).values(job).onConflictDoUpdate({
+                  target: schema.jobs.sourceUrl,
+                  set: {
+                     updatedAt: new Date()
+                  }
+                })
+             } catch (e) { /* ignore individual failures in fallback */ }
+           }
         }
       }
     }
