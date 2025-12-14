@@ -2,6 +2,8 @@ import { X, ExternalLink, Calendar, DollarSign, Building2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import type { JobWithCategory } from "../lib/search-utils";
+import JobInsightsPanel from "./ai/JobInsights";
+import JobMatchScore from "./ai/JobMatchScore";
 
 interface JobDetailModalProps {
   job: JobWithCategory;
@@ -78,6 +80,9 @@ export default function JobDetailModal({
     ? formatDistanceToNow(new Date(job.postDate), { addSuffix: true })
     : "Date not specified";
 
+  // Get description for AI analysis (prefer full, fallback to summary)
+  const descriptionForAI = fullDescription || job.fullDescription || job.description || '';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
       <div 
@@ -122,6 +127,23 @@ export default function JobDetailModal({
               <span>{formattedDate}</span>
             </div>
           </div>
+
+          {/* AI Features: Match Score + Insights */}
+          {descriptionForAI && (
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Match Score */}
+              <JobMatchScore
+                jobTitle={job.title}
+                jobDescription={descriptionForAI}
+              />
+              {/* AI Insights */}
+              <JobInsightsPanel
+                jobId={job.id}
+                jobTitle={job.title}
+                jobDescription={descriptionForAI}
+              />
+            </div>
+          )}
 
           {/* Description */}
           <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-p:mb-4 prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-li:my-1">

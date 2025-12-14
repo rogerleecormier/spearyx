@@ -99,7 +99,8 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 const REMOTEOK_TAGS = [
   'dev', 'engineer', 'devops', 'design', 'marketing',
   'developer', 'frontend', 'backend', 'fullstack',
-  'product', 'project', 'data', 'support'
+  'product', 'project', 'data', 'support',
+  'program', 'cloud', 'sysadmin', 'customer_success'
 ]
 
 // ============================================
@@ -549,8 +550,9 @@ export async function syncAggregator(
     
     log('info', `Total jobs from API: ${jobs.length}`)
     
-    // Limit to first 10 for performance to avoid CPU limits
-    const jobsToProcess = jobs.slice(0, 10)
+    // Limit to first 5 for performance and to avoid D1 limits (max 100 params)
+    // 5 jobs * ~12 params = ~60 params, well within limits
+    const jobsToProcess = jobs.slice(0, 5)
     log('info', `Processing ${jobsToProcess.length} jobs`)
     
     // Batch Process jobs
@@ -572,11 +574,17 @@ export async function syncAggregator(
         // Extract post date from API response
         let postDate: Date | null = null
         if (source === 'remoteok' && job.date) {
-          // RemoteOK uses Unix timestamp in seconds
-          postDate = new Date(job.date * 1000)
+          // RemoteOK provides date as ISO string (e.g. 2024-12-14T...)
+          const d = new Date(job.date)
+          if (!isNaN(d.getTime())) {
+            postDate = d
+          }
         } else if (source === 'himalayas' && job.pubDate) {
-          // Himalayas uses ISO date string
-          postDate = new Date(job.pubDate)
+          // Himalayas uses Unix timestamp in seconds (like RemoteOK)
+          const d = new Date(job.pubDate * 1000)
+          if (!isNaN(d.getTime())) {
+            postDate = d
+          }
         }
 
         const categoryId = determineCategoryId(title, description, job.tags || [])
@@ -626,7 +634,7 @@ export async function syncAggregator(
               }
             })
         } catch (batchError: any) {
-           console.error('Batch upsert failed:', batchError)
+           log('error', `Batch upsert failed, falling back to individual inserts: ${batchError.message}`)
            // Fallback to individual processing if batch fails (e.g. too big query)
            for (const job of jobsWithMetadata) {
              try {
@@ -634,10 +642,16 @@ export async function syncAggregator(
                 await db.insert(schema.jobs).values(job).onConflictDoUpdate({
                   target: schema.jobs.sourceUrl,
                   set: {
-                     updatedAt: new Date()
+                     title: job.title,
+                     company: job.company,
+                     descriptionRaw: job.descriptionRaw,
+                     updatedAt: new Date(),
+                     categoryId: job.categoryId
                   }
                 })
-             } catch (e) { /* ignore individual failures in fallback */ }
+             } catch (e: any) {
+               log('error', `Individual insert failed for ${job.title}: ${e.message}`)
+             }
            }
         }
       }

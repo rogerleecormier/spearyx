@@ -32,3 +32,5 @@ directory = "dist/client"
 pattern = "jobs.spearyx.com"
 custom_domain = true
 
+[ai]
+binding = "AI"

@@ -16,6 +16,11 @@ import { Route as ApiV3LogsRouteImport } from './routes/api/v3/logs'
 import { Route as ApiV3JobsRouteImport } from './routes/api/v3/jobs'
 import { Route as ApiV3JobContentRouteImport } from './routes/api/v3/job-content'
 import { Route as ApiV3CategoriesRouteImport } from './routes/api/v3/categories'
+import { Route as ApiAiUnicornRouteImport } from './routes/api/ai/unicorn'
+import { Route as ApiAiSearchRouteImport } from './routes/api/ai/search'
+import { Route as ApiAiRecommendRouteImport } from './routes/api/ai/recommend'
+import { Route as ApiAiMatchRouteImport } from './routes/api/ai/match'
+import { Route as ApiAiInsightsRouteImport } from './routes/api/ai/insights'
 import { Route as ApiV3SyncDiscoveryRouteImport } from './routes/api/v3/sync/discovery'
 import { Route as ApiV3SyncAtsRouteImport } from './routes/api/v3/sync/ats'
 import { Route as ApiV3SyncAggregatorRouteImport } from './routes/api/v3/sync/aggregator'
@@ -56,6 +61,31 @@ const ApiV3CategoriesRoute = ApiV3CategoriesRouteImport.update({
   path: '/api/v3/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiUnicornRoute = ApiAiUnicornRouteImport.update({
+  id: '/api/ai/unicorn',
+  path: '/api/ai/unicorn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiSearchRoute = ApiAiSearchRouteImport.update({
+  id: '/api/ai/search',
+  path: '/api/ai/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiRecommendRoute = ApiAiRecommendRouteImport.update({
+  id: '/api/ai/recommend',
+  path: '/api/ai/recommend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiMatchRoute = ApiAiMatchRouteImport.update({
+  id: '/api/ai/match',
+  path: '/api/ai/match',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiInsightsRoute = ApiAiInsightsRouteImport.update({
+  id: '/api/ai/insights',
+  path: '/api/ai/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV3SyncDiscoveryRoute = ApiV3SyncDiscoveryRouteImport.update({
   id: '/api/v3/sync/discovery',
   path: '/api/v3/sync/discovery',
@@ -80,6 +110,11 @@ const ApiV3JobsPruneRoute = ApiV3JobsPruneRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/insights': typeof ApiAiInsightsRoute
+  '/api/ai/match': typeof ApiAiMatchRoute
+  '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/search': typeof ApiAiSearchRoute
+  '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -93,6 +128,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/insights': typeof ApiAiInsightsRoute
+  '/api/ai/match': typeof ApiAiMatchRoute
+  '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/search': typeof ApiAiSearchRoute
+  '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -107,6 +147,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/insights': typeof ApiAiInsightsRoute
+  '/api/ai/match': typeof ApiAiMatchRoute
+  '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/search': typeof ApiAiSearchRoute
+  '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -122,6 +167,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/sync'
+    | '/api/ai/insights'
+    | '/api/ai/match'
+    | '/api/ai/recommend'
+    | '/api/ai/search'
+    | '/api/ai/unicorn'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -135,6 +185,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sync'
+    | '/api/ai/insights'
+    | '/api/ai/match'
+    | '/api/ai/recommend'
+    | '/api/ai/search'
+    | '/api/ai/unicorn'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -148,6 +203,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/sync'
+    | '/api/ai/insights'
+    | '/api/ai/match'
+    | '/api/ai/recommend'
+    | '/api/ai/search'
+    | '/api/ai/unicorn'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -162,6 +222,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SyncRoute: typeof SyncRoute
+  ApiAiInsightsRoute: typeof ApiAiInsightsRoute
+  ApiAiMatchRoute: typeof ApiAiMatchRoute
+  ApiAiRecommendRoute: typeof ApiAiRecommendRoute
+  ApiAiSearchRoute: typeof ApiAiSearchRoute
+  ApiAiUnicornRoute: typeof ApiAiUnicornRoute
   ApiV3CategoriesRoute: typeof ApiV3CategoriesRoute
   ApiV3JobContentRoute: typeof ApiV3JobContentRoute
   ApiV3JobsRoute: typeof ApiV3JobsRouteWithChildren
@@ -223,6 +288,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV3CategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/unicorn': {
+      id: '/api/ai/unicorn'
+      path: '/api/ai/unicorn'
+      fullPath: '/api/ai/unicorn'
+      preLoaderRoute: typeof ApiAiUnicornRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/search': {
+      id: '/api/ai/search'
+      path: '/api/ai/search'
+      fullPath: '/api/ai/search'
+      preLoaderRoute: typeof ApiAiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/recommend': {
+      id: '/api/ai/recommend'
+      path: '/api/ai/recommend'
+      fullPath: '/api/ai/recommend'
+      preLoaderRoute: typeof ApiAiRecommendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/match': {
+      id: '/api/ai/match'
+      path: '/api/ai/match'
+      fullPath: '/api/ai/match'
+      preLoaderRoute: typeof ApiAiMatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/insights': {
+      id: '/api/ai/insights'
+      path: '/api/ai/insights'
+      fullPath: '/api/ai/insights'
+      preLoaderRoute: typeof ApiAiInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v3/sync/discovery': {
       id: '/api/v3/sync/discovery'
       path: '/api/v3/sync/discovery'
@@ -269,6 +369,11 @@ const ApiV3JobsRouteWithChildren = ApiV3JobsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SyncRoute: SyncRoute,
+  ApiAiInsightsRoute: ApiAiInsightsRoute,
+  ApiAiMatchRoute: ApiAiMatchRoute,
+  ApiAiRecommendRoute: ApiAiRecommendRoute,
+  ApiAiSearchRoute: ApiAiSearchRoute,
+  ApiAiUnicornRoute: ApiAiUnicornRoute,
   ApiV3CategoriesRoute: ApiV3CategoriesRoute,
   ApiV3JobContentRoute: ApiV3JobContentRoute,
   ApiV3JobsRoute: ApiV3JobsRouteWithChildren,

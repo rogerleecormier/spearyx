@@ -1,13 +1,15 @@
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Briefcase, Loader2, X } from "lucide-react";
-import { Overline, Hero, Body } from "@spearyx/ui-kit";
+import { Briefcase, Loader2, X, Sparkles, Info, Target } from "lucide-react";
+import { Overline, Hero, Body, SkeletonCard } from "@spearyx/ui-kit";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import JobCard from "../components/JobCard";
 import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import SortControls from "../components/SortControls";
 import type { JobWithCategory } from "../lib/search-utils";
+import SkillsModal, { hasUserProfile } from "../components/ai/SkillsModal";
+import UnicornJobs from "../components/ai/UnicornJobs";
 import { getDbFromContext, schema } from "../db/db";
 import { desc, sql } from "drizzle-orm";
 
@@ -71,6 +73,15 @@ interface JobsResponse {
   };
 }
 
+interface AIRecommendResponse {
+  success: boolean;
+  data?: {
+    jobs: JobWithCategory[];
+    searchTerms: string[];
+  };
+  error?: string;
+}
+
 function HomePage() {
   // Get SSR data
   const loaderData = useLoaderData({ from: "/" });
@@ -89,6 +100,20 @@ function HomePage() {
   const [totalJobs, setTotalJobs] = useState(loaderData.totalCount || 0);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(loaderData.hasMore);
+
+  // AI Recommendations state
+  const [aiRecommendedJobs, setAiRecommendedJobs] = useState<JobWithCategory[]>([]);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [aiSearchTerms, setAiSearchTerms] = useState<string[]>([]);
+  const [showAIInfoModal, setShowAIInfoModal] = useState(false);
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [userHasProfile, setUserHasProfile] = useState(false);
+  const aiAbortRef = useRef<AbortController | null>(null);
+
+  // Check if user has profile on mount
+  useEffect(() => {
+    setUserHasProfile(hasUserProfile());
+  }, []);
 
   // Ref for infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -115,6 +140,59 @@ function HomePage() {
     },
     { wait: 300 }  // 300ms debounce delay
   );
+
+  // Fetch AI recommendations when search query changes (with longer delay)
+  useEffect(() => {
+    // Cancel previous AI request
+    if (aiAbortRef.current) {
+      aiAbortRef.current.abort();
+    }
+
+    // Clear AI recommendations if query is too short
+    if (!searchQuery || searchQuery.trim().length < 3) {
+      setAiRecommendedJobs([]);
+      setAiSearchTerms([]);
+      setLoadingAI(false);
+      return;
+    }
+
+    // Set loading immediately so skeletons show right away
+    setLoadingAI(true);
+
+    // Delay AI call to avoid too many requests
+    const timer = setTimeout(async () => {
+      aiAbortRef.current = new AbortController();
+
+      try {
+        const response = await fetch("/api/ai/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: searchQuery }),
+          signal: aiAbortRef.current.signal,
+        });
+
+        const data = (await response.json()) as AIRecommendResponse;
+        if (data.success && data.data) {
+          setAiRecommendedJobs(data.data.jobs);
+          setAiSearchTerms(data.data.searchTerms || []);
+        }
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("AI recommend error:", error);
+        }
+      } finally {
+        setLoadingAI(false);
+      }
+    }, 600); // 600ms delay for AI
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Get IDs of AI-recommended jobs for de-duplication
+  const aiJobIds = new Set(aiRecommendedJobs.map(job => job.id));
+  
+  // Filter out AI-recommended jobs from regular results
+  const regularJobs = jobs.filter(job => !aiJobIds.has(job.id));
 
   // Fetch jobs when filters change
   useEffect(() => {
@@ -236,6 +314,31 @@ function HomePage() {
                 Curated remote jobs from top tech companies
               </Body>
             </div>
+            {/* Header Actions */}
+            <div className="flex items-center gap-2">
+              {/* My Skills Button */}
+              <button
+                onClick={() => setShowSkillsModal(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  userHasProfile 
+                    ? "bg-green-50 border border-green-200 text-green-700 hover:bg-green-100"
+                    : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Target size={12} />
+                My Skills
+                {userHasProfile && <span className="text-green-500">✓</span>}
+              </button>
+              {/* AI Powered Badge */}
+              <button
+                onClick={() => setShowAIInfoModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-xs font-medium hover:bg-amber-100 transition-colors"
+              >
+                <Sparkles size={12} className="text-amber-500" />
+                AI Powered
+                <Info size={12} className="text-amber-400" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -247,7 +350,7 @@ function HomePage() {
           <div className="flex flex-col lg:flex-row gap-5 items-start lg:items-center">
             {/* Search Bar */}
             <div className="w-full lg:flex-[2] min-w-[350px]">
-              <SearchBar onSearch={handleSearch} />
+              <SearchBar onSearch={handleSearch} isAIProcessing={loadingAI} />
             </div>
 
             {/* Filters */}
@@ -300,13 +403,26 @@ function HomePage() {
                 <span>Loading...</span>
               ) : (
                 <span>
-                  <strong>{totalJobs || jobs.length}</strong> remote jobs found
+                  <strong>{(totalJobs || jobs.length) + (searchQuery ? aiRecommendedJobs.length : 0)}</strong> remote jobs found
+                  {searchQuery && aiRecommendedJobs.length > 0 && (
+                    <span className="text-amber-600 ml-1">
+                      ({aiRecommendedJobs.length} AI recommended)
+                    </span>
+                  )}
                 </span>
               )}
             </div>
             <SortControls sortBy={sortBy} onSortChange={handleSortChange} />
           </div>
         </div>
+
+        {/* Unicorn Jobs - shows when not actively searching */}
+        {!searchQuery && (
+          <UnicornJobs
+            onCompanyClick={handleCompanySelect}
+            onOpenSkillsModal={() => setShowSkillsModal(true)}
+          />
+        )}
 
         {/* Job Listings */}
         <div className="min-h-[400px]">
@@ -315,7 +431,7 @@ function HomePage() {
               <Loader2 className="animate-spin text-primary-600 mb-4" size={48} />
               <p>Finding the best remote jobs for you...</p>
             </div>
-          ) : jobs.length === 0 ? (
+          ) : jobs.length === 0 && aiRecommendedJobs.length === 0 && !loadingAI ? (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-2xl border border-slate-200">
               <Briefcase size={64} className="text-slate-300 mb-4" />
               <h2 className="text-xl font-bold text-slate-900 mb-2">No jobs found</h2>
@@ -325,15 +441,83 @@ function HomePage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    onCompanyClick={handleCompanySelect}
-                  />
-                ))}
-              </div>
+              {/* AI Recommended Section */}
+              {searchQuery && (aiRecommendedJobs.length > 0 || loadingAI) && (
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-sm font-medium">
+                      <Sparkles size={16} className="text-amber-500" />
+                      <span>AI Recommended</span>
+                      <button
+                        onClick={() => setShowAIInfoModal(true)}
+                        className="p-0.5 hover:bg-amber-100 rounded-full transition-colors"
+                        title="How AI recommendations work"
+                      >
+                        <Info size={14} className="text-amber-400" />
+                      </button>
+                    </div>
+                    {aiSearchTerms.length > 0 && (
+                      <span className="text-sm text-slate-500">
+                        matching: {aiSearchTerms.join(", ")}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {loadingAI ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="relative">
+                          {/* Skeleton AI Badge */}
+                          <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 px-2 py-1 bg-amber-100/50 border border-amber-200 rounded-full">
+                            <div className="w-12 h-3 bg-amber-200/50 rounded animate-pulse" />
+                          </div>
+                          <SkeletonCard variant="product" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : aiRecommendedJobs.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {aiRecommendedJobs.map((job) => (
+                        <div key={job.id} className="relative">
+                          {/* AI Badge */}
+                          <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 px-2 py-1 bg-amber-100 border border-amber-300 text-amber-700 text-xs font-medium rounded-full shadow-sm">
+                            <Sparkles size={12} className="text-amber-500" />
+                            AI Pick
+                          </div>
+                          <JobCard
+                            job={job}
+                            onCompanyClick={handleCompanySelect}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {/* All Results Section */}
+              {regularJobs.length > 0 && (
+                <div>
+                  {searchQuery && aiRecommendedJobs.length > 0 && (
+                    <div className="flex items-center gap-2 mb-4 pt-6 border-t border-slate-200">
+                      <span className="text-sm font-medium text-slate-700">All Results</span>
+                      <span className="text-sm text-slate-500">
+                        ({regularJobs.length} more jobs)
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {regularJobs.map((job) => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        onCompanyClick={handleCompanySelect}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Infinite scroll trigger */}
               <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
@@ -351,6 +535,61 @@ function HomePage() {
           )}
         </div>
       </main>
+
+      {/* AI Info Modal */}
+      {showAIInfoModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIInfoModal(false)}>
+          <div 
+            className="bg-white rounded-xl max-w-md w-full shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 py-4 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-amber-500" />
+                <h2 className="font-semibold text-amber-800">How AI Works Here</h2>
+              </div>
+              <button
+                onClick={() => setShowAIInfoModal(false)}
+                className="p-1 hover:bg-amber-100 rounded-full transition-colors"
+              >
+                <X size={18} className="text-amber-600" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4 text-sm text-slate-700">
+              <div>
+                <h3 className="font-medium text-slate-900 mb-1">🔍 Smart Search</h3>
+                <p>When you search, AI understands natural language and finds jobs matching your intent. Type "React developer at startups" and AI will identify relevant skills and preferences.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-900 mb-1">✨ AI Recommended</h3>
+                <p>Jobs marked with "AI Pick" are selected by AI as particularly good matches for your search query based on semantic understanding.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-900 mb-1">🎯 Match Score</h3>
+                <p>Add your resume or skills via "My Skills" to see how well you match each job. AI compares your experience to job requirements.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-900 mb-1">📊 Job Insights</h3>
+                <p>Click "Analyze with AI" on any job to get AI-powered insights including estimated salary, culture signals, and red flags.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-900 mb-1">🦄 Hidden Gems</h3>
+                <p>AI scans for high-match jobs in roles or industries you might not search for (e.g. adjacent career paths), helping you discover unexpected opportunities.</p>
+              </div>
+              <div className="pt-3 border-t border-slate-200 text-xs text-slate-500">
+                <p>Powered by Cloudflare Workers AI. Your data stays in your browser and searches are not stored.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Skills Modal */}
+      <SkillsModal
+        isOpen={showSkillsModal}
+        onClose={() => setShowSkillsModal(false)}
+        onSave={() => setUserHasProfile(true)}
+      />
     </div>
   );
 }

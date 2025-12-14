@@ -80,45 +80,51 @@ export const categoryKeywords: CategoryKeywords[] = [
 
 export function determineCategoryId(title: string | null | undefined, description: string | null | undefined, tags: string[] = []): number {
   const titleLower = (title || '').toLowerCase()
-
-  // Truncate description to 2000 chars to save CPU time on regex/scanning
-  const descriptionLower = (description || '').slice(0, 2000).toLowerCase()
   const tagsLower = tags.map(t => t.toLowerCase())
-  
-  // Score each category based on keyword matches
-  const scores = categoryKeywords.map(category => {
-    let score = 0
-    
-    // Check keywords
+
+  // TIER 1: Title Match (Fastest & Highest Confidence)
+  // If we find a match here, we return immediately and skip description scanning.
+  for (const category of categoryKeywords) {
+    for (const keyword of category.keywords) {
+      if (titleLower.includes(keyword.toLowerCase())) {
+        return category.id
+      }
+    }
+  }
+
+  // TIER 2: Tag Match (Fast & Medium Confidence)
+  // If we find a tag match, we return immediately.
+  for (const category of categoryKeywords) {
     for (const keyword of category.keywords) {
       const keywordLower = keyword.toLowerCase()
-      
-      // Title matches get high weight (5 points)
-      if (titleLower.includes(keywordLower)) {
-        score += 5
-      }
-      
-      // Tag matches get medium weight (3 points)
       if (tagsLower.some(t => t.includes(keywordLower))) {
-        score += 3
+        return category.id
       }
-      
-      // Description matches get low weight (1 point)
-      // We only count one match per keyword to avoid keyword stuffing skewing results
-      if (descriptionLower.includes(keywordLower)) {
+    }
+  }
+
+  // TIER 3: Description Match (Slowest & Low Confidence / Fallback)
+  // Only scan description if we found NOTHING in title or tags.
+  // Truncate description to safegaurd CPU even in fallback case.
+  const descriptionLower = (description || '').slice(0, 2000).toLowerCase()
+  if (!descriptionLower) return 1 // Programming
+
+  let bestScore = 0
+  let bestCategoryId = 1
+
+  for (const category of categoryKeywords) {
+    let score = 0
+    for (const keyword of category.keywords) {
+      if (descriptionLower.includes(keyword.toLowerCase())) {
         score += 1
       }
     }
     
-    return {
-      id: category.id,
-      score
+    if (score > bestScore) {
+      bestScore = score
+      bestCategoryId = category.id
     }
-  })
+  }
   
-  // Sort by score and return the highest scoring category
-  scores.sort((a, b) => b.score - a.score)
-  
-  // If no matches, default to Programming & Development (most common for remote jobs)
-  return scores[0].score > 0 ? scores[0].id : 1
+  return bestCategoryId
 }

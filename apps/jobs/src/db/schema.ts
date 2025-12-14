@@ -21,7 +21,7 @@ export const jobs = sqliteTable('jobs', {
   isCleansed: integer('is_cleansed').default(0), // 0 = needs cleansing, 1 = cleansed
   payRange: text('pay_range'),
   postDate: integer('post_date', { mode: 'timestamp' }),
-  sourceUrl: text('source_url').notNull(),
+  sourceUrl: text('source_url').notNull().unique(),
   sourceName: text('source_name').notNull(),
   categoryId: integer('category_id')
     .notNull()

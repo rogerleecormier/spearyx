@@ -5,6 +5,7 @@ export default {
   async fetch(request: Request, env: any, ctx: ExecutionContext) {
     console.log('🔧 Custom worker.ts entry point executing')
     console.log('🔧 env.DB available:', !!env.DB)
+    console.log('🔧 env.AI available:', !!env.AI)
     
     // Import the TanStack Start server
     const { default: server } = await import('./dist/server/server.js')
@@ -20,6 +21,7 @@ export default {
     ;(globalThis as any).__CF_CTX__ = ctx
     
     console.log('🔧 Set globalThis.__CF_ENV__.DB:', !!(globalThis as any).__CF_ENV__?.DB)
+    console.log('🔧 Set globalThis.__CF_ENV__.AI:', !!(globalThis as any).__CF_ENV__?.AI)
     
     // Call the TanStack Start server
     return server.fetch(customRequest, env, ctx)

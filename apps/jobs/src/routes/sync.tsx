@@ -516,7 +516,7 @@ function LogEntry({
       {isExpanded && log.logs.length > 0 && (
         <div className="px-4 pb-4">
           <div className="bg-slate-900 rounded-lg p-3 text-xs font-mono max-h-48 overflow-y-auto">
-            {log.logs.map((entry, i) => (
+            {[...log.logs].reverse().map((entry, i) => (
               <div key={i} className={`${
                 entry.type === 'error' ? 'text-red-400' :
                 entry.type === 'warning' ? 'text-yellow-400' :
