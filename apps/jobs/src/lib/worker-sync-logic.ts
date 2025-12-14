@@ -148,14 +148,19 @@ export async function syncAtsCompany(
     console.log(`[${timeStr}] ${emoji} ${message}`)
   }
   
-  try {
+    // Initialize variables outside try block for error handling scope
+    let source: AtsSource = 'workable'
+    let company = ''
+    let nextIndex = 0
+    let atsIndex = 0
+
+    try {
     // Get batch state to determine which company to sync
     let batchState = await db.select()
       .from(schema.syncHistory)
       .where(sql`status = 'batch_state' AND sync_type = 'ats'`)
       .limit(1)
     
-    let atsIndex = 0
     let lastSource: AtsSource = 'workable' // Start with workable so first run goes to greenhouse
     
     if (batchState.length > 0 && batchState[0].stats) {
@@ -165,7 +170,7 @@ export async function syncAtsCompany(
     }
     
     // Rotate through 3 sources: greenhouse -> lever -> workable -> greenhouse...
-    const source = getNextAtsSource(lastSource)
+    source = getNextAtsSource(lastSource)
     const companies = getCompaniesForSource(source)
     
     // Get next company
@@ -173,8 +178,8 @@ export async function syncAtsCompany(
       atsIndex = 0
     }
     
-    const company = companies[atsIndex]
-    const nextIndex = atsIndex + 1
+    company = companies[atsIndex]
+    nextIndex = atsIndex + 1
     
     log('info', `Starting sync for ${company}`)
     log('info', `Company index: ${atsIndex}/${companies.length}, source: ${source}`)
@@ -388,16 +393,22 @@ export async function syncAtsCompany(
   } catch (error: any) {
     // Handle rate limits gracefully
     if (error.message.includes('429') || (error.cause && String(error.cause).includes('429'))) {
-        log('warning', `Rate limit hit (429) for ${source}. Skipping and rotating.`)
+        const errorMsg = 'Rate limit hit (429)'
+        log('warning', `${errorMsg} for ${source}. Skipping and rotating.`)
+        
         // Force rotation so we don't get stuck on this source
         await updateAtsBatchState(db, source, nextIndex)
+        
+        // Mark as failed in DB so it doesn't stay "running"
+        await markSyncFailed(db, syncId, errorMsg, logs)
+        
         return {
             success: false,
             source,
             company,
             jobsAdded: 0,
             jobsUpdated: 0,
-            error: 'Rate limit hit (429)',
+            error: errorMsg,
             duration: Date.now() - startTime
         }
     }
