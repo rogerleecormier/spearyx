@@ -63,7 +63,8 @@ export const sourceFetchers = {
   lever: createSourceFetcher('lever', 1000),
   workable: createSourceFetcher('workable', 1000),     // 1 req/sec for Workable
   remoteok: createSourceFetcher('remoteok', 2000),      // Slower for aggregators
-  himalayas: createSourceFetcher('himalayas', 2000)
+  himalayas: createSourceFetcher('himalayas', 2000),
+  jobicy: createSourceFetcher('jobicy', 2000)           // Jobicy aggregator
 }
 
 // ============================================

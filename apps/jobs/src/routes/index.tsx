@@ -374,6 +374,7 @@ function HomePage() {
                   { id: "Lever", label: "Lever" },
                   { id: "Workable", label: "Workable" },
                   { id: "Himalayas", label: "Himalayas" },
+                  { id: "Jobicy", label: "Jobicy" },
                 ]}
                 onChange={handleSourceSelect}
               />

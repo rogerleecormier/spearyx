@@ -1,8 +1,38 @@
 {
   "version": "1.0",
-  "lastUpdated": "2025-11-29",
+  "lastUpdated": "2025-12-14",
   "description": "Comprehensive list of companies using Greenhouse ATS that commonly hire remote workers",
   "categories": {
+    "ai-ml": {
+      "name": "AI & Machine Learning",
+      "companies": [
+        "openai",
+        "anthropic",
+        "cohere",
+        "huggingface",
+        "runway",
+        "stability",
+        "perplexity",
+        "character-ai",
+        "anduril",
+        "scale"
+      ]
+    },
+    "infrastructure": {
+      "name": "Cloud & Infrastructure",
+      "companies": [
+        "cloudflare",
+        "fly",
+        "railway",
+        "render",
+        "supabase",
+        "neon",
+        "planetscale",
+        "turso",
+        "upstash",
+        "vercel"
+      ]
+    },
     "tech-giants": {
       "name": "Tech Giants & Fortune 500",
       "companies": [

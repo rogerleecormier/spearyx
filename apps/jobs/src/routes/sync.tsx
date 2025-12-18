@@ -52,6 +52,7 @@ interface DashboardStats {
     workable: number
     remoteok: number
     himalayas: number
+    jobicy: number
   }
   lastSyncAt: string | null
   sourceSyncStatus: Record<string, SourceStatus>
@@ -108,7 +109,7 @@ async function fetchLogs(limit = 20): Promise<{ logs: SyncLog[]; meta: { recentE
   return { logs: data.logs, meta: data.meta }
 }
 
-async function triggerSync(worker: 'ats' | 'aggregator' | 'discovery'): Promise<any> {
+async function triggerSync(worker: 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'): Promise<any> {
   const res = await fetch(`/api/v3/sync/${worker}`, { method: 'POST' })
   return res.json()
 }
@@ -258,7 +259,7 @@ function SyncDashboardContent() {
         {/* Jobs by Source */}
         <div className="bg-white rounded-lg border p-4 mb-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Jobs by Source</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <SourceCard 
               source="greenhouse" 
               count={stats?.jobsBySource?.greenhouse || 0} 
@@ -289,21 +290,27 @@ function SyncDashboardContent() {
               icon="🏔️"
               accentColor="border-l-indigo-500"
             />
+            <SourceCard 
+              source="jobicy" 
+              count={stats?.jobsBySource?.jobicy || 0} 
+              icon="💡"
+              accentColor="border-l-amber-500"
+            />
           </div>
         </div>
 
         {/* Worker Status */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Sync Workers</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Ordered: Discovery, ATS, Aggregator */}
-            {['discovery', 'ats', 'aggregator'].map((id) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Ordered: Discovery, ATS, Jobicy, RemoteOK, Himalayas */}
+            {['discovery', 'ats', 'jobicy', 'remoteok', 'himalayas'].map((id) => {
               const worker = stats?.workerStatus?.[id]
               if (!worker) return null
               return (
                 <WorkerCard 
                   key={id}
-                  workerId={id as 'ats' | 'aggregator' | 'discovery'}
+                  workerId={id as 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'}
                   worker={worker}
                   onTrigger={() => syncMutation.mutate(id as any)}
                   isTriggering={syncMutation.isPending}
@@ -388,7 +395,7 @@ function WorkerCard({
   isTriggering,
   formatDate 
 }: { 
-  workerId: 'ats' | 'aggregator' | 'discovery'
+  workerId: 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'
   worker: WorkerStatus
   onTrigger: () => void
   isTriggering: boolean
@@ -396,7 +403,9 @@ function WorkerCard({
 }) {
   const bgColors: Record<string, string> = {
     ats: 'bg-green-50 border-green-200',
-    aggregator: 'bg-blue-50 border-blue-200',
+    jobicy: 'bg-amber-50 border-amber-200',
+    remoteok: 'bg-emerald-50 border-emerald-200',
+    himalayas: 'bg-blue-50 border-blue-200',
     discovery: 'bg-purple-50 border-purple-200'
   }
 
@@ -457,6 +466,7 @@ function LogEntry({
       case 'workable': return <Building2 className="w-4 h-4 text-purple-600" />
       case 'remoteok': return <Globe className="w-4 h-4 text-red-600" />
       case 'himalayas': return <Globe className="w-4 h-4 text-indigo-600" />
+      case 'jobicy': return <Globe className="w-4 h-4 text-amber-600" />
       default: return <Search className="w-4 h-4 text-purple-600" />
     }
   }
@@ -469,7 +479,8 @@ function LogEntry({
       lever: '🔧',
       workable: '💼',
       remoteok: '🌐',
-      himalayas: '🏔️'
+      himalayas: '🏔️',
+      jobicy: '💡'
     }
     const icon = icons[log.source.toLowerCase()] || ''
     return `${icon} ${log.source}${log.stats.company ? ` / ${log.stats.company}` : ''}`

@@ -4,7 +4,7 @@ compatibility_date = "2025-11-30"
 compatibility_flags = ["nodejs_compat"]
 
 [triggers]
-crons = ["*/5 * * * *"]  # Every 5 minutes (aggregator - less frequent)
+crons = ["3-58/5 * * * *"]  # Every 5 minutes starting at :03 - staggered to avoid conflicts
 
 [[d1_databases]]
 binding = "DB"

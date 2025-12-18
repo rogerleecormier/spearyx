@@ -21,6 +21,9 @@ import { Route as ApiAiSearchRouteImport } from './routes/api/ai/search'
 import { Route as ApiAiRecommendRouteImport } from './routes/api/ai/recommend'
 import { Route as ApiAiMatchRouteImport } from './routes/api/ai/match'
 import { Route as ApiAiInsightsRouteImport } from './routes/api/ai/insights'
+import { Route as ApiV3SyncRemoteokRouteImport } from './routes/api/v3/sync/remoteok'
+import { Route as ApiV3SyncJobicyRouteImport } from './routes/api/v3/sync/jobicy'
+import { Route as ApiV3SyncHimalayasRouteImport } from './routes/api/v3/sync/himalayas'
 import { Route as ApiV3SyncDiscoveryRouteImport } from './routes/api/v3/sync/discovery'
 import { Route as ApiV3SyncAtsRouteImport } from './routes/api/v3/sync/ats'
 import { Route as ApiV3SyncAggregatorRouteImport } from './routes/api/v3/sync/aggregator'
@@ -86,6 +89,21 @@ const ApiAiInsightsRoute = ApiAiInsightsRouteImport.update({
   path: '/api/ai/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV3SyncRemoteokRoute = ApiV3SyncRemoteokRouteImport.update({
+  id: '/api/v3/sync/remoteok',
+  path: '/api/v3/sync/remoteok',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV3SyncJobicyRoute = ApiV3SyncJobicyRouteImport.update({
+  id: '/api/v3/sync/jobicy',
+  path: '/api/v3/sync/jobicy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV3SyncHimalayasRoute = ApiV3SyncHimalayasRouteImport.update({
+  id: '/api/v3/sync/himalayas',
+  path: '/api/v3/sync/himalayas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV3SyncDiscoveryRoute = ApiV3SyncDiscoveryRouteImport.update({
   id: '/api/v3/sync/discovery',
   path: '/api/v3/sync/discovery',
@@ -124,6 +142,9 @@ export interface FileRoutesByFullPath {
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
+  '/api/v3/sync/himalayas': typeof ApiV3SyncHimalayasRoute
+  '/api/v3/sync/jobicy': typeof ApiV3SyncJobicyRoute
+  '/api/v3/sync/remoteok': typeof ApiV3SyncRemoteokRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +163,9 @@ export interface FileRoutesByTo {
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
+  '/api/v3/sync/himalayas': typeof ApiV3SyncHimalayasRoute
+  '/api/v3/sync/jobicy': typeof ApiV3SyncJobicyRoute
+  '/api/v3/sync/remoteok': typeof ApiV3SyncRemoteokRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +185,9 @@ export interface FileRoutesById {
   '/api/v3/sync/aggregator': typeof ApiV3SyncAggregatorRoute
   '/api/v3/sync/ats': typeof ApiV3SyncAtsRoute
   '/api/v3/sync/discovery': typeof ApiV3SyncDiscoveryRoute
+  '/api/v3/sync/himalayas': typeof ApiV3SyncHimalayasRoute
+  '/api/v3/sync/jobicy': typeof ApiV3SyncJobicyRoute
+  '/api/v3/sync/remoteok': typeof ApiV3SyncRemoteokRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +208,9 @@ export interface FileRouteTypes {
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
+    | '/api/v3/sync/himalayas'
+    | '/api/v3/sync/jobicy'
+    | '/api/v3/sync/remoteok'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +229,9 @@ export interface FileRouteTypes {
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
+    | '/api/v3/sync/himalayas'
+    | '/api/v3/sync/jobicy'
+    | '/api/v3/sync/remoteok'
   id:
     | '__root__'
     | '/'
@@ -217,6 +250,9 @@ export interface FileRouteTypes {
     | '/api/v3/sync/aggregator'
     | '/api/v3/sync/ats'
     | '/api/v3/sync/discovery'
+    | '/api/v3/sync/himalayas'
+    | '/api/v3/sync/jobicy'
+    | '/api/v3/sync/remoteok'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -235,6 +271,9 @@ export interface RootRouteChildren {
   ApiV3SyncAggregatorRoute: typeof ApiV3SyncAggregatorRoute
   ApiV3SyncAtsRoute: typeof ApiV3SyncAtsRoute
   ApiV3SyncDiscoveryRoute: typeof ApiV3SyncDiscoveryRoute
+  ApiV3SyncHimalayasRoute: typeof ApiV3SyncHimalayasRoute
+  ApiV3SyncJobicyRoute: typeof ApiV3SyncJobicyRoute
+  ApiV3SyncRemoteokRoute: typeof ApiV3SyncRemoteokRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -323,6 +362,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v3/sync/remoteok': {
+      id: '/api/v3/sync/remoteok'
+      path: '/api/v3/sync/remoteok'
+      fullPath: '/api/v3/sync/remoteok'
+      preLoaderRoute: typeof ApiV3SyncRemoteokRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v3/sync/jobicy': {
+      id: '/api/v3/sync/jobicy'
+      path: '/api/v3/sync/jobicy'
+      fullPath: '/api/v3/sync/jobicy'
+      preLoaderRoute: typeof ApiV3SyncJobicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v3/sync/himalayas': {
+      id: '/api/v3/sync/himalayas'
+      path: '/api/v3/sync/himalayas'
+      fullPath: '/api/v3/sync/himalayas'
+      preLoaderRoute: typeof ApiV3SyncHimalayasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v3/sync/discovery': {
       id: '/api/v3/sync/discovery'
       path: '/api/v3/sync/discovery'
@@ -382,6 +442,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV3SyncAggregatorRoute: ApiV3SyncAggregatorRoute,
   ApiV3SyncAtsRoute: ApiV3SyncAtsRoute,
   ApiV3SyncDiscoveryRoute: ApiV3SyncDiscoveryRoute,
+  ApiV3SyncHimalayasRoute: ApiV3SyncHimalayasRoute,
+  ApiV3SyncJobicyRoute: ApiV3SyncJobicyRoute,
+  ApiV3SyncRemoteokRoute: ApiV3SyncRemoteokRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

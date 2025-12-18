@@ -50,7 +50,7 @@ export const Route = createFileRoute('/api/v3/stats')({
           const pendingCompanies = Number(pendingResult[0]?.count) || 0
 
           // Per-source sync status (last successful sync)
-          const sources = ['greenhouse', 'lever', 'workable', 'remoteok', 'himalayas'] as const
+          const sources = ['greenhouse', 'lever', 'workable', 'remoteok', 'himalayas', 'jobicy'] as const
           const sourceSyncStatus: Record<string, {
             lastSync: string | null
             status: 'running' | 'completed' | 'failed' | 'never'
@@ -93,25 +93,43 @@ export const Route = createFileRoute('/api/v3/stats')({
             }
           }
 
-          // Worker status (grouped)
+          // Worker status (individual workers)
           const workerStatus = {
             ats: {
               name: 'ATS Sync',
               icon: '🏢',
               sources: ['Greenhouse', 'Lever', 'Workable'],
-              schedule: '*/3 min :01',
+              schedule: 'Every 2 min (odd)',
               lastSync: getLatestSync(sourceSyncStatus.greenhouse, sourceSyncStatus.lever),
               status: getAggregatedStatus(sourceSyncStatus.greenhouse, sourceSyncStatus.lever, sourceSyncStatus.workable),
               error: sourceSyncStatus.greenhouse?.error || sourceSyncStatus.lever?.error || sourceSyncStatus.workable?.error
             },
-            aggregator: {
-              name: 'Aggregator Sync',
-              icon: '🌐',
-              sources: ['RemoteOK', 'Himalayas'],
-              schedule: '*/3 min :02',
-              lastSync: getLatestSync(sourceSyncStatus.remoteok, sourceSyncStatus.himalayas),
-              status: getAggregatedStatus(sourceSyncStatus.remoteok, sourceSyncStatus.himalayas),
-              error: sourceSyncStatus.remoteok?.error || sourceSyncStatus.himalayas?.error
+            jobicy: {
+              name: 'Jobicy Sync',
+              icon: '🟠',
+              sources: ['Jobicy'],
+              schedule: 'Every 60 min at :00',
+              lastSync: sourceSyncStatus.jobicy?.lastSync || null,
+              status: sourceSyncStatus.jobicy?.status || 'never',
+              error: sourceSyncStatus.jobicy?.error
+            },
+            remoteok: {
+              name: 'RemoteOK Sync',
+              icon: '🟢',
+              sources: ['RemoteOK'],
+              schedule: 'Every 5 min at :01',
+              lastSync: sourceSyncStatus.remoteok?.lastSync || null,
+              status: sourceSyncStatus.remoteok?.status || 'never',
+              error: sourceSyncStatus.remoteok?.error
+            },
+            himalayas: {
+              name: 'Himalayas Sync',
+              icon: '🔵',
+              sources: ['Himalayas'],
+              schedule: 'Every 5 min at :03',
+              lastSync: sourceSyncStatus.himalayas?.lastSync || null,
+              status: sourceSyncStatus.himalayas?.status || 'never',
+              error: sourceSyncStatus.himalayas?.error
             },
             discovery: await getDiscoveryStatus(db)
           }
@@ -136,7 +154,8 @@ export const Route = createFileRoute('/api/v3/stats')({
                 lever: sourceMap['lever'] || 0,
                 workable: sourceMap['workable'] || 0,
                 remoteok: sourceMap['remoteok'] || 0,
-                himalayas: sourceMap['himalayas'] || 0
+                himalayas: sourceMap['himalayas'] || 0,
+                jobicy: sourceMap['jobicy'] || 0
               },
               lastSyncAt: lastSyncResult[0]?.completedAt 
                 ? new Date(lastSyncResult[0].completedAt).toISOString() 

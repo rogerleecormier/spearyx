@@ -1,142 +1,102 @@
 # Adding New Job Sources
 
-Guide for adding new ATS platforms or job aggregators to the V3 sync system.
+> Guide for adding new ATS platforms or job aggregators to the Spearyx ecosystem.
+
+## Overview
+
+The system uses a **Direct D1 Access** pattern for workers (`src/lib/worker-sync-logic.ts`) and a separate `sync-queue` system for manual API triggers (`src/lib/sync-queue.ts`). When adding a source, you typically need to update the worker logic first, as that powers the automated cron jobs.
 
 ---
 
-## Adding a New ATS Source (e.g., Workday, Ashby)
+## Adding a New ATS Source (e.g., Ashby, Greenhouse)
 
-### 1. Create Throttled Fetcher
+### 1. Primary Worker Logic (Automated Sync)
 
-Edit `src/lib/sync-queue.ts`:
+Edit `apps/jobs/src/lib/worker-sync-logic.ts`:
 
-```typescript
-export const sourceFetchers = {
-  greenhouse: createSourceFetcher('greenhouse', 1000),
-  lever: createSourceFetcher('lever', 1000),
-  remoteok: createSourceFetcher('remoteok', 2000),
-  himalayas: createSourceFetcher('himalayas', 2000),
-  // Add new source
-  workday: createSourceFetcher('workday', 1000),
-}
-```
+1.  **Add Source Type**:
+    ```typescript
+    const ATS_SOURCES = ['greenhouse', 'lever', 'workable', 'ashby'] as const
+    type AtsSource = typeof ATS_SOURCES[number]
+    ```
 
-### 2. Create Company List
-
-Create `src/lib/job-sources/workday-companies.json`:
-
-```json
-{
-  "categories": {
-    "tech": {
-      "companies": ["company1", "company2"]
+2.  **Add Company List**:
+    Import your company list JSON (create one in `src/lib/job-sources/` first).
+    ```typescript
+    import ashbyCompanies from './job-sources/ashby-companies.json'
+    
+    function getAshbyCompanies(): string[] {
+       // ... extraction logic
     }
-  }
-}
-```
+    ```
 
-### 3. Update ATS Sync Endpoint
+3.  **Update `getCompaniesForSource`**:
+    ```typescript
+    function getCompaniesForSource(source: AtsSource): string[] {
+      switch (source) {
+        // ...
+        case 'ashby': return getAshbyCompanies()
+      }
+    }
+    ```
 
-Edit `src/routes/api/v3/sync/ats.ts`:
+4.  **Update `syncAtsCompany` Logic**:
+    *   **API URL**: Add case for URL construction.
+    *   **Parsing**: Add case for parsing the JSON/HTML response into the `jobs` list.
+    *   **Source URL**: Define how to construct the unique URL for deduplication.
 
-```typescript
-// Import new companies
-import workdayCompanies from '../../../../lib/job-sources/workday-companies.json'
+### 2. Manual Trigger Support (Optional but Recommended)
 
-function getWorkdayCompanies(): string[] {
-  // Similar to getGreenhouseCompanies()
-}
+Edit `apps/jobs/src/lib/sync-queue.ts` to enable `POST /api/v3/sync/ats` support:
 
-// Update source rotation to include workday
-// Add API URL logic
-// Add job parsing logic
-```
+1.  **Add Throttled Fetcher**:
+    ```typescript
+    export const sourceFetchers = {
+      // ...
+      ashby: createSourceFetcher('ashby', 1000),
+    }
+    ```
 
-### 4. Update Types
-
-Edit `src/lib/sync-queue.ts`:
-
-```typescript
-export interface SyncWorkItem {
-  source: 'greenhouse' | 'lever' | 'remoteok' | 'himalayas' | 'workday'
-  // ...
-}
-```
-
----
-
-## Adding a New Aggregator Source
-
-### 1. Update Aggregator Endpoint
-
-Edit `src/routes/api/v3/sync/aggregator.ts`:
-
-```typescript
-// Add to source rotation
-export function getNextAggregatorSource(lastSource: string): string {
-  const sources = ['remoteok', 'himalayas', 'newsite']
-  const currentIndex = sources.indexOf(lastSource)
-  return sources[(currentIndex + 1) % sources.length]
-}
-
-// Add API handling
-if (source === 'newsite') {
-  apiUrl = 'https://newsite.com/api/jobs'
-  // Parse response format
-}
-```
-
-### 2. Add Throttled Fetcher
-
-```typescript
-export const sourceFetchers = {
-  // ...existing
-  newsite: createSourceFetcher('newsite', 2000),
-}
-```
+2.  **Update Types**:
+    Add your source string to the `SyncWorkItem` source union type.
 
 ---
 
-## Testing New Sources
+## Adding a New Aggregator (e.g., We Work Remotely)
 
-### 1. Test API Response
+### 1. Primary Worker Logic
 
-```bash
-curl -s 'https://api.newsource.com/jobs' | jq '.' | head -50
-```
+Edit `apps/jobs/src/lib/worker-sync-logic.ts`:
 
-### 2. Check Rate Limits
+1.  **Add Source Type**:
+    ```typescript
+    const AGGREGATOR_SOURCES = ['remoteok', 'himalayas', 'jobicy', 'weworkremotely'] as const
+    ```
 
-Review API documentation for:
-- Requests per minute/second
-- Authentication requirements
-- Response pagination
+2.  **Define Batch Limits**:
+    ```typescript
+    const BATCH_LIMITS = {
+      // ...
+      weworkremotely: 50
+    }
+    ```
 
-### 3. Manual Trigger Test
+3.  **Update `syncAggregator`**:
+    *   **Rotation**: Ensure `getNextAggregatorSource` includes it.
+    *   **API Logic**: Add the `apiUrl` construction and response parsing in the main `syncAggregator` function.
+    *   **Mapping**: Add strict field mapping (Title, Company, Description, Date) to the `jobs` table schema.
 
-```bash
-curl -X POST https://jobs.spearyx.com/api/v3/sync/[endpoint]
-```
+### 2. Manual Trigger Support
 
-### 4. Verify in Database
-
-```sql
-SELECT * FROM jobs 
-WHERE source_name = 'NewSource' 
-ORDER BY created_at DESC 
-LIMIT 10;
-```
+Edit `apps/jobs/src/lib/sync-queue.ts`:
+1.  Add a generic `createSourceFetcher` for the new aggregator with appropriate rate limiting (e.g., 2000ms).
 
 ---
 
-## Checklist
+## Validation Checklist
 
-- [ ] Throttled fetcher added
-- [ ] Company list created (if ATS)
-- [ ] API URL and parsing logic added
-- [ ] Source type added to TypeScript types
-- [ ] Content-type checking included
-- [ ] Remote job filtering logic added
-- [ ] Category mapping updated
-- [ ] Manual testing completed
-- [ ] Deploy and monitor
+- [ ] **Worker Logic**: Added to `worker-sync-logic.ts`?
+- [ ] **Types**: Added to global types / TypeScript unions?
+- [ ] **Rate Limits**: Is the API throttled correctly (e.g., 1 req/sec)?
+- [ ] **Content-Type Check**: Does the code verify `application/json` to avoid parsing error pages?
+- [ ] **Discovery**: If it's an ATS, is it hooked into the Discovery worker's checking logic?

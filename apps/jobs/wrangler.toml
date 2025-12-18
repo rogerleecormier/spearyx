@@ -32,5 +32,25 @@ directory = "dist/client"
 pattern = "jobs.spearyx.com"
 custom_domain = true
 
+[[services]]
+binding = "JOBICY_SYNC"
+service = "spearyx-sync-jobicy"
+
+[[services]]
+binding = "REMOTEOK_SYNC"
+service = "spearyx-sync-remoteok"
+
+[[services]]
+binding = "HIMALAYAS_SYNC"
+service = "spearyx-sync-himalayas"
+
+[[services]]
+binding = "ATS_SYNC"
+service = "spearyx-sync-ats"
+
+[[services]]
+binding = "DISCOVERY_SYNC"
+service = "spearyx-sync-discovery"
+
 [ai]
 binding = "AI"

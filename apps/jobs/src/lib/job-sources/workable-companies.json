@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-12",
+  "lastUpdated": "2025-12-14",
   "description": "List of companies using Workable ATS that commonly hire remote workers",
   "categories": {
     "tech-ai": {
@@ -12,7 +12,21 @@
         "stability-ai",
         "midjourney",
         "cohere",
-        "jasper-ai"
+        "jasper-ai",
+        "adept",
+        "inflection"
+      ]
+    },
+    "crypto-blockchain": {
+      "name": "Crypto & Blockchain",
+      "companies": [
+        "binance",
+        "kraken",
+        "gemini",
+        "chainlink",
+        "avalanche",
+        "polygon",
+        "uniswap"
       ]
     },
     "energy-sustainability": {
@@ -34,7 +48,10 @@
         "buffer",
         "doist",
         "zapier",
-        "close"
+        "close",
+        "remote",
+        "gitlab",
+        "automattic"
       ]
     },
     "construction-infrastructure": {
@@ -61,7 +78,10 @@
         "payoneer",
         "wise",
         "remitly",
-        "circle"
+        "circle",
+        "rippling",
+        "gusto",
+        "brex"
       ]
     },
     "developer-tools": {
@@ -71,7 +91,10 @@
         "notion",
         "airtable",
         "figma",
-        "mux"
+        "mux",
+        "vercel",
+        "netlify",
+        "railway"
       ]
     },
     "analytics-data": {
@@ -81,7 +104,9 @@
         "mixpanel",
         "segment",
         "heap",
-        "pendo"
+        "pendo",
+        "looker",
+        "metabase"
       ]
     }
   },

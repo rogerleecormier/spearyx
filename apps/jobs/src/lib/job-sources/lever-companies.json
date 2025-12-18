@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-29",
+  "lastUpdated": "2025-12-14",
   "description": "List of companies using Lever for job postings",
   "categories": {
     "tech-giants": {
@@ -16,6 +16,33 @@
         "toptal",
         "whoop",
         "workwave"
+      ]
+    },
+    "remote-first": {
+      "name": "Remote-First Companies",
+      "companies": [
+        "zapier",
+        "gitlab",
+        "buffer",
+        "automattic",
+        "doist",
+        "loom",
+        "remote",
+        "oyster",
+        "deel"
+      ]
+    },
+    "fintech": {
+      "name": "Fintech & Payments",
+      "companies": [
+        "mercury",
+        "brex",
+        "ramp",
+        "stripe",
+        "plaid",
+        "rippling",
+        "carta",
+        "gusto"
       ]
     },
     "saas-products": {
@@ -41,7 +68,12 @@
         "shippo",
         "stackblitz",
         "wealthfront",
-        "whereby"
+        "whereby",
+        "notion",
+        "coda",
+        "airtable",
+        "linear",
+        "raycast"
       ]
     },
     "developer-tools": {
@@ -50,14 +82,21 @@
         "filevine",
         "loadsmart",
         "sophos",
-        "spotify"
+        "spotify",
+        "postman",
+        "algolia",
+        "segment",
+        "datadog"
       ]
     },
     "crypto-web3": {
       "name": "Crypto & Web3",
       "companies": [
         "kraken",
-        "ledger"
+        "ledger",
+        "coinbase",
+        "alchemy",
+        "polygon"
       ]
     }
   },

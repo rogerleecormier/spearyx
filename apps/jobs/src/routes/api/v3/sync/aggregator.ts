@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { getDbFromContext, schema } from '../../../../db/db'
-import { sql, eq } from 'drizzle-orm'
+import { sql, eq, inArray } from 'drizzle-orm'
 import { syncQueue, sourceFetchers, withRetry, getNextAggregatorSource, type SyncResult } from '../../../../lib/sync-queue'
 import { determineCategoryId } from '../../../../lib/job-sources'
 
@@ -21,6 +21,32 @@ const REMOTEOK_TAGS = [
   'data',       // Data roles
   'support',    // Customer support
 ]
+
+// Jobicy industries (from their API docs)
+const JOBICY_INDUSTRIES = [
+  'dev',              // Development
+  'marketing',        // Marketing
+  'design-multimedia', // Design & Multimedia
+  'business',         // Business
+  'engineering',      // Engineering
+  'hr',               // Human Resources
+  'copywriting',      // Writing/Copywriting
+  'data-science',     // Data Science
+  'accounting-finance', // Finance/Accounting
+  'management',       // Management/Product
+  'technical-support', // Technical Support
+  'seo'               // SEO
+]
+
+// 3-way source rotation
+const AGGREGATOR_SOURCES = ['remoteok', 'himalayas', 'jobicy'] as const
+type AggregatorSource = typeof AGGREGATOR_SOURCES[number]
+
+function getNextSource(lastSource: AggregatorSource): AggregatorSource {
+  const currentIndex = AGGREGATOR_SOURCES.indexOf(lastSource)
+  const nextIndex = (currentIndex + 1) % AGGREGATOR_SOURCES.length
+  return AGGREGATOR_SOURCES[nextIndex]
+}
 
 export const Route = createFileRoute('/api/v3/sync/aggregator')({
   server: {
@@ -52,19 +78,28 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
             .where(sql`status = 'batch_state' AND sync_type = 'aggregator'`)
             .limit(1)
           
-          let lastSource: 'remoteok' | 'himalayas' = 'himalayas'
+          let lastSource: AggregatorSource = 'jobicy' // Start with jobicy so first run goes to remoteok
           let remoteokTagIndex = 0
+          let jobicyIndustryIndex = 0
+          let himalayasOffset = 0
           
           if (batchState.length > 0 && batchState[0].stats) {
             const state = batchState[0].stats as any
-            lastSource = state.lastSource || 'himalayas'
+            lastSource = state.lastSource || 'jobicy'
             remoteokTagIndex = state.remoteokTagIndex || 0
+            jobicyIndustryIndex = state.jobicyIndustryIndex || 0
+            himalayasOffset = state.himalayasOffset || 0
           }
           
-          const source = getNextAggregatorSource(lastSource)
-          const sourceName = source === 'remoteok' ? 'RemoteOK' : 'Himalayas'
+          const source = getNextSource(lastSource)
+          const sourceNameMap: Record<AggregatorSource, string> = {
+            remoteok: 'RemoteOK',
+            himalayas: 'Himalayas',
+            jobicy: 'Jobicy'
+          }
+          const sourceName = sourceNameMap[source]
           
-          // For RemoteOK, use tag-based queries to get more variety
+          // For RemoteOK/Jobicy, use tag/industry-based queries
           let currentTag = ''
           let apiUrl = ''
           
@@ -75,9 +110,15 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
             currentTag = REMOTEOK_TAGS[remoteokTagIndex % REMOTEOK_TAGS.length]
             apiUrl = `https://remoteok.com/api?tag=${currentTag}`
             syncQueue.log('info', source, `Syncing ${sourceName} tag: ${currentTag} (index ${remoteokTagIndex}/${REMOTEOK_TAGS.length})`)
+          } else if (source === 'himalayas') {
+            apiUrl = `https://himalayas.app/jobs/api?limit=50&offset=${himalayasOffset}`
+            syncQueue.log('info', source, `Starting ${sourceName} sync (offset: ${himalayasOffset})`)
           } else {
-            apiUrl = 'https://himalayas.app/jobs/api'
-            syncQueue.log('info', source, `Starting ${sourceName} sync`)
+            // Jobicy with industry rotation
+            const industry = JOBICY_INDUSTRIES[jobicyIndustryIndex % JOBICY_INDUSTRIES.length]
+            currentTag = industry
+            apiUrl = `https://jobicy.com/api/v2/remote-jobs?count=50&industry=${industry}`
+            syncQueue.log('info', source, `Syncing ${sourceName} industry: ${industry} (index ${jobicyIndustryIndex}/${JOBICY_INDUSTRIES.length})`)
           }
           
           syncQueue.log('info', source, `API: ${apiUrl}`)
@@ -95,13 +136,14 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
               jobsUpdated: 0, 
               jobsDeleted: 0, 
               tag: currentTag || null,
-              tagIndex: source === 'remoteok' ? remoteokTagIndex : null,
-              totalTags: source === 'remoteok' ? REMOTEOK_TAGS.length : null
+              tagIndex: source === 'remoteok' ? remoteokTagIndex : (source === 'jobicy' ? jobicyIndustryIndex : null),
+              totalTags: source === 'remoteok' ? REMOTEOK_TAGS.length : (source === 'jobicy' ? JOBICY_INDUSTRIES.length : null)
             }
           })
           
           let jobsAdded = 0
           let jobsUpdated = 0
+          let jobs: any[] = []
           
           try {
             const fetcher = sourceFetchers[source]
@@ -131,12 +173,14 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
             const data = await response.json() as any
             
             // Parse jobs based on source
-            let jobs: any[] = []
             if (source === 'remoteok') {
               // RemoteOK returns array with first element being metadata
               jobs = Array.isArray(data) ? data.filter((j: any) => j.id && j.position) : []
-            } else {
+            } else if (source === 'himalayas') {
               // Himalayas returns { jobs: [] }
+              jobs = data.jobs || []
+            } else {
+              // Jobicy returns { jobs: [] }
               jobs = data.jobs || []
             }
             
@@ -148,17 +192,32 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
             
             for (const job of jobsToProcess) {
               try {
-                const sourceUrl = source === 'remoteok'
-                  ? `https://remoteok.com/l/${job.id}`
-                  : job.applicationLink || job.url
+                let sourceUrl: string
+                let title: string
+                let company: string
+                let description: string
+                let postDate: Date | null = null
+                
+                if (source === 'remoteok') {
+                  sourceUrl = `https://remoteok.com/l/${job.id}`
+                  title = job.position
+                  company = job.company
+                  description = job.description || ''
+                } else if (source === 'himalayas') {
+                  sourceUrl = job.applicationLink || job.url
+                  title = job.title
+                  company = job.companyName
+                  description = job.description || ''
+                } else {
+                  // Jobicy
+                  sourceUrl = job.url || `https://jobicy.com/jobs/${job.id}`
+                  title = job.jobTitle
+                  company = job.companyName
+                  description = job.jobDescription || ''
+                  if (job.pubDate) postDate = new Date(job.pubDate * 1000)
+                }
                 
                 if (!sourceUrl) continue
-                
-                const title = source === 'remoteok' ? job.position : job.title
-                const company = source === 'remoteok' ? job.company : job.companyName
-                const description = source === 'remoteok'
-                  ? job.description || ''
-                  : job.description || ''
                 
                 // Check if exists
                 const existing = await db.select()
@@ -214,7 +273,7 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
             }).where(eq(schema.syncHistory.id, syncId))
             
             // Still update batch state
-            await updateBatchState(db, source, remoteokTagIndex)
+            await updateBatchState(db, source, remoteokTagIndex, jobicyIndustryIndex, himalayasOffset, 0)
             
             return json({
               success: false,
@@ -233,7 +292,7 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
           }).where(eq(schema.syncHistory.id, syncId))
           
           // Update batch state
-          await updateBatchState(db, source, remoteokTagIndex)
+          await updateBatchState(db, source, remoteokTagIndex, jobicyIndustryIndex, himalayasOffset, jobs.length)
           
           const result: SyncResult = {
             success: true,
@@ -261,20 +320,48 @@ export const Route = createFileRoute('/api/v3/sync/aggregator')({
   }
 })
 
-async function updateBatchState(db: any, source: string, remoteokTagIndex?: number) {
+async function updateBatchState(
+  db: any, 
+  source: string, 
+  remoteokTagIndex?: number, 
+  jobicyIndustryIndex?: number,
+  currentHimalayasOffset?: number,
+  himalayasJobsReturned?: number
+) {
   const existing = await db.select()
     .from(schema.syncHistory)
     .where(sql`status = 'batch_state' AND sync_type = 'aggregator'`)
     .limit(1)
   
+  const existingState = existing[0]?.stats as any || {}
+  
   // Increment tag index if this was a RemoteOK sync
-  const nextTagIndex = source === 'remoteok' && remoteokTagIndex !== undefined 
+  const nextRemoteokTagIndex = source === 'remoteok' && remoteokTagIndex !== undefined 
     ? (remoteokTagIndex + 1) % REMOTEOK_TAGS.length 
-    : (existing[0]?.stats as any)?.remoteokTagIndex || 0
+    : existingState.remoteokTagIndex || 0
+  
+  // Increment industry index if this was a Jobicy sync
+  const nextJobicyIndustryIndex = source === 'jobicy' && jobicyIndustryIndex !== undefined
+    ? (jobicyIndustryIndex + 1) % JOBICY_INDUSTRIES.length
+    : existingState.jobicyIndustryIndex || 0
+  
+  // Update Himalayas offset: increment by jobs returned, reset to 0 if 0 jobs returned
+  let nextHimalayasOffset = existingState.himalayasOffset || 0
+  if (source === 'himalayas' && currentHimalayasOffset !== undefined && himalayasJobsReturned !== undefined) {
+    if (himalayasJobsReturned === 0) {
+      // Pagination exhausted, reset to 0
+      nextHimalayasOffset = 0
+    } else {
+      // Increment offset by number of jobs processed
+      nextHimalayasOffset = currentHimalayasOffset + himalayasJobsReturned
+    }
+  }
   
   const state = {
     lastSource: source,
-    remoteokTagIndex: nextTagIndex,
+    remoteokTagIndex: nextRemoteokTagIndex,
+    jobicyIndustryIndex: nextJobicyIndustryIndex,
+    himalayasOffset: nextHimalayasOffset,
     lastUpdated: new Date().toISOString()
   }
   

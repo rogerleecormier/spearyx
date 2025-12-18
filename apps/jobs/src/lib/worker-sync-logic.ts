@@ -10,6 +10,7 @@ import type { DrizzleD1Database } from '../db/db'
 import * as schema from '../db/schema'
 import { sql, eq, inArray } from 'drizzle-orm'
 import { determineCategoryId } from './job-sources'
+import { decodeHtmlEntities } from './html-utils'
 
 // Import company lists
 import greenhouseCompanies from './job-sources/greenhouse-companies.json'
@@ -172,6 +173,25 @@ export async function syncAtsCompany(
     
     // Rotate through 3 sources: greenhouse -> lever -> workable -> greenhouse...
     source = getNextAtsSource(lastSource)
+    
+    // Check if Workable is in cooldown from previous rate limit
+    if (source === 'workable' && batchState.length > 0 && batchState[0].stats) {
+      const state = batchState[0].stats as any
+      if (state.workableCooldownUntil) {
+        const cooldownEnd = new Date(state.workableCooldownUntil)
+        if (cooldownEnd > new Date()) {
+          const remainingSecs = Math.ceil((cooldownEnd.getTime() - Date.now()) / 1000)
+          log('warning', `Workable in cooldown (${remainingSecs}s remaining), skipping to greenhouse`)
+          // Skip Workable, go to greenhouse instead
+          source = 'greenhouse'
+          // Don't advance atsIndex - we want to try the same Workable company later
+        } else {
+          // Cooldown expired, clear it
+          log('info', `Workable cooldown expired, resuming normal sync`)
+        }
+      }
+    }
+    
     const companies = getCompaniesForSource(source)
     
     // Get next company
@@ -227,8 +247,69 @@ export async function syncAtsCompany(
     
     if (!response.ok) {
       if (response.status === 404) {
-        log('warning', `${company}: No job board found (HTTP 404)`)
+        log('warning', `${company}: No job board found (HTTP 404) - recycling for re-discovery`)
+        
+        // Self-cleanup: Remove from discovered companies and add to potential for re-discovery
+        try {
+          // Delete from discovered_companies (company may have left this ATS)
+          await db.delete(schema.discoveredCompanies)
+            .where(eq(schema.discoveredCompanies.slug, company))
+          
+          // Add to potential_companies for re-discovery on different ATS
+          // Use INSERT OR IGNORE to handle if already exists
+          await db.insert(schema.potentialCompanies).values({
+            id: crypto.randomUUID(),
+            slug: company,
+            status: 'pending',
+            checkCount: 0
+          }).onConflictDoUpdate({
+            target: schema.potentialCompanies.slug,
+            set: {
+              status: 'pending',
+              lastCheckedAt: new Date()
+            }
+          })
+          
+          log('success', `${company}: Recycled for re-discovery`)
+        } catch (recycleError) {
+          log('warning', `${company}: Failed to recycle - ${recycleError}`)
+        }
         // Continue to update batch state
+      } else if (response.status === 429) {
+        // Handle rate limit - set cooldown and skip
+        const resetHeader = response.headers.get('X-Rate-Limit-Reset')
+        let cooldownSeconds = 120 // Default 2 minute cooldown
+        
+        if (resetHeader) {
+          // Workable returns seconds until reset
+          const parsed = parseInt(resetHeader, 10)
+          if (!isNaN(parsed)) {
+            cooldownSeconds = parsed + 10 // Add 10s buffer
+          }
+        }
+        
+        const cooldownUntil = new Date(Date.now() + cooldownSeconds * 1000).toISOString()
+        log('warning', `${source} rate limited (429). Cooldown for ${cooldownSeconds}s until ${cooldownUntil}`)
+        
+        // Set cooldown in batch state (only for Workable)
+        if (source === 'workable') {
+          await updateAtsBatchState(db, source, atsIndex, cooldownUntil) // Don't advance index
+        } else {
+          await updateAtsBatchState(db, source, nextIndex)
+        }
+        
+        // Mark sync as failed gracefully
+        await markSyncFailed(db, syncId, `Rate limit hit (429)`, logs)
+        
+        return {
+          success: false,
+          source,
+          company,
+          jobsAdded: 0,
+          jobsUpdated: 0,
+          error: 'Rate limit hit (429)',
+          duration: Date.now() - startTime
+        }
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
@@ -379,8 +460,8 @@ export async function syncAtsCompany(
       } as any
     }).where(eq(schema.syncHistory.id, syncId))
     
-    // Update batch state
-    await updateAtsBatchState(db, source, nextIndex)
+    // Update batch state (clear cooldown on successful Workable sync)
+    await updateAtsBatchState(db, source, nextIndex, source === 'workable' ? null : undefined)
     
     return {
       success: true,
@@ -397,8 +478,13 @@ export async function syncAtsCompany(
         const errorMsg = 'Rate limit hit (429)'
         log('warning', `${errorMsg} for ${source}. Skipping and rotating.`)
         
-        // Force rotation so we don't get stuck on this source
-        await updateAtsBatchState(db, source, nextIndex)
+        // Set cooldown for Workable (120s default since we don't have response headers here)
+        if (source === 'workable') {
+          const cooldownUntil = new Date(Date.now() + 120000).toISOString()
+          await updateAtsBatchState(db, source, atsIndex, cooldownUntil) // Don't advance index
+        } else {
+          await updateAtsBatchState(db, source, nextIndex)
+        }
         
         // Mark as failed in DB so it doesn't stay "running"
         await markSyncFailed(db, syncId, errorMsg, logs)
@@ -419,16 +505,29 @@ export async function syncAtsCompany(
   }
 }
 
-async function updateAtsBatchState(db: DrizzleD1Database, source: string, nextIndex: number) {
+async function updateAtsBatchState(
+  db: DrizzleD1Database, 
+  source: string, 
+  nextIndex: number,
+  workableCooldownUntil?: string | null
+) {
   const existing = await db.select()
     .from(schema.syncHistory)
     .where(sql`status = 'batch_state' AND sync_type = 'ats'`)
     .limit(1)
   
+  // Preserve existing cooldown if not explicitly changing it
+  let cooldown = workableCooldownUntil
+  if (cooldown === undefined && existing.length > 0 && existing[0].stats) {
+    const existingState = existing[0].stats as any
+    cooldown = existingState.workableCooldownUntil
+  }
+  
   const state = {
     atsIndex: nextIndex,
     lastSource: source,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
+    workableCooldownUntil: cooldown || null
   }
   
   if (existing.length > 0) {
@@ -449,12 +548,49 @@ async function updateAtsBatchState(db: DrizzleD1Database, source: string, nextIn
 }
 
 // ============================================
-// Aggregator Sync Logic (RemoteOK/Himalayas)
+// Aggregator Sync Logic (RemoteOK/Himalayas/Jobicy)
 // ============================================
+
+// Aggregator sources rotation order
+const AGGREGATOR_SOURCES = ['remoteok', 'himalayas', 'jobicy'] as const
+type AggregatorSource = typeof AGGREGATOR_SOURCES[number]
+
+// Source-specific batch limits (API-constrained)
+const BATCH_LIMITS = {
+  remoteok: 50,    // No documented limit, process reasonable batch
+  himalayas: 20,   // Max 20 per request as of March 2025 API change
+  jobicy: 100      // Jobicy allows up to 100 per request (API default/max)
+} as const
+const OFFSET_RESET_HOURS = 24
+
+// Jobicy industry categories for rotation (like RemoteOK tags)
+// Each industry returns up to 100 jobs, giving us ~1200 unique jobs across all industries
+// Values from Jobicy API docs: https://jobicy.com/api/v2
+const JOBICY_INDUSTRIES = [
+  'dev',              // Development
+  'marketing',        // Marketing
+  'design-multimedia', // Design & Multimedia
+  'business',         // Business
+  'engineering',      // Engineering
+  'hr',               // Human Resources
+  'copywriting',      // Writing/Copywriting
+  'data-science',     // Data Science
+  'accounting-finance', // Finance/Accounting
+  'management',       // Management/Product
+  'technical-support', // Technical Support
+  'seo'               // SEO
+] as const
+
+function getNextAggregatorSource(lastSource: AggregatorSource): AggregatorSource {
+  const currentIndex = AGGREGATOR_SOURCES.indexOf(lastSource)
+  const nextIndex = (currentIndex + 1) % AGGREGATOR_SOURCES.length
+  return AGGREGATOR_SOURCES[nextIndex]
+}
 
 export async function syncAggregator(
   db: DrizzleD1Database,
-  timeStr: string
+  timeStr: string,
+  forcedSource?: AggregatorSource  // NEW: Allow forcing specific source for dedicated workers
 ): Promise<SyncResult> {
   const syncId = crypto.randomUUID()
   const startTime = Date.now()
@@ -473,28 +609,66 @@ export async function syncAggregator(
       .where(sql`status = 'batch_state' AND sync_type = 'aggregator'`)
       .limit(1)
     
-    let lastSource: 'remoteok' | 'himalayas' = 'himalayas'
+    let lastSource: AggregatorSource = 'jobicy' // Start with jobicy so first run goes to remoteok
     let remoteokTagIndex = 0
+    let jobicyIndustryIndex = 0
     
     if (batchState.length > 0 && batchState[0].stats) {
       const state = batchState[0].stats as any
-      lastSource = state.lastSource || 'himalayas'
+      lastSource = state.lastSource || 'jobicy'
       remoteokTagIndex = state.remoteokTagIndex || 0
+      jobicyIndustryIndex = state.jobicyIndustryIndex || 0
     }
     
-    const source = lastSource === 'remoteok' ? 'himalayas' : 'remoteok'
-    const sourceName = source === 'remoteok' ? 'RemoteOK' : 'Himalayas'
+    // Use forced source if provided (for dedicated workers), otherwise rotate
+    // 3-way rotation: remoteok -> himalayas -> jobicy -> remoteok...
+    const source = forcedSource || getNextAggregatorSource(lastSource)
+    
+    // Get offset state for this source
+    let currentOffset = 0
+    let offsetResetTime: string | null = null
+    if (batchState.length > 0 && batchState[0].stats) {
+      const state = batchState[0].stats as any
+      const offsets = state.offsets || {}
+      currentOffset = offsets[source]?.offset || 0
+      offsetResetTime = offsets[source]?.resetTime || null
+      
+      // Check if we need to reset offset (24 hours elapsed)
+      if (offsetResetTime) {
+        const resetDate = new Date(offsetResetTime)
+        const hoursSinceReset = (Date.now() - resetDate.getTime()) / (1000 * 60 * 60)
+        if (hoursSinceReset >= OFFSET_RESET_HOURS) {
+          currentOffset = 0
+          console.log(`[${timeStr}] 🔄 Resetting ${source} offset (24h elapsed)`)
+        }
+      }
+    }
+    const sourceNameMap: Record<AggregatorSource, string> = {
+      remoteok: 'RemoteOK',
+      himalayas: 'Himalayas',
+      jobicy: 'Jobicy'
+    }
+    const sourceName = sourceNameMap[source]
     
     let currentTag = ''
     let apiUrl = ''
     
     if (source === 'remoteok') {
+      // RemoteOK uses tag rotation instead of offset pagination
       currentTag = REMOTEOK_TAGS[remoteokTagIndex % REMOTEOK_TAGS.length]
       apiUrl = `https://remoteok.com/api?tag=${currentTag}`
       log('info', `Syncing ${sourceName} tag: ${currentTag} (index ${remoteokTagIndex}/${REMOTEOK_TAGS.length})`)
+    } else if (source === 'himalayas') {
+      // Himalayas supports offset pagination (max 20 per request as of March 2025)
+      apiUrl = `https://himalayas.app/jobs/api?limit=${BATCH_LIMITS.himalayas}&offset=${currentOffset}`
+      log('info', `Starting ${sourceName} sync (offset: ${currentOffset}, limit: ${BATCH_LIMITS.himalayas})`)
     } else {
-      apiUrl = 'https://himalayas.app/jobs/api'
-      log('info', `Starting ${sourceName} sync`)
+      // Jobicy - uses industry rotation (like RemoteOK tags)
+      // Each industry can return up to 50 jobs, giving us ~600 unique jobs total
+      const industry = JOBICY_INDUSTRIES[jobicyIndustryIndex % JOBICY_INDUSTRIES.length]
+      currentTag = industry
+      apiUrl = `https://jobicy.com/api/v2/remote-jobs?count=${BATCH_LIMITS.jobicy}&industry=${industry}`
+      log('info', `Syncing ${sourceName} industry: ${industry} (index ${jobicyIndustryIndex}/${JOBICY_INDUSTRIES.length})`)
     }
     
     log('info', `API: ${apiUrl}`)
@@ -544,48 +718,93 @@ export async function syncAggregator(
     let jobs: any[] = []
     if (source === 'remoteok') {
       jobs = Array.isArray(data) ? data.filter((j: any) => j.id && j.position) : []
+    } else if (source === 'himalayas') {
+      jobs = data.jobs || []
     } else {
+      // Jobicy
       jobs = data.jobs || []
     }
     
     log('info', `Total jobs from API: ${jobs.length}`)
     
-    // Limit to first 5 for performance and to avoid D1 limits (max 100 params)
-    // 5 jobs * ~12 params = ~60 params, well within limits
-    const jobsToProcess = jobs.slice(0, 5)
+    // Determine which jobs to process and check pagination status
+    let jobsToProcess: any[]
+    let paginationExhausted = false
+    
+    if (source === 'jobicy') {
+      // Jobicy uses industry rotation - process first batch from each industry
+      // Industry rotation happens automatically via jobicyIndustryIndex
+      jobsToProcess = jobs.slice(0, BATCH_LIMITS.jobicy)
+      // For Jobicy, pagination is "exhausted" after processing each industry
+      // The industry rotation happens in batch state update
+      paginationExhausted = true  // Always advance to next industry
+      log('info', `Processing ${jobsToProcess.length} jobs from industry`)
+    } else if (source === 'remoteok') {
+      // RemoteOK uses tag rotation
+      jobsToProcess = jobs.slice(0, BATCH_LIMITS.remoteok)
+      paginationExhausted = true  // Always advance to next tag
+      log('info', `Processing ${jobsToProcess.length} jobs from tag`)
+    } else {
+      // Himalayas uses offset pagination
+      // Only consider exhausted when API returns 0 jobs (their API caps at 20 per request)
+      // The 24hr timer will also reset offset regardless
+      paginationExhausted = jobs.length === 0
+      if (paginationExhausted) {
+        log('info', `Pagination exhausted for ${sourceName} (no more jobs at offset ${currentOffset})`)
+      }
+      jobsToProcess = jobs.slice(0, BATCH_LIMITS.himalayas)
+    }
+    
     log('info', `Processing ${jobsToProcess.length} jobs`)
     
     // Batch Process jobs
     if (jobsToProcess.length > 0) {
       // 1. Prepare all jobs
       const jobsWithMetadata = jobsToProcess.map(job => {
-        const sourceUrl = source === 'remoteok'
-          ? `https://remoteok.com/l/${job.id}`
-          : job.applicationLink || job.url
-        
-        if (!sourceUrl) return null
-
-        const title = source === 'remoteok' ? job.position : job.title
-        const company = source === 'remoteok' ? job.company : job.companyName
-        const description = source === 'remoteok'
-          ? job.description || ''
-          : job.description || ''
-        
-        // Extract post date from API response
+        let sourceUrl: string | null = null
+        let title: string = ''
+        let company: string = ''
+        let description: string = ''
         let postDate: Date | null = null
-        if (source === 'remoteok' && job.date) {
-          // RemoteOK provides date as ISO string (e.g. 2024-12-14T...)
-          const d = new Date(job.date)
-          if (!isNaN(d.getTime())) {
-            postDate = d
+        let salary: string | null = null
+        
+        if (source === 'remoteok') {
+          sourceUrl = `https://remoteok.com/l/${job.id}`
+          title = job.position
+          company = job.company
+          description = job.description || ''
+          if (job.date) {
+            const d = new Date(job.date)
+            if (!isNaN(d.getTime())) postDate = d
           }
-        } else if (source === 'himalayas' && job.pubDate) {
-          // Himalayas uses Unix timestamp in seconds (like RemoteOK)
-          const d = new Date(job.pubDate * 1000)
-          if (!isNaN(d.getTime())) {
-            postDate = d
+        } else if (source === 'himalayas') {
+          sourceUrl = job.applicationLink || job.url
+          title = job.title
+          company = job.companyName
+          description = job.description || ''
+          if (job.pubDate) {
+            const d = new Date(job.pubDate * 1000)
+            if (!isNaN(d.getTime())) postDate = d
+          }
+          if (job.minSalary && job.maxSalary && job.currency) {
+            salary = `${job.currency} ${job.minSalary.toLocaleString()} - ${job.maxSalary.toLocaleString()}`
+          }
+        } else {
+          // Jobicy - decode HTML entities in title and company (API returns encoded strings)
+          sourceUrl = job.url
+          title = decodeHtmlEntities(job.jobTitle || '')
+          company = decodeHtmlEntities(job.companyName || '')
+          description = job.jobDescription || job.jobExcerpt || ''
+          if (job.pubDate) {
+            const d = new Date(job.pubDate)
+            if (!isNaN(d.getTime())) postDate = d
+          }
+          if (job.annualSalaryMin && job.annualSalaryMax && job.salaryCurrency) {
+            salary = `${job.salaryCurrency} ${job.annualSalaryMin.toLocaleString()} - ${job.annualSalaryMax.toLocaleString()}/year`
           }
         }
+        
+        if (!sourceUrl) return null
 
         const categoryId = determineCategoryId(title, description, job.tags || [])
 
@@ -596,6 +815,7 @@ export async function syncAggregator(
           isCleansed: 0,
           sourceUrl,
           sourceName,
+          payRange: salary,
           postDate: postDate || new Date(),
           categoryId,
           remoteType: 'fully_remote',
@@ -630,11 +850,14 @@ export async function syncAggregator(
                 company: sql`excluded.company`,
                 descriptionRaw: sql`excluded.description_raw`, // Note: snake_case for SQL column
                 updatedAt: sql`excluded.updated_at`,
-                categoryId: sql`excluded.category_id`
+                categoryId: sql`excluded.category_id`,
+                payRange: sql`excluded.pay_range`
               }
             })
         } catch (batchError: any) {
-           log('error', `Batch upsert failed, falling back to individual inserts: ${batchError.message}`)
+           // D1/Drizzle batch insert with autoincrement generates null IDs which fails
+           // This is expected behavior - fallback to individual inserts
+           log('info', `Using individual inserts (batch: ${batchError.message.substring(0, 50)}...)`)
            // Fallback to individual processing if batch fails (e.g. too big query)
            for (const job of jobsWithMetadata) {
              try {
@@ -646,7 +869,8 @@ export async function syncAggregator(
                      company: job.company,
                      descriptionRaw: job.descriptionRaw,
                      updatedAt: new Date(),
-                     categoryId: job.categoryId
+                     categoryId: job.categoryId,
+                     payRange: job.payRange
                   }
                 })
              } catch (e: any) {
@@ -667,8 +891,14 @@ export async function syncAggregator(
       stats: { jobsAdded, jobsUpdated, jobsDeleted: 0 } as any
     }).where(eq(schema.syncHistory.id, syncId))
     
-    // Update batch state
-    await updateAggregatorBatchState(db, source, remoteokTagIndex)
+    // Update batch state with new offset
+    const nextOffset = paginationExhausted ? 0 : currentOffset + jobsToProcess.length
+    const shouldResetOffset = paginationExhausted || (currentOffset === 0 && !offsetResetTime)
+    
+    await updateAggregatorBatchState(db, source, remoteokTagIndex, jobicyIndustryIndex, {
+      offset: nextOffset,
+      resetTime: shouldResetOffset ? new Date().toISOString() : offsetResetTime
+    })
     
     return {
       success: true,
@@ -685,20 +915,40 @@ export async function syncAggregator(
   }
 }
 
-async function updateAggregatorBatchState(db: DrizzleD1Database, source: string, remoteokTagIndex: number) {
+async function updateAggregatorBatchState(
+  db: DrizzleD1Database, 
+  source: string, 
+  remoteokTagIndex: number,
+  jobicyIndustryIndex: number,
+  offsetInfo?: { offset: number; resetTime: string | null }
+) {
   const existing = await db.select()
     .from(schema.syncHistory)
     .where(sql`status = 'batch_state' AND sync_type = 'aggregator'`)
     .limit(1)
   
   // Increment tag index if this was a RemoteOK sync
-  const nextTagIndex = source === 'remoteok' 
+  const nextRemoteokTagIndex = source === 'remoteok' 
     ? (remoteokTagIndex + 1) % REMOTEOK_TAGS.length 
     : (existing[0]?.stats as any)?.remoteokTagIndex || 0
   
+  // Increment industry index if this was a Jobicy sync
+  const nextJobicyIndustryIndex = source === 'jobicy'
+    ? (jobicyIndustryIndex + 1) % JOBICY_INDUSTRIES.length
+    : (existing[0]?.stats as any)?.jobicyIndustryIndex || 0
+  
+  // Preserve existing offsets and update the current source's offset
+  const existingOffsets = (existing[0]?.stats as any)?.offsets || {}
+  const updatedOffsets = {
+    ...existingOffsets,
+    [source]: offsetInfo || existingOffsets[source] || { offset: 0, resetTime: null }
+  }
+  
   const state = {
     lastSource: source,
-    remoteokTagIndex: nextTagIndex,
+    remoteokTagIndex: nextRemoteokTagIndex,
+    jobicyIndustryIndex: nextJobicyIndustryIndex,
+    offsets: updatedOffsets,
     lastUpdated: new Date().toISOString()
   }
   
@@ -718,6 +968,7 @@ async function updateAggregatorBatchState(db: DrizzleD1Database, source: string,
     })
   }
 }
+
 
 // ============================================
 // Discovery Sync Logic

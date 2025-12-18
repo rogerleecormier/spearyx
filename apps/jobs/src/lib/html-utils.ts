@@ -270,6 +270,14 @@ export function sanitizeHtml(html: string): string {
 export function decodeHtmlEntities(text: string): string {
   if (!text) return ''
   
+  // 0. Handle DOUBLE-ENCODED entities first (e.g., &amp;#8211; -> &#8211; -> –)
+  // This is common when APIs double-encode HTML entities
+  let decoded = text
+    .replace(/&amp;#(\d+);/g, '&#$1;')     // &amp;#8211; -> &#8211;
+    .replace(/&amp;#x([0-9a-fA-F]+);/g, '&#x$1;')  // &amp;#x2013; -> &#x2013;
+    .replace(/&amp;amp;/g, '&amp;')         // &amp;amp; -> &amp;
+    .replace(/&amp;([a-zA-Z]+);/g, '&$1;') // &amp;nbsp; -> &nbsp;
+  
   // 1. Basic named entities lookup
   const entities: Record<string, string> = {
     '&amp;': '&',
@@ -296,7 +304,7 @@ export function decodeHtmlEntities(text: string): string {
   }
 
   // 2. Replace named entities
-  let decoded = text.replace(/&[a-zA-Z0-9]+;/g, (match) => {
+  decoded = decoded.replace(/&[a-zA-Z0-9]+;/g, (match) => {
     return entities[match] || match
   })
 

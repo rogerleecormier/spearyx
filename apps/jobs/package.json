@@ -16,7 +16,10 @@
     "deploy:ats": "wrangler deploy --config wrangler.ats.toml",
     "deploy:aggregator": "wrangler deploy --config wrangler.aggregator.toml",
     "deploy:discovery": "wrangler deploy --config wrangler.discovery.toml",
-    "deploy:workers": "npm run deploy:ats && npm run deploy:aggregator && npm run deploy:discovery",
+    "deploy:jobicy": "wrangler deploy --config wrangler.jobicy.toml",
+    "deploy:remoteok": "wrangler deploy --config wrangler.remoteok.toml",
+    "deploy:himalayas": "wrangler deploy --config wrangler.himalayas.toml",
+    "deploy:workers": "npm run deploy:ats && npm run deploy:discovery && npm run deploy:jobicy && npm run deploy:remoteok && npm run deploy:himalayas",
     "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
