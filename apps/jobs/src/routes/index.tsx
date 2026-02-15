@@ -1,5 +1,5 @@
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Briefcase, Loader2, X, Sparkles, Info, Target } from "lucide-react";
 import { Overline, Hero, Body, SkeletonCard } from "@spearyx/ui-kit";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
@@ -8,14 +8,15 @@ import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import SortControls from "../components/SortControls";
 import type { JobWithCategory } from "../lib/search-utils";
-import SkillsModal, { hasUserProfile } from "../components/ai/SkillsModal";
+import SkillsModal, { hasUserProfile, loadUserProfile } from "../components/ai/SkillsModal";
 import UnicornJobs from "../components/ai/UnicornJobs";
+import type { JobScoreResult } from "./api/ai/score-all";
 import { getDbFromContext, schema } from "../db/db";
 import { desc, sql } from "drizzle-orm";
 
 // SSR Loader - fetches initial data on server
 export const Route = createFileRoute("/")({
-  loader: async ({ context }) => {
+  loader: async ({ context }: { context: any }) => {
     try {
       const db = await getDbFromContext(context as any);
 
@@ -34,10 +35,10 @@ export const Route = createFileRoute("/")({
 
       // Fetch categories
       const categoriesData = await db.select().from(schema.categories);
-      const categoriesMap = new Map(categoriesData.map((c) => [c.id, c]));
+      const categoriesMap = new Map(categoriesData.map((c: any) => [c.id, c]));
 
       // Transform jobs with category data
-      const jobs = jobsData.map((job) => ({
+      const jobs = jobsData.map((job: any) => ({
         ...job,
         category: categoriesMap.get(job.categoryId) || categoriesData[0],
       }));
@@ -108,6 +109,10 @@ function HomePage() {
   const [showAIInfoModal, setShowAIInfoModal] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
   const [userHasProfile, setUserHasProfile] = useState(false);
+
+  // Inline scoring state
+  const [scoreMap, setScoreMap] = useState<Map<number, JobScoreResult>>(new Map());
+  const [isScoring, setIsScoring] = useState(false);
   const aiAbortRef = useRef<AbortController | null>(null);
 
   // Check if user has profile on mount
@@ -189,10 +194,10 @@ function HomePage() {
   }, [searchQuery]);
 
   // Get IDs of AI-recommended jobs for de-duplication
-  const aiJobIds = new Set(aiRecommendedJobs.map(job => job.id));
-  
+  const aiJobIds = new Set(aiRecommendedJobs.map((job: JobWithCategory) => job.id));
+
   // Filter out AI-recommended jobs from regular results
-  const regularJobs = jobs.filter(job => !aiJobIds.has(job.id));
+  const regularJobs = jobs.filter((job: JobWithCategory) => !aiJobIds.has(job.id));
 
   // Fetch jobs when filters change
   useEffect(() => {
@@ -234,7 +239,7 @@ function HomePage() {
       const response = await fetch(`/api/v3/jobs?${params.toString()}`);
       const data = (await response.json()) as JobsResponse;
       if (data.success) {
-        setJobs((prev) => [...prev, ...data.data.jobs]);
+        setJobs((prev: JobWithCategory[]) => [...prev, ...data.data.jobs]);
         setOffset(nextOffset);
         setHasMore(data.data.hasMore);
       }
@@ -267,6 +272,96 @@ function HomePage() {
     setSearchQuery(query);
   }, []);
 
+  // Helper to fetch and score jobs
+  const fetchAndScoreJobs = useCallback(async (currentJobs: JobWithCategory[], currentAiJobs: JobWithCategory[]) => {
+    const profile = loadUserProfile();
+    if (!profile || (!profile.resume && profile.skills.length === 0)) return;
+
+    const allJobsToScore = [...currentJobs, ...currentAiJobs];
+    if (allJobsToScore.length === 0) return;
+
+    setIsScoring(true);
+    try {
+      const jobsPayload = allJobsToScore.map((j: JobWithCategory) => ({
+        id: j.id,
+        title: j.title,
+        description: (j.description || "").substring(0, 2000),
+      }));
+
+      const response = await fetch("/api/ai/score-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resume: profile.resume,
+          skills: profile.skills,
+          jobs: jobsPayload,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Scoring failed");
+
+      const result = (await response.json()) as {
+        success: boolean;
+        data?: { scores: JobScoreResult[]; totalScored: number };
+        error?: string;
+      };
+
+      if (result.success && result.data) {
+        setScoreMap((prev) => {
+          const newMap = new Map(prev);
+          result.data!.scores.forEach((s) => newMap.set(s.jobId, s));
+          return newMap;
+        });
+      }
+    } catch (error) {
+      console.error("Scoring error:", error);
+    } finally {
+      setIsScoring(false);
+    }
+  }, []);
+
+  // Search + Score: run search then score all results
+  const handleSearchAndScore = useCallback(async (query: string) => {
+    setSearchQuery(query);
+
+    // We need to wait for the results from the search we just triggered.
+    // Since the results come from the fetch effect, we can't easily wait here
+    // unless we refactor the fetch to be a callable function (which we should).
+
+    // For now, let's set a flag that we want to score the next set of results.
+    // However, the user wants two buttons, so let's make this more explicit.
+
+    setLoading(true);
+    const params = new URLSearchParams();
+    params.set("search", query);
+    if (selectedCategoryId) params.set("category", selectedCategoryId.toString());
+    if (selectedSource) params.set("source", selectedSource);
+    if (selectedCompany) params.set("company", selectedCompany);
+    params.set("sortBy", sortBy);
+    params.set("limit", "30");
+    params.set("offset", "0");
+
+    try {
+      const response = await fetch(`/api/v3/jobs?${params.toString()}`);
+      const data = (await response.json()) as JobsResponse;
+      if (data.success) {
+        setJobs(data.data.jobs);
+        setTotalJobs(data.data.total);
+        setHasMore(data.data.hasMore);
+        setOffset(0);
+
+        // Immediately score these results
+        // We also need to wait for AI recommendations if they are loading?
+        // But let's score the regular jobs first.
+        fetchAndScoreJobs(data.data.jobs, aiRecommendedJobs);
+      }
+    } catch (error) {
+      console.error("Search + Score error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategoryId, selectedSource, selectedCompany, sortBy, aiRecommendedJobs, fetchAndScoreJobs]);
+
   const handleCategorySelect = useCallback((categoryId: number | null) => {
     setSelectedCategoryId(categoryId);
   }, []);
@@ -287,7 +382,7 @@ function HomePage() {
   }, []);
 
   const handleSortChange = useCallback(
-    (newSortBy: "newest" | "oldest" | "title-asc" | "title-desc") => {
+    (newSortBy: "newest" | "oldest" | "title-asc" | "title-desc" | "recently-added") => {
       setSortBy(newSortBy);
     },
     []
@@ -319,16 +414,16 @@ function HomePage() {
               {/* My Skills Button */}
               <button
                 onClick={() => setShowSkillsModal(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  userHasProfile 
-                    ? "bg-green-50 border border-green-200 text-green-700 hover:bg-green-100"
-                    : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${userHasProfile
+                  ? "bg-green-50 border border-green-200 text-green-700 hover:bg-green-100"
+                  : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
+                  }`}
               >
                 <Target size={12} />
                 My Skills
                 {userHasProfile && <span className="text-green-500">✓</span>}
               </button>
+
               {/* AI Powered Badge */}
               <button
                 onClick={() => setShowAIInfoModal(true)}
@@ -350,7 +445,13 @@ function HomePage() {
           <div className="flex flex-col lg:flex-row gap-5 items-start lg:items-center">
             {/* Search Bar */}
             <div className="w-full lg:flex-[2] min-w-[350px]">
-              <SearchBar onSearch={handleSearch} isAIProcessing={loadingAI} />
+              <SearchBar
+                onSearch={handleSearch}
+                onSearchAndScore={handleSearchAndScore}
+                isAIProcessing={loadingAI}
+                isScoring={isScoring}
+                hasResume={userHasProfile}
+              />
             </div>
 
             {/* Filters */}
@@ -358,7 +459,7 @@ function HomePage() {
               <FilterDropdown
                 label="Categories"
                 value={selectedCategoryId}
-                options={categories.map((c) => ({
+                options={categories.map((c: any) => ({
                   id: c.id,
                   label: c.name,
                 }))}
@@ -463,7 +564,7 @@ function HomePage() {
                       </span>
                     )}
                   </div>
-                  
+
                   {loadingAI ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {[1, 2, 3].map((i) => (
@@ -478,7 +579,7 @@ function HomePage() {
                     </div>
                   ) : aiRecommendedJobs.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {aiRecommendedJobs.map((job) => (
+                      {aiRecommendedJobs.map((job: JobWithCategory) => (
                         <div key={job.id} className="relative">
                           {/* AI Badge */}
                           <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 px-2 py-1 bg-amber-100 border border-amber-300 text-amber-700 text-xs font-medium rounded-full shadow-sm">
@@ -487,6 +588,7 @@ function HomePage() {
                           </div>
                           <JobCard
                             job={job}
+                            score={scoreMap.get(job.id)}
                             onCompanyClick={handleCompanySelect}
                           />
                         </div>
@@ -507,12 +609,13 @@ function HomePage() {
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {regularJobs.map((job) => (
+                    {regularJobs.map((job: JobWithCategory) => (
                       <JobCard
                         key={job.id}
                         job={job}
+                        score={scoreMap.get(job.id)}
                         onCompanyClick={handleCompanySelect}
                       />
                     ))}
@@ -540,9 +643,9 @@ function HomePage() {
       {/* AI Info Modal */}
       {showAIInfoModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIInfoModal(false)}>
-          <div 
+          <div
             className="bg-white rounded-xl max-w-md w-full shadow-xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <div className="px-5 py-4 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -584,6 +687,8 @@ function HomePage() {
           </div>
         </div>
       )}
+
+
 
       {/* Skills Modal */}
       <SkillsModal

@@ -1,23 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import type { AIEnv } from "../../../lib/ai";
+import { getAIFromContext } from "../../../lib/ai";
+import { getD1FromContext } from "../../../db/db";
 import type { JobWithCategory } from "../../../lib/search-utils";
-
-// Helper to get AI and DB from context
-function getEnvFromContext(context: any): { ai: AIEnv['AI'] | null; db: any } {
-  let ai = context?.cloudflare?.env?.AI;
-  let db = context?.cloudflare?.env?.DB;
-  
-  if (!ai || !db) {
-    const cfEnv = (globalThis as any).__CF_ENV__;
-    if (cfEnv) {
-      ai = ai || cfEnv.AI;
-      db = db || cfEnv.DB;
-    }
-  }
-  
-  return { ai: ai || null, db: db || null };
-}
 
 const UNICORN_PROMPT = `You are a career advisor finding unique, non-obvious opportunities.
 
@@ -52,7 +37,8 @@ export const Route = createFileRoute("/api/ai/unicorn")({
     handlers: {
       POST: async ({ request, context }) => {
         try {
-          const { ai, db } = getEnvFromContext(context);
+          const ai = await getAIFromContext(context);
+          const db = await getD1FromContext(context);
 
           if (!ai) {
             return json({ success: false, error: "AI not available" }, { status: 503 });
@@ -89,18 +75,21 @@ export const Route = createFileRoute("/api/ai/unicorn")({
 
           // Parse AI response
           let responseText = "";
-          if (typeof aiResponse === "string") {
+          const res = aiResponse as any;
+          if (res?.choices?.[0]?.message) {
+            responseText = res.choices[0].message.content || "";
+          } else if (typeof aiResponse === "string") {
             responseText = aiResponse;
-          } else if (aiResponse && typeof (aiResponse as any).response === "string") {
-            responseText = (aiResponse as any).response;
-          } else if (aiResponse) {
+          } else if (res?.response) {
+            responseText = res.response;
+          } else if (res) {
             responseText = JSON.stringify(aiResponse);
           }
 
           // Handle nested response
           let parsed = JSON.parse(responseText);
           if (parsed.response) parsed = parsed.response;
-          
+
           const searchQueries: string[] = Array.isArray(parsed) ? parsed : [];
 
           if (searchQueries.length === 0) {
@@ -114,14 +103,14 @@ export const Route = createFileRoute("/api/ai/unicorn")({
           for (const query of searchQueries.slice(0, 3)) {
             const keywords = query.toLowerCase().split(/\s+/);
             const likePatterns = keywords.map(k => `%${k}%`);
-            
+
             // Search in Title OR Description, but require ALL keywords (AND logic)
             // This allows "Healthcare Operations" to match if "Healthcare" is in desc and "Operations" in title
             // But "product manager" won't match just "manager"
-            const whereConditions = likePatterns.map(() => 
+            const whereConditions = likePatterns.map(() =>
               `(LOWER(j.title) LIKE ? OR LOWER(j.description) LIKE ?)`
             ).join(" AND ");
-            
+
             // Double the params because each keyword is used twice
             const params = likePatterns.flatMap(p => [p, p]);
 
@@ -165,95 +154,96 @@ export const Route = createFileRoute("/api/ai/unicorn")({
                     id: row.catId as number,
                     name: row.categoryName as string,
                     slug: row.categorySlug as string,
+                    description: null,
+                    createdAt: new Date(),
                   },
-                  unicornQuery: query, // Track which query found this
-                });
+                } as any);
               }
             }
           }
 
-            // Verify match scores in parallel
-            const MIN_MATCH_SCORE = 80;
-            const verifiedJobs: Array<JobWithCategory & { matchScore: number }> = [];
-            
-            console.log("Checking", allJobs.length, "candidate jobs for match scores");
+          // Verify match scores in parallel
+          const MIN_MATCH_SCORE = 80;
+          const verifiedJobs: Array<JobWithCategory & { matchScore: number }> = [];
 
-            const checkJob = async (job: JobWithCategory) => {
-              try {
-                const matchResponse = await ai.run(
-                  "@cf/meta/llama-3.3-70b-instruct-fp8-fast" as any,
-                  {
-                    messages: [
-                      { role: "system", content: QUICK_MATCH_PROMPT },
-                      { 
-                        role: "user", 
-                        content: `Candidate:\n${profile}\n\nJob Title: ${job.title}\nJob Description: ${job.description?.substring(0, 1500) || ""}` 
-                      },
-                    ],
-                    max_tokens: 50,
-                  }
-                );
+          console.log("Checking", allJobs.length, "candidate jobs for match scores");
 
-                console.log(`Raw match response for ${job.title.substring(0,20)}:`, JSON.stringify(matchResponse));
-
-                let score = NaN;
-                
-                // 1. Try direct number access if it's an object
-                if (typeof matchResponse === 'object' && matchResponse !== null) {
-                   const r = matchResponse as any;
-                   if (typeof r.response === 'number') score = r.response;
-                   else if (typeof r.response === 'string') {
-                      // Try extracting number from string response "85" or "Score: 85"
-                      const match = r.response.match(/\b\d{1,3}\b/);
-                      if (match) score = parseInt(match[0], 10);
-                   }
-                   else if (typeof r.response === 'object' && r.response !== null) {
-                      // Nested {"response": {"response": 85}}
-                      if (typeof r.response.response === 'number') score = r.response.response;
-                   }
+          const checkJob = async (job: JobWithCategory) => {
+            try {
+              const matchResponse = await ai.run(
+                "@cf/meta/llama-3.3-70b-instruct-fp8-fast" as any,
+                {
+                  messages: [
+                    { role: "system", content: QUICK_MATCH_PROMPT },
+                    {
+                      role: "user",
+                      content: `Candidate:\n${profile}\n\nJob Title: ${job.title}\nJob Description: ${job.description?.substring(0, 1500) || ""}`
+                    },
+                  ],
+                  max_tokens: 300,
                 }
-                
-                // 2. If valid score found, verify it's reasonable
-                if (!isNaN(score) && score >= 0 && score <= 100) {
-                   // Good score
-                } else {
-                   // 3. Fallback: treat generic response as string and regex search
-                   let text = "";
-                   if (typeof matchResponse === 'string') text = matchResponse;
-                   else text = JSON.stringify(matchResponse);
-                   
-                   // Find the key "response": 85 or just a number
-                   // Look for "response": 85
-                   const jsonMatch = text.match(/"response"\s*:\s*(\d+)/);
-                   if (jsonMatch) {
-                      score = parseInt(jsonMatch[1], 10);
-                   } else {
-                      // Just look for first distinct number 0-100
-                      // This is risky if there are other numbers but with max_tokens=10 it's likely the score
-                      const numMatch = text.match(/\b\d{1,3}\b/);
-                      if (numMatch) score = parseInt(numMatch[0], 10);
-                   }
-                }
+              );
 
-                console.log(`Job: ${job.title.substring(0,30)} Score: ${score}`);
-                
-                if (!isNaN(score) && score >= MIN_MATCH_SCORE) {
-                  return { ...job, matchScore: Math.min(100, score) };
+              console.log(`Raw match response for ${job.title.substring(0, 20)}:`, JSON.stringify(matchResponse));
+
+              let score = NaN;
+
+              // 1. Try direct number access if it's an object
+              if (typeof matchResponse === 'object' && matchResponse !== null) {
+                const r = matchResponse as any;
+                if (typeof r.response === 'number') score = r.response;
+                else if (typeof r.response === 'string') {
+                  // Try extracting number from string response "85" or "Score: 85"
+                  const match = r.response.match(/\b\d{1,3}\b/);
+                  if (match) score = parseInt(match[0], 10);
                 }
-              } catch (e) {
-                console.error("Match check failed:", e);
+                else if (typeof r.response === 'object' && r.response !== null) {
+                  // Nested {"response": {"response": 85}}
+                  if (typeof r.response.response === 'number') score = r.response.response;
+                }
               }
-              return null;
-            };
 
-            // Process all jobs in parallel
-            const results = await Promise.all(allJobs.map(job => checkJob(job)));
-            
-            results.forEach(res => {
-              if (res) verifiedJobs.push(res);
-            });
+              // 2. If valid score found, verify it's reasonable
+              if (!isNaN(score) && score >= 0 && score <= 100) {
+                // Good score
+              } else {
+                // 3. Fallback: treat generic response as string and regex search
+                let text = "";
+                if (typeof matchResponse === 'string') text = matchResponse;
+                else text = JSON.stringify(matchResponse);
 
-            console.log("Verified jobs:", verifiedJobs.length);
+                // Find the key "response": 85 or just a number
+                // Look for "response": 85
+                const jsonMatch = text.match(/"response"\s*:\s*(\d+)/);
+                if (jsonMatch) {
+                  score = parseInt(jsonMatch[1], 10);
+                } else {
+                  // Just look for first distinct number 0-100
+                  // This is risky if there are other numbers but with max_tokens=10 it's likely the score
+                  const numMatch = text.match(/\b\d{1,3}\b/);
+                  if (numMatch) score = parseInt(numMatch[0], 10);
+                }
+              }
+
+              console.log(`Job: ${job.title.substring(0, 30)} Score: ${score}`);
+
+              if (!isNaN(score) && score >= MIN_MATCH_SCORE) {
+                return { ...job, matchScore: Math.min(100, score) };
+              }
+            } catch (e) {
+              console.error("Match check failed:", e);
+            }
+            return null;
+          };
+
+          // Process all jobs in parallel
+          const results = await Promise.all(allJobs.map(job => checkJob(job)));
+
+          results.forEach(res => {
+            if (res) verifiedJobs.push(res);
+          });
+
+          console.log("Verified jobs:", verifiedJobs.length);
 
           // Return verified high-match jobs
           return json({

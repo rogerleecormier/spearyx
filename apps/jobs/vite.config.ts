@@ -23,6 +23,8 @@ const config = defineConfig({
   resolve: {
     alias: {
       'node:sqlite': new URL('./src/stubs/node-sqlite.js', import.meta.url).pathname,
+      // Fix blake3-wasm resolution issue by pointing to browser version
+      'blake3-wasm': 'blake3-wasm/esm/browser/index.js',
     },
   },
   optimizeDeps: {
@@ -31,7 +33,7 @@ const config = defineConfig({
   ssr: {
     // Don't externalize D1 and Cloudflare packages
     noExternal: ["drizzle-orm"],
-    external: ["node:sqlite", "blake3-wasm", "miniflare"],
+    external: ["node:sqlite", "blake3-wasm", "miniflare", "wrangler"],
   },
 });
 

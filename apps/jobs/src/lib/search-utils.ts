@@ -2,6 +2,21 @@ import Fuse from 'fuse.js'
 import type { Job, Category } from '../db/schema'
 
 export interface JobWithCategory extends Job {
+  id: number
+  title: string
+  company: string | null
+  description: string | null
+  descriptionRaw: string | null
+  fullDescription: string | null
+  isCleansed: number | null
+  payRange: string | null
+  postDate: Date | null
+  sourceUrl: string
+  sourceName: string
+  categoryId: number
+  remoteType: string
+  createdAt: Date
+  updatedAt: Date
   category: Category
 }
 
@@ -35,17 +50,17 @@ export function searchJobs(jobs: JobWithCategory[], options: SearchOptions) {
       if (!job.payRange) {
         return !!options.includeNoSalary
       }
-      
+
       // Parse salary range (e.g., "0-50000", "50000-100000", "200000+")
       const [filterMin, filterMax] = options.salaryRange!.includes('+')
         ? [parseInt(options.salaryRange!.replace('+', '')), Infinity]
         : options.salaryRange!.split('-').map(Number)
-      
+
       // Extract numbers from pay range string, handling 'k' suffix
       // Matches: $100k, $100,000, 100k, 100000
       const matches = job.payRange.match(/(\d+(?:,\d{3})*|\d+)k?/gi)
       if (!matches || matches.length === 0) return false
-      
+
       const salaries = matches.map(s => {
         const clean = s.toLowerCase().replace(/,/g, '').replace('$', '')
         if (clean.endsWith('k')) {
@@ -53,17 +68,17 @@ export function searchJobs(jobs: JobWithCategory[], options: SearchOptions) {
         }
         return parseFloat(clean)
       })
-      
+
       // Get the minimum salary mentioned in the job's pay range
       // If only one number, treat it as both min and max
       const jobMinSalary = Math.min(...salaries)
-      
+
       // Check if job's MINIMUM salary meets the filter's MINIMUM requirement
       // For ranges like "50k-100k", we want jobs that start at 50k or higher?
       // Or jobs that overlap?
       // User said: "filters for salary do not filter based upon minimum salary in the salary range"
       // This implies if I select "100k-150k", I expect jobs where the pay is at least 100k.
-      
+
       // Logic: Job's minimum salary must be >= Filter's minimum salary
       // AND Job's minimum salary must be <= Filter's maximum salary (if not infinity)
       return jobMinSalary >= filterMin && (filterMax === Infinity || jobMinSalary <= filterMax)
@@ -83,33 +98,33 @@ export function searchJobs(jobs: JobWithCategory[], options: SearchOptions) {
     })
 
     const searchResults = fuse.search(options.query)
-    results = searchResults.map((result) => result.item)
+    results = searchResults.map((result: any) => result.item)
   }
 
   // Apply sorting
   switch (options.sortBy) {
     case 'newest':
-      results.sort((a, b) => {
+      results.sort((a: JobWithCategory, b: JobWithCategory) => {
         const dateA = a.postDate ? new Date(a.postDate).getTime() : 0
         const dateB = b.postDate ? new Date(b.postDate).getTime() : 0
         return dateB - dateA
       })
       break
     case 'oldest':
-      results.sort((a, b) => {
+      results.sort((a: JobWithCategory, b: JobWithCategory) => {
         const dateA = a.postDate ? new Date(a.postDate).getTime() : 0
         const dateB = b.postDate ? new Date(b.postDate).getTime() : 0
         return dateA - dateB
       })
       break
     case 'title-asc':
-      results.sort((a, b) => a.title.localeCompare(b.title))
+      results.sort((a: JobWithCategory, b: JobWithCategory) => a.title.localeCompare(b.title))
       break
     case 'title-desc':
-      results.sort((a, b) => b.title.localeCompare(a.title))
+      results.sort((a: JobWithCategory, b: JobWithCategory) => b.title.localeCompare(a.title))
       break
     case 'recently-added':
-      results.sort((a, b) => {
+      results.sort((a: JobWithCategory, b: JobWithCategory) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
         return dateB - dateA
@@ -117,7 +132,7 @@ export function searchJobs(jobs: JobWithCategory[], options: SearchOptions) {
       break
     default:
       // Default to newest
-      results.sort((a, b) => {
+      results.sort((a: JobWithCategory, b: JobWithCategory) => {
         const dateA = a.postDate ? new Date(a.postDate).getTime() : 0
         const dateB = b.postDate ? new Date(b.postDate).getTime() : 0
         return dateB - dateA

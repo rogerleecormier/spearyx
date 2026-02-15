@@ -7,11 +7,16 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { JobWithCategory } from "../lib/search-utils";
-import { useState } from "react";
+import type { JobScoreResult } from "../routes/api/ai/score-all";
+import React, { useState } from "react";
 import JobDetailModal from "./JobDetailModal";
 
+import { getMasterScoreGradient } from "../lib/scoreUtils";
+
 interface JobCardProps {
+  key?: any;
   job: JobWithCategory;
+  score?: JobScoreResult;
   onCompanyClick?: (company: string) => void;
 }
 
@@ -44,7 +49,7 @@ function getTruncatedDescription(
   };
 
   // Replace entities
-  text = text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => {
+  text = text.replace(/&[a-zA-Z0-9#]+;/g, (entity: string) => {
     return entities[entity] || entity;
   });
 
@@ -56,7 +61,7 @@ function getTruncatedDescription(
   return text.substring(0, maxLength).trim() + "...";
 }
 
-export default function JobCard({ job, onCompanyClick }: JobCardProps) {
+export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const formattedDate = job.postDate
@@ -69,11 +74,24 @@ export default function JobCard({ job, onCompanyClick }: JobCardProps) {
     <>
       <div className="flex flex-col h-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
         <div className="p-5 flex-1 flex flex-col">
-          {/* Category badge at top */}
-          <div className="mb-3">
+          {/* Category badge + Master Score at top */}
+          <div className="mb-3 flex items-center justify-between gap-2">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
               {job.category.name}
             </span>
+            {score && (
+              <div className="flex items-center gap-1.5">
+                {score.isUnicorn && (
+                  <span className="text-sm" title={score.unicornReason || "Unicorn opportunity"}>🦄</span>
+                )}
+                <div
+                  className={`inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br ${getMasterScoreGradient(score.masterScore)} text-white text-sm font-bold shadow-sm`}
+                  title={`Master Score: ${score.masterScore}`}
+                >
+                  {score.masterScore}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Title */}
@@ -83,15 +101,15 @@ export default function JobCard({ job, onCompanyClick }: JobCardProps) {
 
           {/* Company */}
           {job.company && (
-            <div className="flex items-center gap-2 text-slate-600 mb-4 text-sm font-medium">
+            <div className="flex items-center gap-2 text-slate-600 mb-2 text-sm font-medium">
               <Building2 size={16} className="text-slate-400" />
               {onCompanyClick ? (
                 <button
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     onCompanyClick(job.company!);
                   }}
-                  className="hover:text-primary-600 hover:underline transition-colors text-left"
+                  className="hover:text-amber-600 hover:underline transition-colors text-left"
                 >
                   {job.company}
                 </button>
@@ -99,6 +117,13 @@ export default function JobCard({ job, onCompanyClick }: JobCardProps) {
                 <span>{job.company}</span>
               )}
             </div>
+          )}
+
+          {/* Description Preview */}
+          {truncatedDescription && (
+            <p className="text-slate-600 text-sm mb-4 line-clamp-2">
+              {truncatedDescription}
+            </p>
           )}
 
           {/* Meta info */}
@@ -143,6 +168,7 @@ export default function JobCard({ job, onCompanyClick }: JobCardProps) {
 
       <JobDetailModal
         job={job}
+        score={score}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

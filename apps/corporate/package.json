@@ -7,7 +7,8 @@
     "build": "vite build",
     "serve": "npx wrangler dev",
     "test": "vitest run",
-    "preview": "npm run build && npx wrangler dev"
+    "preview": "npm run build && npx wrangler dev",
+    "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

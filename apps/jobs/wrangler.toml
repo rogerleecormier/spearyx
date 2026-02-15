@@ -54,3 +54,4 @@ service = "spearyx-sync-discovery"
 
 [ai]
 binding = "AI"
+remote = true

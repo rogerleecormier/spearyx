@@ -13,17 +13,16 @@ export function getDb(d1: D1Database) {
   return drizzle(d1, { schema });
 }
 
-// Helper to get DB from context (for use in API routes)
-export async function getDbFromContext(context: any) {
+export async function getD1FromContext(context: any): Promise<D1Database | null> {
   // Try different context structures
   // 1. Standard Cloudflare Pages/Workers context (production)
   let d1Binding = context?.cloudflare?.env?.DB;
-  
+
   // 2. Direct env access (some configurations)
   if (!d1Binding) {
     d1Binding = context?.env?.DB;
   }
-  
+
   // 3. Direct DB binding (development)
   if (!d1Binding) {
     d1Binding = context?.DB;
@@ -43,19 +42,25 @@ export async function getDbFromContext(context: any) {
     d1Binding = (globalThis as any).DB;
   }
 
-  // 5. Development mode - use getPlatformProxy
+  // 6. Development mode - use getPlatformProxy
   if (!d1Binding && (import.meta.env?.DEV || process.env.NODE_ENV === 'development')) {
     try {
-      const { getPlatformProxy } = await import('wrangler');
+      const { getPlatformProxy } = await import(/* @vite-ignore */ 'wrangler');
       const proxy = await getPlatformProxy({
         configPath: './wrangler.toml',
-        persist: { path: '.wrangler/state/v3' },
       });
       d1Binding = proxy.env.DB;
     } catch (error) {
       console.error('Failed to get platform proxy:', error);
     }
   }
+
+  return d1Binding || null;
+}
+
+// Helper to get DB from context (for use in API routes)
+export async function getDbFromContext(context: any) {
+  const d1Binding = await getD1FromContext(context);
 
   if (!d1Binding) {
     throw new Error(

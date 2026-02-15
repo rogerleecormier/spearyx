@@ -1,29 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import { parseSearchQuery, type AIEnv } from "../../../lib/ai";
+import { parseSearchQuery, getAIFromContext, type AIEnv } from "../../../lib/ai";
 import { getDbFromContext, schema } from "../../../db/db";
-import { like, or, desc, sql } from "drizzle-orm";
-
-// Helper to get AI binding from context
-function getAIFromContext(context: any): AIEnv['AI'] | null {
-  let ai = context?.cloudflare?.env?.AI;
-  if (!ai) ai = context?.env?.AI;
-  if (!ai && typeof globalThis !== 'undefined') {
-    const cfEnv = (globalThis as any).__CF_ENV__;
-    if (cfEnv) ai = cfEnv.AI;
-  }
-  if (!ai && typeof globalThis !== 'undefined') {
-    ai = (globalThis as any).AI;
-  }
-  return ai || null;
-}
+import { like, or, desc } from "drizzle-orm";
 
 export const Route = createFileRoute("/api/ai/recommend")({
   server: {
     handlers: {
       POST: async ({ request, context }) => {
         try {
-          const ai = getAIFromContext(context);
+          const ai = await getAIFromContext(context);
           const db = await getDbFromContext(context);
 
           const body = await request.json() as { query: string };
@@ -44,11 +30,11 @@ export const Route = createFileRoute("/api/ai/recommend")({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ query: body.query }),
               });
-              
+
               // Actually call AI directly instead of internal fetch
               const { parseSearchQuery: parse } = await import("../../../lib/ai");
               parsedQuery = await parse(env, body.query);
-              
+
               // Extract all keywords and skills (deduplicated)
               const keywords = Array.isArray(parsedQuery.keywords) ? parsedQuery.keywords : [];
               const skills = Array.isArray(parsedQuery.skills) ? parsedQuery.skills : [];
@@ -69,7 +55,7 @@ export const Route = createFileRoute("/api/ai/recommend")({
           }
 
           // Build search conditions - match on title, company, or description
-          const conditions = searchTerms.map(term => 
+          const conditions = searchTerms.map(term =>
             or(
               like(schema.jobs.title, `%${term}%`),
               like(schema.jobs.company, `%${term}%`),

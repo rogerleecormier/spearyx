@@ -1,20 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import type { AIEnv } from "../../../lib/ai";
-
-// Helper to get AI binding from context
-function getAIFromContext(context: any): AIEnv['AI'] | null {
-  let ai = context?.cloudflare?.env?.AI;
-  if (!ai) ai = context?.env?.AI;
-  if (!ai && typeof globalThis !== 'undefined') {
-    const cfEnv = (globalThis as any).__CF_ENV__;
-    if (cfEnv) ai = cfEnv.AI;
-  }
-  if (!ai && typeof globalThis !== 'undefined') {
-    ai = (globalThis as any).AI;
-  }
-  return ai || null;
-}
+import { getAIFromContext } from "../../../lib/ai";
 
 const MATCH_PROMPT = `You are a job matching expert. Analyze how well a candidate matches a job.
 
@@ -41,7 +27,7 @@ export const Route = createFileRoute("/api/ai/match")({
     handlers: {
       POST: async ({ request, context }) => {
         try {
-          const ai = getAIFromContext(context);
+          const ai = await getAIFromContext(context);
 
           if (!ai) {
             return json(
@@ -103,40 +89,40 @@ ${body.jobDescription}
 
           // Parse the AI response - handle various response formats
           let responseText = "";
-          console.log("AI response type:", typeof response);
-          console.log("AI response keys:", response ? Object.keys(response as any) : "null");
-          
-          if (typeof response === "string") {
+          const res = response as any;
+
+          if (res?.choices?.[0]?.message) {
+            responseText = res.choices[0].message.content || res.choices[0].message.reasoning_content || "";
+          } else if (typeof response === "string") {
             responseText = response;
-          } else if (response && typeof (response as any).response === "string") {
-            responseText = (response as any).response;
+          } else if (res?.response) {
+            responseText = res.response;
           } else if (response) {
-            // Try JSON stringifying and use as-is
             responseText = JSON.stringify(response);
           }
-          
+
           console.log("Response text (first 300):", responseText.substring(0, 300));
-          
+
           // Clean JSON from potential markdown
           let jsonStr = responseText.trim();
           if (jsonStr.startsWith("```")) {
             jsonStr = jsonStr.replace(/```json?\n?/g, "").replace(/```$/g, "").trim();
           }
-          
+
           // Try to extract JSON from the response if it's not pure JSON
           const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             jsonStr = jsonMatch[0];
           }
-          
+
           console.log("Parsed JSON (first 300):", jsonStr.substring(0, 300));
 
           let result: MatchResult;
           try {
             const parsed = JSON.parse(jsonStr);
             // Handle double-nested response: {response: {matchScore...}}
-            result = parsed.response && typeof parsed.response === "object" 
-              ? parsed.response 
+            result = parsed.response && typeof parsed.response === "object"
+              ? parsed.response
               : parsed;
           } catch (parseError) {
             console.error("Failed to parse match JSON:", jsonStr.substring(0, 200));

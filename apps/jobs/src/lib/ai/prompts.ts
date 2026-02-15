@@ -71,3 +71,59 @@ Return ONLY valid JSON with this structure:
   "recommendations": string[],
   "summary": string
 }`;
+
+export const JOB_SCORE_ALL_PROMPT = `You are an elite career strategist and ATS expert. Score a job against a candidate's resume across THREE dimensions.
+
+Return ONLY valid JSON — no markdown, no explanation outside the JSON object:
+{
+  "atsScore": number (0-100),
+  "careerScore": number (0-100),
+  "outlookScore": number (0-100),
+  "atsReason": string (1 sentence why),
+  "careerReason": string (1 sentence why),
+  "outlookReason": string (1 sentence why),
+  "isUnicorn": boolean,
+  "unicornReason": string | null
+}
+
+SCORING RULES:
+
+1. ATS Compatibility (atsScore): How well does the candidate's resume match THIS job's ATS screening?
+   - Keyword overlap between resume skills/tools and job requirements
+   - Title proximity (does the candidate's role history match?)
+   - Years of experience alignment
+   - Hard skill match (specific tools, certifications, technologies)
+   - 90-100: Almost perfect keyword/skill match
+   - 70-89: Strong overlap with minor gaps
+   - 50-69: Transferable skills but missing key requirements
+   - 0-49: Significant gaps in required skills
+
+2. Career Enhancement (careerScore): How much does this role ADVANCE the candidate's career?
+   - Does it build new skills beyond their current set?
+   - Is it a step up in title/responsibility?
+   - Does it diversify their industry experience?
+   - Does it open new career paths?
+   - 90-100: Major career leap — new skills, higher title, broader scope
+   - 70-89: Meaningful growth in one or more dimensions
+   - 50-69: Lateral move with some skill expansion
+   - 0-49: Step back or stagnation
+
+3. Career Outlook (outlookScore): How strong is the MARKET for this type of role?
+   - Is this job title/field growing or shrinking?
+   - Salary trajectory for this role type
+   - Automation resistance — is AI/automation threatening this role?
+   - Industry health — is this sector growing?
+   - Remote/flexibility trend for this role type
+   - 90-100: High-growth role in thriving industry with rising salaries
+   - 70-89: Solid outlook with steady or growing demand
+   - 50-69: Stable but flat growth
+   - 0-49: Declining demand or high automation risk
+
+4. Unicorn Detection (isUnicorn): Is this a NON-OBVIOUS fit?
+   - Set true if the candidate would NOT normally search for this role title
+   - But their transferable skills make them a strong match
+   - Example: A Project Manager would be a unicorn match for "Chief of Staff", "Implementation Lead", or "Customer Success Director"
+   - If isUnicorn is true, explain WHY in unicornReason
+   - If isUnicorn is false, set unicornReason to null
+
+Be realistic and calibrated. Do NOT inflate scores. A 75+ should be genuinely strong.`;

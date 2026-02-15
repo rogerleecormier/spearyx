@@ -1,40 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import { analyzeJobInsights, type AIEnv } from "../../../lib/ai";
-
-// Helper to get AI binding from context (mirrors getDbFromContext pattern)
-function getAIFromContext(context: any): AIEnv['AI'] | null {
-  // 1. Standard Cloudflare context
-  let ai = context?.cloudflare?.env?.AI;
-  
-  // 2. Direct env access
-  if (!ai) {
-    ai = context?.env?.AI;
-  }
-  
-  // 3. Check global __CF_ENV__ (set by custom worker entry)
-  if (!ai && typeof globalThis !== 'undefined') {
-    const cfEnv = (globalThis as any).__CF_ENV__;
-    if (cfEnv) {
-      ai = cfEnv.AI;
-    }
-  }
-  
-  // 4. Direct on globalThis
-  if (!ai && typeof globalThis !== 'undefined') {
-    ai = (globalThis as any).AI;
-  }
-
-  return ai || null;
-}
+import { analyzeJobInsights, getAIFromContext, type AIEnv } from "../../../lib/ai";
 
 export const Route = createFileRoute("/api/ai/insights")({
   server: {
     handlers: {
       POST: async ({ request, context }) => {
         try {
-          const ai = getAIFromContext(context);
-          
+          const ai = await getAIFromContext(context);
+
           if (!ai) {
             console.error("AI binding not found. Context keys:", Object.keys(context || {}));
             console.error("globalThis.__CF_ENV__:", (globalThis as any).__CF_ENV__ ? 'exists' : 'undefined');
@@ -44,8 +18,8 @@ export const Route = createFileRoute("/api/ai/insights")({
             );
           }
 
-          const body = await request.json() as { 
-            description: string; 
+          const body = await request.json() as {
+            description: string;
             title?: string;
           };
 

@@ -1,18 +1,68 @@
-import { X, ExternalLink, Calendar, DollarSign, Building2 } from "lucide-react";
+import { X, ExternalLink, Calendar, DollarSign, Building2, Target, TrendingUp, BarChart3, Info } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import type { JobWithCategory } from "../lib/search-utils";
+import type { JobScoreResult } from "../routes/api/ai/score-all";
 import JobInsightsPanel from "./ai/JobInsights";
 import JobMatchScore from "./ai/JobMatchScore";
+import { getBarColor, getMasterScoreGradient } from "../lib/scoreUtils";
+
+// Score detail bar for the modal
+function ScoreDetailBar({
+  score,
+  label,
+  reason,
+  icon: Icon,
+}: {
+  score: number;
+  label: string;
+  reason: string;
+  icon: any;
+}) {
+  return (
+    <div className="group space-y-2 p-4 bg-slate-50 border border-slate-100 rounded-xl transition-all hover:shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100 flex-shrink-0">
+            <Icon size={16} className="text-primary-600" />
+          </div>
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-widest">
+            {label}
+          </span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-lg font-black text-slate-800">{score}</span>
+          <span className="text-[10px] text-slate-400 font-bold">/100</span>
+        </div>
+      </div>
+
+      <div className="h-3 bg-white rounded-full overflow-hidden border border-slate-100 p-0.5 shadow-inner">
+        <div
+          className={`h-full rounded-full transition-all duration-1000 ease-out ${getBarColor(score)}`}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Info size={12} className="text-slate-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+          {reason}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 interface JobDetailModalProps {
   job: JobWithCategory;
+  score?: JobScoreResult;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function JobDetailModal({
   job,
+  score,
   isOpen,
   onClose,
 }: JobDetailModalProps) {
@@ -39,7 +89,7 @@ export default function JobDetailModal({
             url: job.sourceUrl,
             company: job.company || ''
           });
-          
+
           const response = await fetch(`/api/v3/job-content?${params.toString()}`);
           if (response.ok) {
             const data = await response.json() as { content?: string };
@@ -85,8 +135,8 @@ export default function JobDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div 
-        className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-300" 
+      <div
+        className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -128,6 +178,65 @@ export default function JobDetailModal({
             </div>
           </div>
 
+          {/* AI Score Breakdown — detailed panel */}
+          {score && (
+            <div className="mb-6 rounded-xl border border-slate-200 overflow-hidden">
+              {/* Score Header */}
+              <div className={`px-5 py-4 bg-gradient-to-r ${getMasterScoreGradient(score.masterScore)} text-white flex items-center justify-between`}>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-xl font-bold">
+                    {score.masterScore}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Master Score</p>
+                    <p className="text-xs text-white/80">
+                      Based on ATS compatibility, career growth, and career outlook
+                    </p>
+                  </div>
+                </div>
+                {score.isUnicorn && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
+                    🦄 Unicorn
+                  </div>
+                )}
+              </div>
+
+              {/* Score Details */}
+              <div className="p-5 space-y-4">
+                <ScoreDetailBar
+                  score={score.atsScore}
+                  label="ATS Compatibility"
+                  reason={score.atsReason}
+                  icon={Target}
+                />
+                <ScoreDetailBar
+                  score={score.careerScore}
+                  label="Career Enhancement"
+                  reason={score.careerReason}
+                  icon={TrendingUp}
+                />
+                <ScoreDetailBar
+                  score={score.outlookScore}
+                  label="Career Outlook"
+                  reason={score.outlookReason}
+                  icon={BarChart3}
+                />
+
+                {/* Unicorn Callout */}
+                {score.isUnicorn && score.unicornReason && (
+                  <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-1">
+                      🦄 Why This Is a Unicorn
+                    </p>
+                    <p className="text-xs text-purple-600 leading-relaxed">
+                      {score.unicornReason}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* AI Features: Match Score + Insights */}
           {descriptionForAI && (
             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,7 +257,7 @@ export default function JobDetailModal({
           {/* Description */}
           <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-p:mb-4 prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-li:my-1">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Job Description</h3>
-            
+
             {fetchError ? (
               <div className="flex flex-col items-center justify-center py-12">
                 {isCustomDomain ? (
@@ -211,12 +320,12 @@ export default function JobDetailModal({
                 )}
               </div>
             ) : (
-              <div 
+              <div
                 className="job-description-content"
                 style={{
                   lineHeight: '1.75'
                 }}
-                dangerouslySetInnerHTML={{ __html: fullDescription || job.fullDescription || job.description || 'No description available.' }} 
+                dangerouslySetInnerHTML={{ __html: fullDescription || job.fullDescription || job.description || 'No description available.' }}
               />
             )}
           </div>

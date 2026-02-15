@@ -18,6 +18,7 @@ import { Route as ApiV3JobContentRouteImport } from './routes/api/v3/job-content
 import { Route as ApiV3CategoriesRouteImport } from './routes/api/v3/categories'
 import { Route as ApiAiUnicornRouteImport } from './routes/api/ai/unicorn'
 import { Route as ApiAiSearchRouteImport } from './routes/api/ai/search'
+import { Route as ApiAiScoreAllRouteImport } from './routes/api/ai/score-all'
 import { Route as ApiAiRecommendRouteImport } from './routes/api/ai/recommend'
 import { Route as ApiAiMatchRouteImport } from './routes/api/ai/match'
 import { Route as ApiAiInsightsRouteImport } from './routes/api/ai/insights'
@@ -72,6 +73,11 @@ const ApiAiUnicornRoute = ApiAiUnicornRouteImport.update({
 const ApiAiSearchRoute = ApiAiSearchRouteImport.update({
   id: '/api/ai/search',
   path: '/api/ai/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiScoreAllRoute = ApiAiScoreAllRouteImport.update({
+  id: '/api/ai/score-all',
+  path: '/api/ai/score-all',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiRecommendRoute = ApiAiRecommendRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
+  '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
+    | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
     | '/api/v3/categories'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
+    | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
     | '/api/v3/categories'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
+    | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
     | '/api/v3/categories'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   ApiAiInsightsRoute: typeof ApiAiInsightsRoute
   ApiAiMatchRoute: typeof ApiAiMatchRoute
   ApiAiRecommendRoute: typeof ApiAiRecommendRoute
+  ApiAiScoreAllRoute: typeof ApiAiScoreAllRoute
   ApiAiSearchRoute: typeof ApiAiSearchRoute
   ApiAiUnicornRoute: typeof ApiAiUnicornRoute
   ApiV3CategoriesRoute: typeof ApiV3CategoriesRoute
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ai/search'
       fullPath: '/api/ai/search'
       preLoaderRoute: typeof ApiAiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/score-all': {
+      id: '/api/ai/score-all'
+      path: '/api/ai/score-all'
+      fullPath: '/api/ai/score-all'
+      preLoaderRoute: typeof ApiAiScoreAllRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai/recommend': {
@@ -432,6 +452,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiInsightsRoute: ApiAiInsightsRoute,
   ApiAiMatchRoute: ApiAiMatchRoute,
   ApiAiRecommendRoute: ApiAiRecommendRoute,
+  ApiAiScoreAllRoute: ApiAiScoreAllRoute,
   ApiAiSearchRoute: ApiAiSearchRoute,
   ApiAiUnicornRoute: ApiAiUnicornRoute,
   ApiV3CategoriesRoute: ApiV3CategoriesRoute,
