@@ -145,7 +145,7 @@ export default function JobScoreDashboard({
         async (forceRefresh = false) => {
             const profile = loadUserProfile();
             if (!profile || (!profile.resume && profile.skills.length === 0)) {
-                setError("Add your resume in 'My Skills' first.");
+                setError("Add your resume in 'My Profile' first.");
                 return;
             }
 

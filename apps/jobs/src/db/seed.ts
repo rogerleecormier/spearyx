@@ -46,6 +46,41 @@ const defaultCategories = [
     slug: 'product-management',
     description: 'Product managers, product owners, and product leadership roles',
   },
+  {
+    name: 'Healthcare & Medical',
+    slug: 'healthcare-medical',
+    description: 'Remote medical coding, telehealth, clinical research, healthcare admin, and medical support roles',
+  },
+  {
+    name: 'Administrative & Reception',
+    slug: 'administrative-reception',
+    description: 'Virtual assistants, receptionists, office administrators, and clerical support roles',
+  },
+  {
+    name: 'Education & Training',
+    slug: 'education-training',
+    description: 'Online tutoring, instructional design, curriculum development, and training coordinator roles',
+  },
+  {
+    name: 'Legal',
+    slug: 'legal',
+    description: 'Paralegals, legal assistants, contract specialists, and compliance roles',
+  },
+  {
+    name: 'Accounting & Finance',
+    slug: 'accounting-finance',
+    description: 'Bookkeepers, accountants, financial analysts, payroll, and billing roles',
+  },
+  {
+    name: 'Human Resources',
+    slug: 'human-resources',
+    description: 'HR coordinators, recruiters, benefits administrators, and people operations roles',
+  },
+  {
+    name: 'Writing & Content',
+    slug: 'writing-content',
+    description: 'Technical writers, editors, translators, transcriptionists, and content creators',
+  },
 ]
 
 const mockJobs = [

@@ -4,12 +4,15 @@ import {
   DollarSign,
   Building2,
   Eye,
+  Sparkles,
+  Globe,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { JobWithCategory } from "../lib/search-utils";
 import type { JobScoreResult } from "../routes/api/ai/score-all";
 import React, { useState } from "react";
 import JobDetailModal from "./JobDetailModal";
+import AIAnalysisModal from "./ai/AIAnalysisModal";
 
 import { getMasterScoreGradient } from "../lib/scoreUtils";
 
@@ -63,6 +66,7 @@ function getTruncatedDescription(
 
 export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const formattedDate = job.postDate
     ? formatDistanceToNow(new Date(job.postDate), { addSuffix: true })
@@ -74,11 +78,17 @@ export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
     <>
       <div className="flex flex-col h-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
         <div className="p-5 flex-1 flex flex-col">
-          {/* Category badge + Master Score at top */}
+          {/* Category badge + Source + Master Score at top */}
           <div className="mb-3 flex items-center justify-between gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              {job.category.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                {job.category.name}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium text-slate-400 bg-slate-50 border border-slate-100">
+                <Globe size={10} className="text-slate-300" />
+                {job.sourceName}
+              </span>
+            </div>
             {score && (
               <div className="flex items-center gap-1.5">
                 {score.isUnicorn && (
@@ -141,36 +151,44 @@ export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
           </div>
         </div>
 
-        {/* Footer with actions */}
-        <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-500">
-            via {job.sourceName}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm"
-            >
-              <Eye size={16} />
-              Quick View
-            </button>
-            <a
-              href={job.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow"
-            >
-              View Job <ExternalLink size={16} />
-            </a>
-          </div>
+        {/* Footer — buttons only */}
+        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => setIsAIModalOpen(true)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 hover:border-amber-300 transition-colors"
+          >
+            <Sparkles size={12} />
+            AI Analysis
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 bg-white border border-slate-200 rounded-md hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300 transition-colors"
+          >
+            <Eye size={12} />
+            Quick View
+          </button>
+          <a
+            href={job.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"
+          >
+            View Job <ExternalLink size={12} />
+          </a>
         </div>
       </div>
 
       <JobDetailModal
         job={job}
-        score={score}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <AIAnalysisModal
+        job={job}
+        score={score}
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
       />
     </>
   );

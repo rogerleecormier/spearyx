@@ -224,7 +224,49 @@
         "23andme",
         "betterhelp",
         "maven",
-        "oscar"
+        "oscar",
+        "hims",
+        "ro",
+        "lyra-health",
+        "spring-health",
+        "modern-health",
+        "rula",
+        "alma",
+        "grow-therapy",
+        "tava-health",
+        "teladoc",
+        "amwell",
+        "cerebral",
+        "talkspace",
+        "devoted-health",
+        "clover-health",
+        "bright-health",
+        "agilon-health",
+        "signify-health",
+        "veeva",
+        "phreesia",
+        "evolent-health",
+        "doximity",
+        "headspace",
+        "calm"
+      ]
+    },
+    "medical-staffing": {
+      "name": "Medical Staffing & Support",
+      "companies": [
+        "nomad-health",
+        "incredible-health",
+        "clipboard-health",
+        "carerev",
+        "trusted-health",
+        "vivian-health",
+        "medely",
+        "shiftmed",
+        "connectrn",
+        "intelycare",
+        "aya-healthcare",
+        "amn-healthcare",
+        "cross-country-healthcare"
       ]
     },
     "education-learning": {
@@ -235,7 +277,97 @@
         "duolingo",
         "masterclass",
         "udacity",
-        "udemy"
+        "udemy",
+        "skillshare",
+        "brilliant",
+        "degreed",
+        "docebo",
+        "codecademy",
+        "datacamp",
+        "pluralsight",
+        "outschool",
+        "instructure",
+        "thinkific",
+        "teachable",
+        "kajabi",
+        "varsity-tutors",
+        "chegg"
+      ]
+    },
+    "legal-compliance": {
+      "name": "Legal & Compliance",
+      "companies": [
+        "ironclad",
+        "docusign",
+        "clio",
+        "litify",
+        "filevine",
+        "icertis",
+        "agiloft",
+        "linksquares",
+        "lexion",
+        "juro",
+        "legalzoom",
+        "casetext",
+        "unit21",
+        "alloy",
+        "feedzai"
+      ]
+    },
+    "accounting-finance-hr": {
+      "name": "Accounting, Finance & HR",
+      "companies": [
+        "intuit",
+        "xero",
+        "freshbooks",
+        "bench",
+        "pilot-com",
+        "bill-com",
+        "tipalti",
+        "chargebee",
+        "zuora",
+        "expensify",
+        "ramp",
+        "bamboohr",
+        "hibob",
+        "lattice",
+        "deel",
+        "oyster",
+        "papaya-global",
+        "remote",
+        "paycor",
+        "rippling"
+      ]
+    },
+    "administrative-bpo": {
+      "name": "Administrative & BPO",
+      "companies": [
+        "belay",
+        "boldly",
+        "concentrix",
+        "ttec",
+        "conduent",
+        "teleperformance",
+        "liveops",
+        "arise",
+        "working-solutions"
+      ]
+    },
+    "writing-content": {
+      "name": "Writing & Content",
+      "companies": [
+        "contently",
+        "skyword",
+        "nerdwallet",
+        "medium",
+        "substack",
+        "webflow",
+        "verbit",
+        "rev",
+        "lionbridge",
+        "transperfect",
+        "welocalize",
+        "smartling"
       ]
     },
     "design-creative": {

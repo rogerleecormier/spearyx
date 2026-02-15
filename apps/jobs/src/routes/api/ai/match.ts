@@ -93,12 +93,20 @@ ${body.jobDescription}
 
           if (res?.choices?.[0]?.message) {
             responseText = res.choices[0].message.content || res.choices[0].message.reasoning_content || "";
+          } else if (typeof res?.response === "string") {
+            responseText = res.response;
           } else if (typeof response === "string") {
             responseText = response;
-          } else if (res?.response) {
-            responseText = res.response;
+          } else if (res?.response && typeof res.response === "object") {
+            // ReadableStream or other object response
+            responseText = JSON.stringify(res.response);
           } else if (response) {
             responseText = JSON.stringify(response);
+          }
+
+          // Ensure responseText is always a string
+          if (typeof responseText !== "string") {
+            responseText = JSON.stringify(responseText) || "";
           }
 
           console.log("Response text (first 300):", responseText.substring(0, 300));

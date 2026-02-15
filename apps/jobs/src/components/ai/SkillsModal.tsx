@@ -89,11 +89,11 @@ export default function SkillsModal({ isOpen, onClose, onSave }: SkillsModalProp
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-xl max-w-lg w-full shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -101,7 +101,7 @@ export default function SkillsModal({ isOpen, onClose, onSave }: SkillsModalProp
         <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles size={18} className="text-amber-500" />
-            <h2 className="font-semibold text-slate-900">Your Skills Profile</h2>
+            <h2 className="font-semibold text-slate-900">Your Profile</h2>
           </div>
           <button
             onClick={onClose}
@@ -115,22 +115,20 @@ export default function SkillsModal({ isOpen, onClose, onSave }: SkillsModalProp
         <div className="flex border-b border-slate-200 flex-shrink-0">
           <button
             onClick={() => setActiveTab("resume")}
-            className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-              activeTab === "resume" 
-                ? "text-amber-700 border-b-2 border-amber-500 bg-amber-50/50" 
+            className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === "resume"
+                ? "text-amber-700 border-b-2 border-amber-500 bg-amber-50/50"
                 : "text-slate-600 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <FileText size={16} />
             Paste Resume
           </button>
           <button
             onClick={() => setActiveTab("skills")}
-            className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-              activeTab === "skills" 
-                ? "text-amber-700 border-b-2 border-amber-500 bg-amber-50/50" 
+            className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === "skills"
+                ? "text-amber-700 border-b-2 border-amber-500 bg-amber-50/50"
                 : "text-slate-600 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <Tags size={16} />
             Add Skills

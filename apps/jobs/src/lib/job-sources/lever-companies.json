@@ -98,6 +98,93 @@
         "alchemy",
         "polygon"
       ]
+    },
+    "healthcare": {
+      "name": "Healthcare & Medical",
+      "companies": [
+        "hims",
+        "ro",
+        "talkspace",
+        "spring-health",
+        "lyra-health",
+        "modern-health",
+        "cerebral",
+        "alma",
+        "grow-therapy",
+        "headspace",
+        "calm",
+        "teladoc",
+        "doximity",
+        "phreesia",
+        "signify-health"
+      ]
+    },
+    "education": {
+      "name": "Education & Training",
+      "companies": [
+        "coursera",
+        "udemy",
+        "duolingo",
+        "masterclass",
+        "pluralsight",
+        "codecademy",
+        "datacamp",
+        "outschool",
+        "thinkific",
+        "teachable",
+        "degreed",
+        "instructure",
+        "chegg"
+      ]
+    },
+    "legal-compliance": {
+      "name": "Legal & Compliance",
+      "companies": [
+        "ironclad",
+        "clio",
+        "filevine",
+        "icertis",
+        "linksquares",
+        "docusign",
+        "legalzoom",
+        "unit21",
+        "alloy"
+      ]
+    },
+    "admin-hr-finance": {
+      "name": "Admin, HR & Finance",
+      "companies": [
+        "bamboohr",
+        "lattice",
+        "hibob",
+        "deel",
+        "oyster",
+        "papaya-global",
+        "freshbooks",
+        "xero",
+        "bench",
+        "expensify",
+        "chargebee",
+        "bill-com",
+        "belay",
+        "boldly",
+        "ttec",
+        "concentrix"
+      ]
+    },
+    "writing-localization": {
+      "name": "Writing & Localization",
+      "companies": [
+        "contently",
+        "nerdwallet",
+        "medium",
+        "substack",
+        "verbit",
+        "smartling",
+        "lionbridge",
+        "transperfect",
+        "welocalize"
+      ]
     }
   },
   "notes": {

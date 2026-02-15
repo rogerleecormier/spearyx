@@ -75,6 +75,97 @@ export const categoryKeywords: CategoryKeywords[] = [
       'sales', 'account executive', 'bdr', 'sdr', 'business development',
       'sales representative', 'account manager', 'sales manager', 'inside sales'
     ]
+  },
+  {
+    id: 10, // Healthcare & Medical
+    keywords: [
+      'medical', 'healthcare', 'health care', 'nurse', 'nursing', 'clinical',
+      'telehealth', 'telemedicine', 'medical coding', 'medical coder', 'icd',
+      'medical billing', 'health information', 'him', 'ehr', 'emr',
+      'pharmacy', 'pharmacist', 'pharmacy technician', 'pharm tech',
+      'medical records', 'patient', 'patient care', 'care coordinator',
+      'utilization review', 'case manager', 'case management',
+      'medical assistant', 'medical receptionist', 'medical secretary',
+      'radiology', 'lab', 'laboratory', 'pathology', 'dental',
+      'mental health', 'therapist', 'counselor', 'psychologist',
+      'physician', 'doctor', 'md', 'registered nurse', 'rn', 'lpn',
+      'cna', 'medical device', 'biotech', 'pharmaceutical',
+      'clinical research', 'clinical trial', 'cra', 'crc',
+      'health coach', 'wellness', 'dietitian', 'nutritionist'
+    ]
+  },
+  {
+    id: 11, // Administrative & Reception
+    keywords: [
+      'receptionist', 'administrative assistant', 'admin assistant',
+      'virtual assistant', 'office manager', 'office administrator',
+      'executive assistant', 'secretary', 'clerical', 'front desk',
+      'office coordinator', 'administrative coordinator', 'data entry',
+      'filing', 'scheduling', 'appointment', 'office support',
+      'administrative support', 'admin support', 'personal assistant',
+      'administrative specialist', 'office assistant'
+    ]
+  },
+  {
+    id: 12, // Education & Training
+    keywords: [
+      'teacher', 'tutor', 'instructor', 'professor', 'lecturer',
+      'curriculum', 'instructional design', 'instructional designer',
+      'e-learning', 'elearning', 'online teaching', 'education',
+      'training', 'trainer', 'training coordinator', 'training specialist',
+      'learning and development', 'l&d', 'academic', 'school',
+      'teaching assistant', 'course developer', 'education specialist',
+      'learning management', 'lms', 'onboarding specialist'
+    ]
+  },
+  {
+    id: 13, // Legal
+    keywords: [
+      'legal', 'paralegal', 'attorney', 'lawyer', 'law clerk',
+      'legal assistant', 'legal secretary', 'contract specialist',
+      'contracts manager', 'compliance', 'compliance officer',
+      'regulatory', 'litigation', 'corporate counsel', 'legal counsel',
+      'legal analyst', 'legal coordinator', 'patent', 'trademark',
+      'intellectual property', 'ip', 'legal operations'
+    ]
+  },
+  {
+    id: 14, // Accounting & Finance
+    keywords: [
+      'accountant', 'accounting', 'bookkeeper', 'bookkeeping',
+      'financial analyst', 'finance manager', 'cpa', 'auditor', 'audit',
+      'tax', 'tax preparer', 'tax specialist', 'payroll',
+      'accounts payable', 'accounts receivable', 'ap', 'ar',
+      'billing', 'billing specialist', 'invoice', 'invoicing',
+      'controller', 'treasurer', 'financial planning', 'fp&a',
+      'budget', 'budgeting', 'general ledger', 'financial reporting',
+      'revenue', 'collections', 'credit analyst'
+    ]
+  },
+  {
+    id: 15, // Human Resources
+    keywords: [
+      'human resources', 'hr', 'recruiter', 'recruiting', 'talent acquisition',
+      'hr coordinator', 'hr manager', 'hr generalist', 'hr specialist',
+      'people operations', 'people ops', 'benefits', 'benefits administrator',
+      'compensation', 'hris', 'employee relations', 'workforce',
+      'staffing', 'staffing coordinator', 'talent management',
+      'diversity', 'dei', 'employee engagement', 'hr business partner',
+      'hrbp', 'onboarding', 'offboarding'
+    ]
+  },
+  {
+    id: 16, // Writing & Content
+    keywords: [
+      'writer', 'writing', 'technical writer', 'technical writing',
+      'editor', 'editing', 'copywriter', 'copy editor', 'proofreader',
+      'proofreading', 'translator', 'translation', 'interpreter',
+      'transcriptionist', 'transcription', 'content creator',
+      'content strategist', 'content specialist', 'ghostwriter',
+      'journalist', 'reporter', 'blogger', 'grant writer',
+      'proposal writer', 'documentation', 'documentation specialist',
+      'medical writer', 'science writer', 'ux writer', 'ux writing'
+    ]
   }
 ]
 
@@ -119,12 +210,12 @@ export function determineCategoryId(title: string | null | undefined, descriptio
         score += 1
       }
     }
-    
+
     if (score > bestScore) {
       bestScore = score
       bestCategoryId = category.id
     }
   }
-  
+
   return bestCategoryId
 }

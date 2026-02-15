@@ -62,15 +62,6 @@
         "elite-construction"
       ]
     },
-    "healthcare": {
-      "name": "Healthcare & Life Sciences",
-      "companies": [
-        "icon-plc",
-        "karo-healthcare",
-        "docplanner",
-        "zocdoc"
-      ]
-    },
     "fintech": {
       "name": "Fintech & Payments",
       "companies": [
@@ -107,6 +98,103 @@
         "pendo",
         "looker",
         "metabase"
+      ]
+    },
+    "healthcare": {
+      "name": "Healthcare & Medical",
+      "companies": [
+        "talkspace",
+        "betterhelp",
+        "cerebral",
+        "headspace",
+        "calm",
+        "teladoc",
+        "oscar",
+        "devoted-health",
+        "doximity",
+        "zocdoc",
+        "spring-health",
+        "modern-health",
+        "alma",
+        "rula",
+        "icon-plc",
+        "karo-healthcare",
+        "docplanner"
+      ]
+    },
+    "medical-staffing": {
+      "name": "Medical Staffing",
+      "companies": [
+        "nomad-health",
+        "incredible-health",
+        "clipboard-health",
+        "trusted-health",
+        "vivian-health",
+        "medely",
+        "carerev",
+        "shiftmed"
+      ]
+    },
+    "education": {
+      "name": "Education & Training",
+      "companies": [
+        "coursera",
+        "udemy",
+        "skillshare",
+        "codecademy",
+        "datacamp",
+        "outschool",
+        "thinkific",
+        "teachable",
+        "degreed",
+        "chegg",
+        "varsity-tutors"
+      ]
+    },
+    "legal": {
+      "name": "Legal & Compliance",
+      "companies": [
+        "ironclad",
+        "clio",
+        "docusign",
+        "legalzoom",
+        "icertis",
+        "filevine",
+        "linksquares",
+        "unit21"
+      ]
+    },
+    "admin-hr-finance": {
+      "name": "Admin, HR & Finance",
+      "companies": [
+        "bamboohr",
+        "hibob",
+        "deel",
+        "oyster",
+        "remote",
+        "papaya-global",
+        "freshbooks",
+        "xero",
+        "expensify",
+        "ramp",
+        "belay",
+        "concentrix",
+        "ttec",
+        "teleperformance"
+      ]
+    },
+    "writing-content": {
+      "name": "Writing & Content",
+      "companies": [
+        "contently",
+        "nerdwallet",
+        "medium",
+        "substack",
+        "verbit",
+        "rev",
+        "lionbridge",
+        "transperfect",
+        "smartling"
       ]
     }
   },
