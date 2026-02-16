@@ -1,6 +1,16 @@
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
-import { db } from './db'
+import { migrate } from 'drizzle-orm/d1/migrator'
+import { getDbFromContext } from './db'
 
-console.log('Running migrations...')
-migrate(db, { migrationsFolder: './drizzle' })
-console.log('Migrations completed!')
+async function runMigrations() {
+    try {
+        const db = await getDbFromContext({})
+        console.log('Running migrations...')
+        await migrate(db, { migrationsFolder: './drizzle' })
+        console.log('Migrations completed!')
+    } catch (error) {
+        console.error('Migration failed:', error)
+        process.exit(1)
+    }
+}
+
+runMigrations()

@@ -5,20 +5,15 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useQuery, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
-import { 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  RefreshCw,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
-  Building2,
-  Globe,
-  Search,
   ChevronDown,
-  ChevronUp,
-  Play
+  ChevronUp
 } from 'lucide-react'
 
 // ============================================
@@ -97,22 +92,26 @@ const queryClient = new QueryClient({
 
 async function fetchStats(): Promise<DashboardStats> {
   const res = await fetch('/api/v3/stats')
-  const data = await res.json()
-  if (!data.success) throw new Error(data.error)
+  const data = (await res.json()) as { success: boolean; error?: string; stats: DashboardStats }
+  if (!data?.success) throw new Error(data?.error || 'Failed to fetch stats')
   return data.stats
 }
 
-async function fetchLogs(limit = 20): Promise<{ logs: SyncLog[]; meta: { recentErrors: number } }> {
+async function fetchLogs(
+  limit = 20
+): Promise<{ logs: SyncLog[]; meta: { recentErrors: number } }> {
   const res = await fetch(`/api/v3/logs?limit=${limit}`)
-  const data = await res.json()
-  if (!data.success) throw new Error(data.error)
+  const data = (await res.json()) as {
+    success: boolean
+    error?: string
+    logs: SyncLog[]
+    meta: { recentErrors: number }
+  }
+  if (!data?.success) throw new Error(data?.error || 'Failed to fetch logs')
   return { logs: data.logs, meta: data.meta }
 }
 
-async function triggerSync(worker: 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'): Promise<any> {
-  const res = await fetch(`/api/v3/sync/${worker}`, { method: 'POST' })
-  return res.json()
-}
+
 
 // ============================================
 // Dashboard Component
@@ -131,20 +130,10 @@ function SyncDashboardContent() {
   })
 
   // Logs query
-  const { data: logsData, isLoading: logsLoading } = useQuery({
+  const { data: logsData } = useQuery({
     queryKey: ['sync-logs'],
     queryFn: () => fetchLogs(30),
     refetchInterval: autoRefresh ? 10000 : false
-  })
-
-  // Manual sync mutation
-  const syncMutation = useMutation({
-    mutationFn: triggerSync,
-    onSuccess: () => {
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
-    }
   })
 
   // Helpers
@@ -157,28 +146,11 @@ function SyncDashboardContent() {
   const formatDate = (iso: string | null) => {
     if (!iso) return 'Never'
     const date = new Date(iso)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + 
-           ', ' + formatTime(iso)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ', ' + formatTime(iso)
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'running': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'failed': return <XCircle className="w-4 h-4 text-red-500" />
-      default: return <Clock className="w-4 h-4 text-slate-400" />
-    }
-  }
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      running: 'bg-blue-100 text-blue-700',
-      completed: 'bg-green-100 text-green-700',
-      failed: 'bg-red-100 text-red-700',
-      never: 'bg-slate-100 text-slate-600'
-    }
-    return styles[status] || styles.never
-  }
 
   if (statsLoading) {
     return (
@@ -223,9 +195,9 @@ function SyncDashboardContent() {
               </div>
             )}
             <label className="flex items-center gap-2 text-sm">
-              <input 
-                type="checkbox" 
-                checked={autoRefresh} 
+              <input
+                type="checkbox"
+                checked={autoRefresh}
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className="rounded"
               />
@@ -249,10 +221,10 @@ function SyncDashboardContent() {
           <StatCard label="Total Jobs" value={stats?.totalJobs || 0} />
           <StatCard label="Discovered Companies" value={stats?.totalDiscoveredCompanies || 0} />
           <StatCard label="Pending Discovery" value={stats?.pendingCompanies || 0} />
-          <StatCard 
-            label="Last Sync" 
-            value={stats?.lastSyncAt ? formatDate(stats.lastSyncAt) : 'Never'} 
-            isText 
+          <StatCard
+            label="Last Sync"
+            value={stats?.lastSyncAt ? formatDate(stats.lastSyncAt) : 'Never'}
+            isText
           />
         </div>
 
@@ -260,40 +232,34 @@ function SyncDashboardContent() {
         <div className="bg-white rounded-lg border p-4 mb-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">Jobs by Source</h2>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <SourceCard 
-              source="greenhouse" 
-              count={stats?.jobsBySource?.greenhouse || 0} 
-              icon="🌱" 
+            <SourceCard
+              source="greenhouse"
+              count={stats?.jobsBySource?.greenhouse || 0}
               accentColor="border-l-green-500"
             />
-            <SourceCard 
-              source="lever" 
-              count={stats?.jobsBySource?.lever || 0} 
-              icon="⚙️"
+            <SourceCard
+              source="lever"
+              count={stats?.jobsBySource?.lever || 0}
               accentColor="border-l-blue-500"
             />
-            <SourceCard 
-              source="workable" 
-              count={stats?.jobsBySource?.workable || 0} 
-              icon="💼"
+            <SourceCard
+              source="workable"
+              count={stats?.jobsBySource?.workable || 0}
               accentColor="border-l-purple-500"
             />
-            <SourceCard 
-              source="remoteok" 
-              count={stats?.jobsBySource?.remoteok || 0} 
-              icon="🌐"
+            <SourceCard
+              source="remoteok"
+              count={stats?.jobsBySource?.remoteok || 0}
               accentColor="border-l-red-500"
             />
-            <SourceCard 
-              source="himalayas" 
-              count={stats?.jobsBySource?.himalayas || 0} 
-              icon="🏔️"
+            <SourceCard
+              source="himalayas"
+              count={stats?.jobsBySource?.himalayas || 0}
               accentColor="border-l-indigo-500"
             />
-            <SourceCard 
-              source="jobicy" 
-              count={stats?.jobsBySource?.jobicy || 0} 
-              icon="💡"
+            <SourceCard
+              source="jobicy"
+              count={stats?.jobsBySource?.jobicy || 0}
               accentColor="border-l-amber-500"
             />
           </div>
@@ -308,12 +274,10 @@ function SyncDashboardContent() {
               const worker = stats?.workerStatus?.[id]
               if (!worker) return null
               return (
-                <WorkerCard 
+                <WorkerCard
                   key={id}
                   workerId={id as 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'}
                   worker={worker}
-                  onTrigger={() => syncMutation.mutate(id as any)}
-                  isTriggering={syncMutation.isPending}
                   formatDate={formatDate}
                 />
               )
@@ -329,7 +293,7 @@ function SyncDashboardContent() {
           </div>
           <div className="divide-y max-h-[500px] overflow-y-auto">
             {logs.map((log) => (
-              <LogEntry 
+              <LogEntry
                 key={log.id}
                 log={log}
                 isExpanded={expandedLog === log.id}
@@ -364,18 +328,13 @@ function StatCard({ label, value, isText = false }: { label: string; value: stri
   )
 }
 
-function SourceCard({ 
-  source, 
-  count, 
-  icon, 
+function SourceCard({
+  source,
+  count,
   accentColor
-}: { 
+}: {
   source: string
   count: number
-  icon: string
-  gradient?: string
-  bgLight?: string
-  borderColor?: string
   accentColor: string
 }) {
   return (
@@ -388,17 +347,13 @@ function SourceCard({
   )
 }
 
-function WorkerCard({ 
-  workerId, 
-  worker, 
-  onTrigger, 
-  isTriggering,
-  formatDate 
-}: { 
+function WorkerCard({
+  workerId,
+  worker,
+  formatDate
+}: {
   workerId: 'ats' | 'jobicy' | 'remoteok' | 'himalayas' | 'discovery'
   worker: WorkerStatus
-  onTrigger: () => void
-  isTriggering: boolean
   formatDate: (iso: string | null) => string
 }) {
   const bgColors: Record<string, string> = {
@@ -415,12 +370,11 @@ function WorkerCard({
         <span className="text-xl">{worker.icon}</span>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-500">{worker.schedule}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            worker.status === 'running' ? 'bg-blue-100 text-blue-700' :
+          <span className={`text-xs px-2 py-0.5 rounded-full ${worker.status === 'running' ? 'bg-blue-100 text-blue-700' :
             worker.status === 'failed' ? 'bg-red-100 text-red-700' :
-            worker.status === 'completed' ? 'bg-green-100 text-green-700' :
-            'bg-slate-100 text-slate-600'
-          }`}>
+              worker.status === 'completed' ? 'bg-green-100 text-green-700' :
+                'bg-slate-100 text-slate-600'
+            }`}>
             {worker.status}
           </span>
         </div>
@@ -436,40 +390,22 @@ function WorkerCard({
           {worker.error}
         </p>
       )}
-      <button
-        onClick={onTrigger}
-        disabled={isTriggering || worker.status === 'running'}
-        className="mt-3 w-full px-3 py-1.5 text-xs bg-white border rounded hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center gap-1"
-      >
-        <Play className="w-3 h-3" />
-        Trigger Now
-      </button>
     </div>
   )
 }
 
-function LogEntry({ 
-  log, 
-  isExpanded, 
+function LogEntry({
+  log,
+  isExpanded,
   onToggle,
-  formatTime 
-}: { 
+  formatTime
+}: {
   log: SyncLog
   isExpanded: boolean
   onToggle: () => void
   formatTime: (iso: string | null) => string
 }) {
-  const getSourceIcon = (source: string | null) => {
-    switch (source?.toLowerCase()) {
-      case 'greenhouse': return <Building2 className="w-4 h-4 text-green-600" />
-      case 'lever': return <Building2 className="w-4 h-4 text-blue-600" />
-      case 'workable': return <Building2 className="w-4 h-4 text-purple-600" />
-      case 'remoteok': return <Globe className="w-4 h-4 text-red-600" />
-      case 'himalayas': return <Globe className="w-4 h-4 text-indigo-600" />
-      case 'jobicy': return <Globe className="w-4 h-4 text-amber-600" />
-      default: return <Search className="w-4 h-4 text-purple-600" />
-    }
-  }
+
 
   const getSourceLabel = (log: SyncLog) => {
     if (log.syncType === 'discovery') return '🔍 Discovery'
@@ -523,17 +459,16 @@ function LogEntry({
           )}
         </div>
       </button>
-      
+
       {isExpanded && log.logs.length > 0 && (
         <div className="px-4 pb-4">
           <div className="bg-slate-900 rounded-lg p-3 text-xs font-mono max-h-48 overflow-y-auto">
             {[...log.logs].reverse().map((entry, i) => (
-              <div key={i} className={`${
-                entry.type === 'error' ? 'text-red-400' :
+              <div key={i} className={`${entry.type === 'error' ? 'text-red-400' :
                 entry.type === 'warning' ? 'text-yellow-400' :
-                entry.type === 'success' ? 'text-green-400' :
-                'text-slate-300'
-              }`}>
+                  entry.type === 'success' ? 'text-green-400' :
+                    'text-slate-300'
+                }`}>
                 [{new Date(entry.timestamp).toLocaleTimeString()}] {entry.message}
               </div>
             ))}

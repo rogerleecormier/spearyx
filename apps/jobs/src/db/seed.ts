@@ -1,4 +1,4 @@
-import { db, schema } from './db'
+import { getDbFromContext, schema } from './db'
 
 const defaultCategories = [
   {
@@ -197,15 +197,15 @@ const mockJobs = [
 ]
 
 async function seed() {
+  const db = await getDbFromContext({})
   console.log('Seeding database...')
 
-  // Insert categories
-  console.log('Inserting categories...')
-  await db.insert(schema.categories).values(defaultCategories)
-
-  // Insert mock jobs
-  console.log('Inserting mock jobs...')
-  await db.insert(schema.jobs).values(mockJobs)
+  // Insert categories and mock jobs using batch for reliability
+  console.log('Inserting categories and mock jobs...')
+  await db.batch([
+    db.insert(schema.categories).values(defaultCategories).onConflictDoNothing(),
+    db.insert(schema.jobs).values(mockJobs).onConflictDoNothing(),
+  ])
 
   console.log('Database seeded successfully!')
 }
