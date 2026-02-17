@@ -6,6 +6,7 @@ import {
   Eye,
   Sparkles,
   Globe,
+  FileText,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { JobWithCategory } from "../lib/search-utils";
@@ -13,6 +14,7 @@ import type { JobScoreResult } from "../routes/api/ai/score-all";
 import React, { useState } from "react";
 import JobDetailModal from "./JobDetailModal";
 import AIAnalysisModal from "./ai/AIAnalysisModal";
+import ResumeBuilderModal from "./ai/ResumeBuilderModal";
 
 import { getMasterScoreGradient } from "../lib/scoreUtils";
 
@@ -67,6 +69,7 @@ function getTruncatedDescription(
 export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
   const formattedDate = job.postDate
     ? formatDistanceToNow(new Date(job.postDate), { addSuffix: true })
@@ -152,7 +155,16 @@ export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
         </div>
 
         {/* Footer — buttons only */}
-        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-1.5">
+        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-1.5 flex-wrap">
+          <button
+            onClick={() => setIsResumeModalOpen(true)}
+            disabled={!job.description}
+            title={!job.description ? "No job description available" : "Generate Tailored Resume"}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 hover:border-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileText size={12} />
+            Tailor Resume
+          </button>
           <button
             onClick={() => setIsAIModalOpen(true)}
             className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 hover:border-amber-300 transition-colors"
@@ -189,6 +201,12 @@ export default function JobCard({ job, score, onCompanyClick }: JobCardProps) {
         score={score}
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
+      />
+
+      <ResumeBuilderModal
+        job={job}
+        isOpen={isResumeModalOpen}
+        onClose={() => setIsResumeModalOpen(false)}
       />
     </>
   );

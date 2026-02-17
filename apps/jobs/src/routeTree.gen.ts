@@ -22,6 +22,7 @@ import { Route as ApiAiScoreAllRouteImport } from './routes/api/ai/score-all'
 import { Route as ApiAiRecommendRouteImport } from './routes/api/ai/recommend'
 import { Route as ApiAiMatchRouteImport } from './routes/api/ai/match'
 import { Route as ApiAiInsightsRouteImport } from './routes/api/ai/insights'
+import { Route as ApiAiGenerateResumeRouteImport } from './routes/api/ai/generate-resume'
 import { Route as ApiV3JobsPruneRouteImport } from './routes/api/v3/jobs/prune'
 
 const SyncRoute = SyncRouteImport.update({
@@ -89,6 +90,11 @@ const ApiAiInsightsRoute = ApiAiInsightsRouteImport.update({
   path: '/api/ai/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiGenerateResumeRoute = ApiAiGenerateResumeRouteImport.update({
+  id: '/api/ai/generate-resume',
+  path: '/api/ai/generate-resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV3JobsPruneRoute = ApiV3JobsPruneRouteImport.update({
   id: '/prune',
   path: '/prune',
@@ -98,6 +104,7 @@ const ApiV3JobsPruneRoute = ApiV3JobsPruneRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sync': typeof SyncRoute
+  '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
   '/api/ai/recommend': typeof ApiAiRecommendRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/sync'
+    | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sync'
+    | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/sync'
+    | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
     | '/api/ai/recommend'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SyncRoute: typeof SyncRoute
+  ApiAiGenerateResumeRoute: typeof ApiAiGenerateResumeRoute
   ApiAiInsightsRoute: typeof ApiAiInsightsRoute
   ApiAiMatchRoute: typeof ApiAiMatchRoute
   ApiAiRecommendRoute: typeof ApiAiRecommendRoute
@@ -304,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/generate-resume': {
+      id: '/api/ai/generate-resume'
+      path: '/api/ai/generate-resume'
+      fullPath: '/api/ai/generate-resume'
+      preLoaderRoute: typeof ApiAiGenerateResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v3/jobs/prune': {
       id: '/api/v3/jobs/prune'
       path: '/prune'
@@ -329,6 +349,7 @@ const ApiV3JobsRouteWithChildren = ApiV3JobsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SyncRoute: SyncRoute,
+  ApiAiGenerateResumeRoute: ApiAiGenerateResumeRoute,
   ApiAiInsightsRoute: ApiAiInsightsRoute,
   ApiAiMatchRoute: ApiAiMatchRoute,
   ApiAiRecommendRoute: ApiAiRecommendRoute,
