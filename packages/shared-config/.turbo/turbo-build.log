@@ -1,7 +1,6 @@
 
 
-> @spearyx/shared-config@0.0.0 build
+> @spearyx/shared-config@0.0.0 build /run/media/rogerleecormier/Storage/dev/spearyx/packages/shared-config
 > echo 'No build needed for source imports'
 
 No build needed for source imports
-⠙[1G[0K

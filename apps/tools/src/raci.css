@@ -1,34 +1,31 @@
 /**
- * RACI-Specific Layout Styles
- * Uses shared theme variables from @spearyx/shared-config
+ * RACI Generator — Glassmorphic Design
+ * Unified with the Spearyx design system
  */
 
-
-/* ============================================================================
-   Layout Container
-   ============================================================================ */
-
-/* Root Container */
+/* ── Page background ── */
 .raci-editor-container {
   width: 100%;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header Section */
+/* ── Sticky Page Header (from page-level, not nav) ── */
 .raci-header-section {
-  background: white;
-  border-bottom: 1px solid rgb(226, 232, 240);
-  padding: 1.5rem 2rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  padding: 1.25rem 2rem;
+  box-shadow: 0 1px 16px rgba(15, 23, 42, 0.06);
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 20;
 }
 
-/* Main Layout */
+/* ── Main layout ── */
 .raci-editor-layout {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -40,15 +37,19 @@
   width: 100%;
 }
 
-/* ============================================================================
-   Header Bar
-   ============================================================================ */
-
+/* ── Header Bar (inside cards) ── */
 .raci-header-bar {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
   gap: 1rem;
-  width: 100%;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .raci-header-content {
@@ -67,7 +68,7 @@
   background: transparent;
   transition: border-color 0.2s;
   flex: 1;
-  color: rgb(15, 23, 42);
+  color: #0f172a;
 }
 
 .raci-title-input:focus {
@@ -76,59 +77,46 @@
 }
 
 .raci-title-input::placeholder {
-  color: rgb(148, 163, 184);
+  color: #cbd5e1;
 }
 
-/* ============================================================================
-   Sidebar
-   ============================================================================ */
-
+/* ── Sidebar ── */
 .raci-sidebar {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   overflow-y: auto;
   max-height: calc(100vh - 180px);
-  padding-right: 0.5rem;
+  padding-right: 0.25rem;
 }
 
-.raci-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.raci-sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.raci-sidebar::-webkit-scrollbar-thumb {
-  background: rgb(203, 213, 225);
-  border-radius: 3px;
-}
-
-.raci-sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgb(148, 163, 184);
-}
+.raci-sidebar::-webkit-scrollbar { width: 5px; }
+.raci-sidebar::-webkit-scrollbar-track { background: transparent; }
+.raci-sidebar::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 3px; }
+.raci-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.6); }
 
 .raci-sidebar-card {
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
   padding: 1.25rem;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   transition: all 0.2s;
 }
 
 .raci-sidebar-card:hover {
-  border-color: rgb(203, 213, 225);
-  box-shadow: 0 4px 6px rgb(0 0 0 / 0.07);
+  border-color: rgba(220, 38, 38, 0.15);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
 }
 
 .raci-sidebar-title {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: rgb(51, 65, 85);
+  letter-spacing: 0.08em;
+  color: #64748b;
   margin-bottom: 1rem;
 }
 
@@ -136,20 +124,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background: rgb(226, 232, 240);
-  color: rgb(51, 65, 85);
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.4rem;
+  background: rgba(226, 232, 240, 0.8);
+  color: #475569;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
-/* ============================================================================
-   Main Content
-   ============================================================================ */
-
+/* ── Main Content ── */
 .raci-main-content {
   display: flex;
   flex-direction: column;
@@ -158,46 +143,34 @@
 }
 
 .raci-matrix-card {
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   overflow: auto;
   flex: 1;
   min-height: 400px;
 }
 
-.raci-matrix-card::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+.raci-matrix-card::-webkit-scrollbar { width: 5px; height: 5px; }
+.raci-matrix-card::-webkit-scrollbar-track { background: transparent; }
+.raci-matrix-card::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 3px; }
+.raci-matrix-card::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.6); }
 
-.raci-matrix-card::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.raci-matrix-card::-webkit-scrollbar-thumb {
-  background: rgb(203, 213, 225);
-  border-radius: 3px;
-}
-
-.raci-matrix-card::-webkit-scrollbar-thumb:hover {
-  background: rgb(148, 163, 184);
-}
-
-/* ============================================================================
-   Action Bar
-   ============================================================================ */
-
+/* ── Action Bar ── */
 .raci-action-bar {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   flex-wrap: wrap;
 }
 
@@ -207,44 +180,39 @@
   flex-wrap: wrap;
 }
 
-/* ============================================================================
-   RACI Color Coding
-   ============================================================================ */
-
+/* ── RACI Color Coding (preserved, now with glassmorphic feel) ── */
 .raci-value-r {
-  background-color: #dcfce7;
+  background: rgba(220, 252, 231, 0.85);
   color: #15803d;
   border-left: 3px solid #16a34a;
+  backdrop-filter: blur(4px);
 }
-
 .raci-value-a {
-  background-color: #fef3c7;
+  background: rgba(254, 243, 199, 0.85);
   color: #b45309;
   border-left: 3px solid #f59e0b;
+  backdrop-filter: blur(4px);
 }
-
 .raci-value-c {
-  background-color: #dbeafe;
+  background: rgba(219, 234, 254, 0.85);
   color: #1e40af;
   border-left: 3px solid #3b82f6;
+  backdrop-filter: blur(4px);
 }
-
 .raci-value-i {
-  background-color: #f3f4f6;
+  background: rgba(243, 244, 246, 0.85);
   color: #374151;
   border-left: 3px solid #9ca3af;
+  backdrop-filter: blur(4px);
 }
 
-/* ============================================================================
-   Matrix Grid
-   ============================================================================ */
-
+/* ── Matrix Grid ── */
 .raci-matrix {
   display: grid;
   gap: 1px;
-  background: rgb(203, 213, 225);
-  border: 1px solid rgb(203, 213, 225);
-  border-radius: 0.5rem;
+  background: rgba(203, 213, 225, 0.6);
+  border: 1px solid rgba(203, 213, 225, 0.6);
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
@@ -252,16 +220,16 @@
   display: grid;
   gap: 1px;
   grid-template-columns: 150px repeat(auto-fit, minmax(120px, 1fr));
-  background: rgb(203, 213, 225);
+  background: rgba(203, 213, 225, 0.6);
 }
 
 .raci-matrix-header-cell {
-  background: rgb(240, 244, 248);
+  background: rgba(240, 244, 248, 0.9);
   padding: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: rgb(51, 65, 85);
-  border-right: 1px solid rgb(203, 213, 225);
+  color: #334155;
+  border-right: 1px solid rgba(203, 213, 225, 0.5);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -272,449 +240,96 @@
   display: grid;
   grid-template-columns: 150px repeat(auto-fit, minmax(120px, 1fr));
   gap: 1px;
-  background: rgb(203, 213, 225);
+  background: rgba(203, 213, 225, 0.6);
 }
 
 .raci-matrix-row-header {
-  background: rgb(240, 244, 248);
+  background: rgba(240, 244, 248, 0.9);
   padding: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: rgb(51, 65, 85);
-  border-right: 1px solid rgb(203, 213, 225);
+  color: #334155;
+  border-right: 1px solid rgba(203, 213, 225, 0.5);
   display: flex;
   align-items: center;
 }
 
 .raci-matrix-cell {
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
   padding: 0.75rem;
   min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
   transition: all 0.15s;
   border: 1px solid transparent;
 }
 
 .raci-matrix-cell:hover {
-  background: rgb(248, 250, 252);
-  border-color: #ef4444;
+  background: rgba(254, 242, 242, 0.9);
+  border-color: rgba(220, 38, 38, 0.3);
 }
 
 .raci-matrix-cell:focus {
   outline: none;
-  background: rgb(254, 242, 242);
+  background: rgba(254, 242, 242, 0.95);
   border: 2px solid #ef4444;
 }
 
-/* ============================================================================
-   Forms & Input
-   ============================================================================ */
-
-.raci-input,
-.raci-textarea,
-.raci-select {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid rgb(203, 213, 225);
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  background: white;
-  color: rgb(15, 23, 42);
-}
-
-.raci-input:focus,
-.raci-textarea:focus,
-.raci-select:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
-}
-
-.raci-textarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-}
-
-.raci-input::placeholder,
-.raci-textarea::placeholder {
-  color: rgb(148, 163, 184);
-}
-
-/* ============================================================================
-   Buttons
-   ============================================================================ */
-
-.raci-button,
-.raci-button-primary,
-.raci-button-secondary,
-.raci-button-danger {
-  padding: 0.625rem 1rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 36px;
-  white-space: nowrap;
-}
-
-.raci-button-primary {
-  background: #ef4444;
-  color: white;
-}
-
-.raci-button-primary:hover {
-  background: #dc2626;
-  box-shadow: 0 4px 6px rgb(239 68 68 / 0.2);
-}
-
-.raci-button-primary:active {
-  background: #b91c1c;
-}
-
-.raci-button-secondary {
-  background: rgb(238, 242, 255);
-  color: rgb(79, 70, 229);
-  border: 1px solid rgb(199, 210, 254);
-}
-
-.raci-button-secondary:hover {
-  background: rgb(224, 231, 255);
-  box-shadow: 0 2px 4px rgb(99 102 241 / 0.1);
-}
-
-.raci-button-danger {
-  background: rgb(243, 244, 246);
-  color: rgb(220, 38, 38);
-  border: 1px solid rgb(254, 202, 202);
-}
-
-.raci-button-danger:hover {
-  background: rgb(254, 226, 226);
-  color: rgb(159, 18, 18);
-}
-
-/* ============================================================================
-   Lists
-   ============================================================================ */
-
-.raci-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.raci-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem;
-  background: rgb(248, 250, 252);
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-}
-
-.raci-list-item:hover {
-  background: rgb(241, 245, 249);
-  border-color: rgb(203, 213, 225);
-}
-
-.raci-list-item-label {
-  flex: 1;
-  color: rgb(51, 65, 85);
-  font-weight: 500;
-}
-
-.raci-list-item-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* ============================================================================
-   Responsive Design
-   ============================================================================ */
-
-@media (max-width: 1024px) {
-  .raci-editor-layout {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .raci-sidebar {
-    max-height: none;
-  }
-
-  .raci-header-section {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .raci-editor-container {
-    padding: 0;
-  }
-
-  .raci-editor-layout {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    padding: 0.75rem;
-  }
-
-  .raci-header-section {
-    padding: 1rem 0.75rem;
-  }
-
-  .raci-title-input {
-    font-size: 1.5rem;
-  }
-
-  .raci-matrix-card {
-    min-height: 300px;
-    padding: 1rem;
-  }
-
-  .raci-action-bar {
-    flex-direction: column;
-  }
-
-  .raci-action-group {
-    width: 100%;
-  }
-
-  .raci-matrix-row {
-    grid-template-columns: 100px repeat(auto-fit, minmax(80px, 1fr));
-  }
-
-  .raci-matrix-header {
-    grid-template-columns: 100px repeat(auto-fit, minmax(80px, 1fr));
-  }
-
-  .raci-button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* ============================================================================
-   Print Styles
-   ============================================================================ */
-
-@media print {
-  .raci-editor-container {
-    background: white;
-  }
-
-  .raci-header-section,
-  .raci-action-bar,
-  .raci-sidebar {
-    display: none;
-  }
-
-  .raci-editor-layout {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
-
-  .raci-matrix-card {
-    box-shadow: none;
-    border: none;
-    padding: 0;
-  }
-}
-
-/* Header Bar */
-.raci-header-bar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 1.5rem;
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.5rem;
-  gap: 1rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.raci-header-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-}
-
-.raci-title-input {
-  font-size: 1.875rem;
-  font-weight: 700;
-  padding: 0.5rem;
-  border: none;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
-  flex: 1;
-}
-
-.raci-title-input:focus {
-  outline: none;
-  border-bottom-color: #ef4444;
-}
-
-.raci-logo-upload {
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
-/* Main Layout */
-.raci-editor-layout {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-  .raci-editor-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Sidebar */
-.raci-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-height: calc(100vh - 250px);
-  overflow-y: auto;
-}
-
-.raci-section {
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
-
-.raci-section h2 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #1f2937;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #ef4444;
-}
-
-/* Main Content */
-.raci-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
+/* ── Matrix table variants ── */
 .raci-matrix-editor {
-  background: white;
-  border: 1px solid rgb(226, 232, 240);
-  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.75rem;
   overflow: auto;
   max-height: calc(100vh - 300px);
 }
 
-.raci-matrix-table {
-  border-collapse: collapse;
-  min-width: 100%;
-}
+.raci-matrix-table { border-collapse: collapse; min-width: 100%; }
 
-.raci-matrix-header-row {
-  background: rgb(248, 250, 252);
-}
+.raci-matrix-header-row { background: rgba(248, 250, 252, 0.9); }
 
 .raci-matrix-header-cell {
   padding: 0.75rem;
-  border: 1px solid rgb(226, 232, 240);
+  border: 1px solid rgba(226, 232, 240, 0.6);
   font-weight: 600;
   text-align: center;
   position: sticky;
   top: 0;
   z-index: 10;
+  background: rgba(248, 250, 252, 0.95);
+  font-size: 0.8125rem;
+  color: #334155;
 }
 
-.raci-matrix-role-header {
-  text-align: left;
-  min-width: 150px;
-}
-
-.raci-matrix-task-name {
-  font-size: 0.875rem;
-  word-break: break-word;
-  max-width: 80px;
-}
-
-.raci-matrix-row {
-  border-top: 1px solid rgb(226, 232, 240);
-}
+.raci-matrix-role-header { text-align: left; min-width: 150px; }
+.raci-matrix-task-name { font-size: 0.8125rem; word-break: break-word; max-width: 80px; }
 
 .raci-matrix-role-name {
   padding: 0.75rem;
   font-weight: 500;
-  border: 1px solid rgb(226, 232, 240);
+  border: 1px solid rgba(226, 232, 240, 0.6);
   min-width: 150px;
+  color: #334155;
+  font-size: 0.8125rem;
 }
 
 .raci-matrix-cell-container {
   padding: 0.25rem;
-  border: 1px solid rgb(226, 232, 240);
+  border: 1px solid rgba(226, 232, 240, 0.6);
   height: 3rem;
 }
 
-.raci-matrix-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  border: 2px solid transparent;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.raci-matrix-cell-r {
-  background-color: #dcfce7;
-  border-color: #22c55e;
-  color: #166534;
-}
-
-.raci-matrix-cell-a {
-  background-color: #fee2e2;
-  border-color: #ef4444;
-  color: #7f1d1d;
-}
-
-.raci-matrix-cell-c {
-  background-color: #eef2ff;
-  border-color: #6366f1;
-  color: #312e81;
-}
-
-.raci-matrix-cell-i {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-  color: #374151;
-}
-
-.raci-matrix-cell-empty {
-  background-color: white;
-  border-color: rgb(226, 232, 240);
-}
+.raci-matrix-cell-r { background: rgba(220,252,231,0.85); border-color: #22c55e; color: #166534; }
+.raci-matrix-cell-a { background: rgba(254,226,226,0.85); border-color: #ef4444; color: #7f1d1d; }
+.raci-matrix-cell-c { background: rgba(238,242,255,0.85); border-color: #6366f1; color: #312e81; }
+.raci-matrix-cell-i { background: rgba(243,244,246,0.85); border-color: #9ca3af; color: #374151; }
+.raci-matrix-cell-empty { background: rgba(255,255,255,0.85); border-color: rgba(226,232,240,0.6); }
 
 .raci-matrix-select {
   width: 100%;
@@ -722,7 +337,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
   text-align: center;
   appearance: none;
@@ -734,19 +349,160 @@
   outline-offset: -2px;
 }
 
-/* Controls */
-.raci-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
+/* ── Forms & Inputs ── */
+.raci-input,
+.raci-textarea,
+.raci-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.7);
+  color: #0f172a;
+  backdrop-filter: blur(8px);
 }
 
-/* Modal Styles */
+.raci-input:focus,
+.raci-textarea:focus,
+.raci-select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.raci-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.raci-input::placeholder,
+.raci-textarea::placeholder { color: #cbd5e1; }
+
+/* ── Buttons ── */
+.raci-button,
+.raci-button-primary,
+.raci-button-secondary,
+.raci-button-danger {
+  padding: 0.5625rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.raci-button-primary {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.raci-button-primary:hover {
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+  transform: translateY(-1px);
+}
+
+.raci-button-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2);
+}
+
+.raci-button-secondary {
+  background: rgba(238, 242, 255, 0.8);
+  color: #4f46e5;
+  border: 1px solid rgba(199, 210, 254, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.raci-button-secondary:hover {
+  background: rgba(224, 231, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.12);
+}
+
+.raci-button-danger {
+  background: rgba(254, 228, 228, 0.7);
+  color: #dc2626;
+  border: 1px solid rgba(254, 202, 202, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.raci-button-danger:hover {
+  background: rgba(254, 202, 202, 0.85);
+}
+
+/* ── Lists ── */
+.raci-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.raci-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.875rem;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  transition: all 0.15s;
+  backdrop-filter: blur(6px);
+}
+
+.raci-list-item:hover {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.raci-list-item-label {
+  flex: 1;
+  color: #334155;
+  font-weight: 500;
+}
+
+.raci-list-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Sections ── */
+.raci-section {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+.raci-section h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(220, 38, 38, 0.3);
+}
+
+/* ── Modal ── */
 .raci-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -754,39 +510,37 @@
 }
 
 .raci-modal {
-  background: white;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
   max-width: 28rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  animation: raci-modal-slide-in 0.2s ease-out;
+  width: 100%;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.2), 0 8px 24px rgba(15, 23, 42, 0.1);
+  animation: raci-modal-slide-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes raci-modal-slide-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .raci-modal-title {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.5rem;
+  color: #0f172a;
 }
 
-.raci-modal-title.raci-modal-error {
-  color: rgb(220, 38, 38);
-}
+.raci-modal-title.raci-modal-error { color: #dc2626; }
 
 .raci-modal-content {
-  color: rgb(71, 85, 105);
-  margin-bottom: 1rem;
+  color: #475569;
+  margin-bottom: 1.25rem;
   line-height: 1.6;
+  font-size: 0.9375rem;
 }
 
 .raci-modal-actions {
@@ -795,19 +549,16 @@
   justify-content: flex-end;
 }
 
-.raci-modal-actions button {
-  min-width: 100px;
-}
+.raci-modal-actions button { min-width: 90px; }
 
-/* Description Panel */
+/* ── Misc ── */
 .raci-description-panel textarea {
   width: 100%;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-/* Editors */
 .raci-roles-editor,
 .raci-tasks-editor {
   display: flex;
@@ -815,84 +566,76 @@
   gap: 0.75rem;
 }
 
-/* Buttons */
-button {
-  transition: all 0.2s;
-  font-weight: 500;
-  border-radius: 0.375rem;
+.raci-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: more) {
-  .raci-editor-container {
-    border: 2px solid;
-  }
-
-  .raci-matrix-editor th,
-  .raci-matrix-editor td {
-    border-width: 2px;
-  }
-
-  button {
-    border-width: 2px;
-  }
-
-  /* Increase contrast ratios */
-  .raci-title-input {
-    font-weight: 900;
-  }
-}
-
-/* Accessibility: Focus Visible */
+/* ── Accessibility ── */
 :focus-visible {
   outline: 2px solid #ef4444;
   outline-offset: 2px;
 }
 
-/* Scrollbar Styling */
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Scrollbars ── */
 .raci-editor-layout::-webkit-scrollbar,
 .raci-sidebar::-webkit-scrollbar,
-.raci-matrix-editor::-webkit-scrollbar {
-  width: 8px;
-}
+.raci-matrix-editor::-webkit-scrollbar { width: 6px; }
 
 .raci-editor-layout::-webkit-scrollbar-track,
 .raci-sidebar::-webkit-scrollbar-track,
-.raci-matrix-editor::-webkit-scrollbar-track {
-  background: rgb(241, 245, 249);
-}
+.raci-matrix-editor::-webkit-scrollbar-track { background: transparent; }
 
 .raci-editor-layout::-webkit-scrollbar-thumb,
 .raci-sidebar::-webkit-scrollbar-thumb,
-.raci-matrix-editor::-webkit-scrollbar-thumb {
-  background: rgb(203, 213, 225);
-  border-radius: 4px;
-}
+.raci-matrix-editor::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 3px; }
 
 .raci-editor-layout::-webkit-scrollbar-thumb:hover,
 .raci-sidebar::-webkit-scrollbar-thumb:hover,
-.raci-matrix-editor::-webkit-scrollbar-thumb:hover {
-  background: rgb(148, 163, 184);
-}
+.raci-matrix-editor::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.6); }
 
-/* Print Styles */
-@media print {
-  .raci-controls,
-  .raci-sidebar {
-    display: none;
-  }
-
+/* ── Responsive ── */
+@media (max-width: 1024px) {
   .raci-editor-layout {
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
   }
-
-  .raci-matrix-editor {
+  .raci-sidebar {
     max-height: none;
-    overflow: visible;
+    grid-template-columns: 1fr;
   }
+  .raci-header-section { padding: 1rem; }
+}
+
+@media (max-width: 768px) {
+  .raci-editor-layout { grid-template-columns: 1fr; gap: 0.75rem; padding: 0.75rem; }
+  .raci-header-section { padding: 0.875rem 0.75rem; }
+  .raci-title-input { font-size: 1.5rem; }
+  .raci-matrix-card { min-height: 300px; padding: 1rem; }
+  .raci-action-bar { flex-direction: column; }
+  .raci-action-group { width: 100%; }
+  .raci-matrix-row { grid-template-columns: 100px repeat(auto-fit, minmax(80px, 1fr)); }
+  .raci-matrix-header { grid-template-columns: 100px repeat(auto-fit, minmax(80px, 1fr)); }
+  .raci-button { width: 100%; justify-content: center; }
+}
+
+/* ── Print ── */
+@media print {
+  .raci-editor-container { background: white; }
+  .raci-header-section, .raci-action-bar, .raci-sidebar, .raci-controls { display: none; }
+  .raci-editor-layout { grid-template-columns: 1fr; padding: 0; }
+  .raci-matrix-card { box-shadow: none; border: none; padding: 0; }
+  .raci-matrix-editor { max-height: none; overflow: visible; }
+}
+
+/* ── High contrast ── */
+@media (prefers-contrast: more) {
+  .raci-matrix-cell, .raci-matrix-header-cell { border-width: 2px; }
+  button { border-width: 2px; }
+  .raci-title-input { font-weight: 900; }
 }

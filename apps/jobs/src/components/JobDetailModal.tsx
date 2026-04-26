@@ -1,8 +1,9 @@
-import { X, ExternalLink, Calendar, DollarSign, Building2, FileText } from "lucide-react";
+import { X, ExternalLink, Calendar, DollarSign, Building2, FileText, Sparkles, RefreshCw, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
 import type { JobWithCategory } from "../lib/search-utils";
 import ResumeBuilderModal from "./ai/ResumeBuilderModal";
+import AIAnalysisModal from "./ai/AIAnalysisModal";
 
 interface JobDetailModalProps {
   job: JobWithCategory;
@@ -10,36 +11,24 @@ interface JobDetailModalProps {
   onClose: () => void;
 }
 
-export default function JobDetailModal({
-  job,
-  isOpen,
-  onClose,
-}: JobDetailModalProps) {
+export default function JobDetailModal({ job, isOpen, onClose }: JobDetailModalProps) {
   const [fullDescription, setFullDescription] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
 
   useEffect(() => {
-    // Priority 1: If we have the full description in the DB (e.g. Himalayas/RemoteOK), use it immediately
-    if (job.fullDescription) {
-      setFullDescription(job.fullDescription);
-      // We continue to fetch below to ensure we get the latest sanitized version
-    }
+    if (job.fullDescription) setFullDescription(job.fullDescription);
 
-    // Priority 2: Fetch fresh content
     if (isOpen && job.sourceUrl && job.company) {
       const fetchContent = async () => {
         setIsLoading(true);
         setFetchError(null);
         setIsCustomDomain(false);
         try {
-          const params = new URLSearchParams({
-            url: job.sourceUrl,
-            company: job.company || ''
-          });
-
+          const params = new URLSearchParams({ url: job.sourceUrl, company: job.company || "" });
           const response = await fetch(`/api/v3/job-content?${params.toString()}`);
           if (response.ok) {
             const data = await response.json() as { content?: string };
@@ -48,7 +37,7 @@ export default function JobDetailModal({
               setFetchError(null);
               setIsCustomDomain(false);
             } else {
-              setFetchError('No content returned from API');
+              setFetchError("No content returned from API");
             }
           } else {
             const errorData = await response.json() as { error?: string; isCustomDomain?: boolean; hint?: string };
@@ -56,22 +45,16 @@ export default function JobDetailModal({
             setFetchError(errorData.hint || errorData.error || `Failed to load (${response.status})`);
           }
         } catch (error) {
-          console.error("Failed to fetch job content:", error);
-          setFetchError(error instanceof Error ? error.message : 'Failed to fetch content');
-          setIsCustomDomain(false);
+          setFetchError(error instanceof Error ? error.message : "Failed to fetch content");
         } finally {
           setIsLoading(false);
         }
       };
-
       fetchContent();
     } else if (!isOpen) {
-      // Reset error when modal closes
       setFetchError(null);
       setIsCustomDomain(false);
     }
-    // Removed fullDescription from dependencies to prevent infinite loop
-    // We only want to re-run this when the JOB changes (sourceUrl/company) or modal opens
   }, [isOpen, job.sourceUrl, job.company, job.fullDescription]);
 
   if (!isOpen) return null;
@@ -80,173 +63,233 @@ export default function JobDetailModal({
     ? formatDistanceToNow(new Date(job.postDate), { addSuffix: true })
     : "Date not specified";
 
+  const hasDescription = !!(job.description || fullDescription);
+
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 flex items-center justify-center p-4 z-50"
+        style={{ background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        onClick={onClose}
+      >
+        {/* Modal */}
         <div
-          className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
+          className="w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(255,255,255,0.96)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(226,232,240,0.9)",
+            boxShadow: "0 24px 80px rgba(15,23,42,0.22), 0 8px 24px rgba(15,23,42,0.1)",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="flex justify-between items-start p-6 border-b-2 border-slate-200 gap-4">
-            <div className="flex-1 flex flex-col gap-3">
-              <h2 className="text-2xl font-bold text-slate-900 leading-tight">{job.title}</h2>
-              <span className="inline-flex self-start items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                {job.category.name}
-              </span>
+          {/* ── Header ── */}
+          <div
+            className="flex items-start justify-between gap-4 p-6"
+            style={{ borderBottom: "1px solid rgba(226,232,240,0.8)", background: "rgba(255,255,255,0.6)" }}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide"
+                  style={{ background: "rgba(220,38,38,0.08)", color: "#b91c1c", border: "1px solid rgba(220,38,38,0.15)" }}
+                >
+                  {job.category.name}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium"
+                  style={{ background: "rgba(248,250,252,0.9)", color: "#94a3b8", border: "1px solid rgba(226,232,240,0.6)" }}
+                >
+                  <Globe size={9} />
+                  {job.sourceName}
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">{job.title}</h2>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => setIsResumeModalOpen(true)}
-                disabled={!job.description && !fullDescription}
-                title={!job.description && !fullDescription ? "No job description available" : "Generate Tailored Resume"}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 hover:border-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!hasDescription}
+                title={!hasDescription ? "No description available" : "AI Resume Tailor"}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: "rgba(16,185,129,0.08)", color: "#059669", border: "1px solid rgba(16,185,129,0.2)" }}
               >
-                <FileText size={16} />
+                <FileText size={13} />
                 Tailor Resume
               </button>
               <button
                 onClick={onClose}
-                className="flex items-center justify-center p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
-                aria-label="Close modal"
+                className="p-1.5 rounded-lg transition-colors"
+                style={{ color: "#94a3b8" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(241,245,249,0.9)"; (e.currentTarget as HTMLElement).style.color = "#475569"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#94a3b8"; }}
+                aria-label="Close"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
           </div>
 
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-            {/* Metadata */}
-            <div className="flex flex-wrap gap-6 mb-6 pb-6 border-b border-slate-200">
-              {job.company && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Building2 size={18} className="text-slate-400" />
-                  <span>{job.company}</span>
-                </div>
-              )}
-              {job.payRange && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <DollarSign size={18} className="text-slate-400" />
-                  <span>{job.payRange}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Calendar size={18} className="text-slate-400" />
-                <span>{formattedDate}</span>
+          {/* ── Metadata bar ── */}
+          <div
+            className="flex flex-wrap items-center gap-4 px-6 py-3"
+            style={{ borderBottom: "1px solid rgba(226,232,240,0.6)", background: "rgba(248,250,252,0.5)" }}
+          >
+            {job.company && (
+              <div className="flex items-center gap-1.5 text-sm text-slate-600 font-medium">
+                <Building2 size={14} className="text-slate-400" />
+                {job.company}
               </div>
-              {/* Mobile Tailor Resume Button */}
-              <button
-                onClick={() => setIsResumeModalOpen(true)}
-                disabled={!job.description && !fullDescription}
-                title={!job.description && !fullDescription ? "No job description available" : "Generate Tailored Resume"}
-                className="sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 hover:border-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
-              >
-                <FileText size={16} />
-                Tailor Resume
-              </button>
+            )}
+            {job.payRange && (
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <DollarSign size={14} className="text-emerald-500" />
+                <span className="font-medium">{job.payRange}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 text-sm text-slate-500">
+              <Calendar size={14} className="text-slate-400" />
+              {formattedDate}
             </div>
+            {/* Mobile tailor button */}
+            <button
+              onClick={() => setIsResumeModalOpen(true)}
+              disabled={!hasDescription}
+              className="sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg w-full justify-center mt-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "rgba(16,185,129,0.08)", color: "#059669", border: "1px solid rgba(16,185,129,0.2)" }}
+            >
+              <FileText size={13} />
+              Tailor Resume
+            </button>
+          </div>
 
-            {/* Description */}
-            <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-p:mb-4 prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-li:my-1">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Job Description</h3>
-
-              {fetchError ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  {isCustomDomain ? (
-                    // User-friendly message for custom domain jobs
-                    <div className="text-center max-w-md">
-                      <div className="mb-6">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-                          <ExternalLink className="text-blue-600" size={32} />
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                          View Full Description on Job Site
-                        </h3>
-                        <p className="text-sm text-slate-600">
-                          This job is hosted on a custom domain. Click the button below to view the complete job description and apply.
-                        </p>
-                      </div>
-                      <a
-                        href={job.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow"
-                      >
-                        View Full Job Description <ExternalLink size={18} />
-                      </a>
-                    </div>
-                  ) : (
-                    // Technical error for other cases
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="text-red-600 p-4 bg-red-50 rounded-lg mb-4 max-w-md text-center">
-                        <p className="font-semibold mb-2">Failed to load full description</p>
-                        <p className="text-sm text-red-700">{fetchError}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setFetchError(null);
-                          setFullDescription(null);
-                          setIsCustomDomain(false);
-                        }}
-                        className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
-                      >
-                        Retry
-                      </button>
-                      {/* Show summary as fallback */}
-                      {job.description && (
-                        <div className="mt-6 opacity-60 border-t pt-6">
-                          <p className="text-sm text-slate-500 mb-2">Summary:</p>
-                          <div dangerouslySetInnerHTML={{ __html: job.description }} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : isLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-4"></div>
-                  <p>Loading full description...</p>
-                  {/* Show summary while loading if available */}
-                  {job.description && (
-                    <div className="mt-6 opacity-50" dangerouslySetInnerHTML={{ __html: job.description }} />
-                  )}
-                </div>
-              ) : (
-                <div
-                  className="job-description-content"
-                  style={{
-                    lineHeight: '1.75'
-                  }}
-                  dangerouslySetInnerHTML={{ __html: fullDescription || job.fullDescription || job.description || 'No description available.' }}
-                />
-              )}
+          {/* ── AI Feature Banner ── */}
+          <div
+            className="px-6 py-2 flex items-center gap-3"
+            style={{ background: "rgba(139,92,246,0.04)", borderBottom: "1px solid rgba(139,92,246,0.1)" }}
+          >
+            <Sparkles size={12} className="text-violet-500 flex-shrink-0" />
+            <span className="text-xs text-violet-600 font-semibold">AI-Powered:</span>
+            <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
+              <span>JD-Resume Analysis</span>
+              <span className="text-slate-300">·</span>
+              <span>Cover Letter Generator</span>
+              <span className="text-slate-300">·</span>
+              <span>Match Scoring</span>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-center p-6 border-t-2 border-slate-200 gap-4 flex-wrap bg-slate-50 rounded-b-2xl">
-            <span className="text-sm font-medium text-slate-500">via {job.sourceName}</span>
-            <a
-              href={job.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow"
-            >
-              View Job <ExternalLink size={16} />
-            </a>
+          {/* ── Body — Description ── */}
+          <div className="flex-1 overflow-y-auto p-6 jobs-modal-scroll">
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 rounded-full bg-primary-500 inline-block" />
+              Job Description
+            </h3>
+
+            {fetchError ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                {isCustomDomain ? (
+                  <div className="text-center max-w-md">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)" }}>
+                      <ExternalLink size={24} className="text-sky-600" />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 mb-2">View on Job Site</h3>
+                    <p className="text-sm text-slate-500 mb-6">This job is hosted on a custom domain. Click below to view the complete description and apply.</p>
+                    <a
+                      href={job.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white rounded-xl transition-all"
+                      style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
+                    >
+                      View Full Job <ExternalLink size={14} />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="text-center max-w-sm">
+                    <div className="p-4 rounded-xl mb-4 text-sm" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#b91c1c" }}>
+                      <p className="font-semibold mb-1">Failed to load description</p>
+                      <p className="text-xs opacity-80">{fetchError}</p>
+                    </div>
+                    <button
+                      onClick={() => { setFetchError(null); setFullDescription(null); setIsCustomDomain(false); }}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all"
+                      style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}
+                    >
+                      <RefreshCw size={14} />
+                      Retry
+                    </button>
+                    {job.description && (
+                      <div className="mt-6 pt-6 border-t border-slate-100 opacity-70">
+                        <p className="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wide">Summary</p>
+                        <div className="job-description-content" dangerouslySetInnerHTML={{ __html: job.description }} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : isLoading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-10 h-10 rounded-full border-2 border-slate-200 border-t-primary-500 animate-spin mb-4" />
+                <p className="text-sm text-slate-500 font-medium mb-6">Loading full description…</p>
+                {job.description && (
+                  <div className="job-description-content opacity-40 max-w-full" dangerouslySetInnerHTML={{ __html: job.description }} />
+                )}
+              </div>
+            ) : (
+              <div
+                className="job-description-content"
+                dangerouslySetInnerHTML={{ __html: fullDescription || job.fullDescription || job.description || "No description available." }}
+              />
+            )}
+          </div>
+
+          {/* ── Footer ── */}
+          <div
+            className="flex items-center justify-between gap-4 px-6 py-4 flex-wrap"
+            style={{ borderTop: "1px solid rgba(226,232,240,0.8)", background: "rgba(248,250,252,0.7)" }}
+          >
+            <span className="text-xs font-medium text-slate-400">via {job.sourceName}</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAnalysisModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all"
+                style={{ background: "rgba(139,92,246,0.08)", color: "#7c3aed", border: "1px solid rgba(139,92,246,0.2)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.14)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.08)"; }}
+              >
+                <Sparkles size={13} />
+                AI Analysis
+              </button>
+              <a
+                href={job.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl transition-all"
+                style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 12px rgba(220,38,38,0.28)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 18px rgba(220,38,38,0.38)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(220,38,38,0.28)"; }}
+              >
+                Apply Now <ExternalLink size={12} />
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
       <ResumeBuilderModal
-        job={{
-          ...job,
-          description: fullDescription || job.description,
-          // Use full description if available for better context
-        }}
+        job={{ ...job, description: fullDescription || job.description }}
         isOpen={isResumeModalOpen}
         onClose={() => setIsResumeModalOpen(false)}
+      />
+      <AIAnalysisModal
+        job={job}
+        initialDescriptionHtml={fullDescription || job.fullDescription || job.description}
+        isOpen={isAnalysisModalOpen}
+        onClose={() => setIsAnalysisModalOpen(false)}
       />
     </>
   );

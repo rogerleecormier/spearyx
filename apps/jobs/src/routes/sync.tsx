@@ -184,8 +184,8 @@ function SyncDashboardContent() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Sync Dashboard</h1>
-            <p className="text-slate-600 text-sm">V3 API • TanStack Query</p>
+            <h1 className="text-2xl font-bold text-slate-900">Source Operations</h1>
+            <p className="text-slate-600 text-sm">Internal sync health, logs, and source status</p>
           </div>
           <div className="flex items-center gap-4">
             {recentErrors > 0 && (

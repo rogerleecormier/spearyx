@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 export const categories = sqliteTable('categories', {
@@ -137,3 +137,104 @@ export type DuplicateJob = typeof duplicateJobs.$inferSelect
 export type NewDuplicateJob = typeof duplicateJobs.$inferInsert
 export type CompanyJobProgress = typeof companyJobProgress.$inferSelect
 export type NewCompanyJobProgress = typeof companyJobProgress.$inferInsert
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User-centric tables (migrated from job-analyzer)
+// Dates stored as ISO 8601 text strings (new Date().toISOString())
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role').notNull().default('user'), // "admin" | "user"
+  createdAt: text('created_at').notNull(),
+})
+
+// ─── Master Resume ────────────────────────────────────────────────────────────
+// One structured resume per user. JSON fields store typed arrays (see comments).
+export const masterResume = sqliteTable('master_resume', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').unique().references(() => users.id),
+  fullName: text('full_name').notNull(),
+  email: text('email'),
+  phone: text('phone'),
+  linkedin: text('linkedin'),
+  website: text('website'),
+  summary: text('summary'),
+  competencies: text('competencies'), // JSON: string[]
+  tools: text('tools'),               // JSON: string[]
+  experience: text('experience'),     // JSON: { title, company, start, end, bullets[] }[]
+  education: text('education'),       // JSON: { school, degree, field, year }[]
+  certifications: text('certifications'), // JSON: string[]
+  rawText: text('raw_text'),          // Original uploaded document text
+  updatedAt: text('updated_at'),
+})
+
+// ─── Job Analyses ─────────────────────────────────────────────────────────────
+// One row per job the user has analyzed. Links to generatedDocuments for PDFs.
+export const jobAnalyses = sqliteTable('job_analyses', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').references(() => users.id),
+  jobUrl: text('job_url').notNull(),
+  jobTitle: text('job_title'),
+  company: text('company'),
+  industry: text('industry'),
+  location: text('location'),
+  jdText: text('jd_text'),           // Full job description text
+  matchScore: integer('match_score'), // 0-100
+  gapAnalysis: text('gap_analysis'),  // JSON: { skill, gap, severity }[]
+  recommendations: text('recommendations'), // JSON: string[]
+  pursue: integer('pursue'),          // 1 = pursue, 0 = do not pursue
+  pursueJustification: text('pursue_justification'),
+  keywords: text('keywords'),         // JSON: string[]
+  strategyNote: text('strategy_note'),
+  personalInterest: text('personal_interest'), // 1-3 sentence "why this role"
+  careerAnalysis: text('career_analysis'), // JSON: { trajectory, recommendation, reasoning }
+  insights: text('insights'),             // JSON: { workLifeBalance, remoteFlexibility, seniorityLevel, cultureSignals, redFlags }
+  applied: integer('applied').default(0), // 1 = applied, 0 = not applied
+  appliedAt: text('applied_at'),
+  createdAt: text('created_at'),
+})
+
+// ─── Generated Documents ──────────────────────────────────────────────────────
+// PDFs stored in R2; r2Key is the object key used to retrieve/serve them.
+export const generatedDocuments = sqliteTable('generated_documents', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  jobAnalysisId: integer('job_analysis_id').references(() => jobAnalyses.id),
+  docType: text('doc_type').notNull(), // "resume" | "cover_letter"
+  r2Key: text('r2_key').notNull(),
+  fileName: text('file_name'),
+  resumeKeywords: text('resume_keywords'), // JSON: string[] — keywords used in this doc
+  createdAt: text('created_at'),
+})
+
+// ─── Analytics Summary ────────────────────────────────────────────────────────
+// Populated exclusively by the cron job — do not write from request handlers.
+export const analyticsSummary = sqliteTable('analytics_summary', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').references(() => users.id),
+  period: text('period').notNull(), // "all_time" | "YYYY-MM"
+  topJdKeywords: text('top_jd_keywords'),      // JSON: { keyword, count }[]
+  topResumeKeywords: text('top_resume_keywords'), // JSON: { keyword, count }[]
+  topJobTitles: text('top_job_titles'),         // JSON: { title, count }[]
+  topIndustries: text('top_industries'),        // JSON: { industry, count }[]
+  averageMatchScore: real('average_match_score'),
+  totalAnalyses: integer('total_analyses'),
+  totalResumesGenerated: integer('total_resumes_generated'),
+  totalApplied: integer('total_applied').default(0),
+  updatedAt: text('updated_at'),
+})
+
+// ─── Inferred Types (user-centric tables) ─────────────────────────────────────
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
+export type MasterResume = typeof masterResume.$inferSelect
+export type NewMasterResume = typeof masterResume.$inferInsert
+export type JobAnalysis = typeof jobAnalyses.$inferSelect
+export type NewJobAnalysis = typeof jobAnalyses.$inferInsert
+export type GeneratedDocument = typeof generatedDocuments.$inferSelect
+export type NewGeneratedDocument = typeof generatedDocuments.$inferInsert
+export type AnalyticsSummary = typeof analyticsSummary.$inferSelect
+export type NewAnalyticsSummary = typeof analyticsSummary.$inferInsert

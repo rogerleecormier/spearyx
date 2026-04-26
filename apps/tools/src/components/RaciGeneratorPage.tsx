@@ -184,7 +184,7 @@ export default function RaciGeneratorPage() {
 
   if (!isInitialized) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%)" }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           <Body size="sm" className="mt-4 text-slate-600">
@@ -196,7 +196,7 @@ export default function RaciGeneratorPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%)" }}>
       {/* Import Notification */}
       {importNotification && (
         <div className="bg-indigo-50 border-b border-indigo-200">
@@ -224,20 +224,21 @@ export default function RaciGeneratorPage() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <Overline className="text-primary-600 mb-2">
-                Project Tools
-              </Overline>
-              <Hero className="text-2xl md:text-3xl lg:text-4xl text-slate-950 mb-2">
-                RACI Matrix Generator
-              </Hero>
-              <Body size="sm" className="text-slate-600">
-                Define roles and responsibilities with crystal clarity
-              </Body>
+      {/* Page Header — consistent with Spearyx glassmorphic system */}
+      <header className="spx-page-header">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm" style={{ background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)", border: "1px solid rgba(220,38,38,0.15)" }}>
+                📊
+              </div>
+              <div>
+                <p className="overline text-primary-600 mb-1">Project Tools</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
+                  RACI Matrix Generator
+                </h1>
+                <p className="text-sm text-slate-500 mt-1">Define roles and responsibilities with AI-powered clarity</p>
+              </div>
             </div>
           </div>
         </div>
@@ -611,19 +612,19 @@ export default function RaciGeneratorPage() {
                 </CardContent>
               </Card>
 
-              {/* Export Card - Enhanced Design */}
+              {/* Export Card */}
               <Card
-                className="shadow-md hover:shadow-lg transition-all overflow-hidden"
+                className="shadow-sm hover:shadow-md transition-all overflow-hidden"
                 style={{
-                  backgroundColor: "#f0fdf4",
-                  borderColor: "#86efac",
-                  borderWidth: "2px",
+                  backgroundColor: "rgba(240,253,244,0.85)",
+                  borderColor: "rgba(134,239,172,0.7)",
+                  backdropFilter: "blur(12px)",
                 }}
               >
                 <CardHeader
                   className="pb-3 pt-4 px-4"
                   style={{
-                    borderBottomColor: "#86efac",
+                    borderBottomColor: "rgba(134,239,172,0.5)",
                     borderBottomWidth: "1px",
                   }}
                 >
@@ -653,11 +654,11 @@ export default function RaciGeneratorPage() {
 
             {/* Danger Zone */}
             <Card
-              className="shadow-md hover:shadow-lg transition-all overflow-hidden"
+              className="shadow-sm hover:shadow-md transition-all overflow-hidden"
               style={{
-                backgroundColor: "#ffe4e9",
-                borderColor: "#ff8fa3",
-                borderWidth: "2px",
+                backgroundColor: "rgba(255,228,233,0.85)",
+                borderColor: "rgba(255,143,163,0.6)",
+                backdropFilter: "blur(12px)",
               }}
             >
               <CardHeader className="pb-3 pt-4 px-4">

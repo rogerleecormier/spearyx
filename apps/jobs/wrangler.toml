@@ -25,6 +25,22 @@ database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
 preview_database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
 migrations_dir = "drizzle"
 
+# R2 bucket for generated PDF documents (resumes, cover letters)
+# Bucket must be created before deploying: wrangler r2 bucket create spearyx-documents
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "spearyx-documents"
+
+# KV namespace for session tokens (7-day TTL) and URL scrape cache
+# Namespace must be created before deploying: wrangler kv namespace create spearyx-sessions
+[[kv_namespaces]]
+binding = "KV"
+id = "07de8044b8154750a0cfc2e5eaa60f2c"
+
+# Browser Rendering API for job URL scraping
+[browser]
+binding = "BROWSER"
+
 [assets]
 directory = "dist/client"
 
@@ -35,3 +51,7 @@ custom_domain = true
 [ai]
 binding = "AI"
 remote = true
+
+# Analytics aggregation cron — runs every 6 hours
+[triggers]
+crons = ["0 */6 * * *"]

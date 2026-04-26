@@ -7,6 +7,7 @@ export * from "./Typography";
 // Header
 export * from "./Header";
 export * from "./AppHeader";
+export * from "./PageHeader";
 
 // UI Components
 export * from "./ui/avatar";
@@ -18,3 +19,7 @@ export * from "./ui/sheet";
 export * from "./ui/tooltip";
 export * from "./ui/Toaster";
 export * from "./ui/input";
+export * from "./ui/textarea";
+
+// Utilities
+export * from "./lib/utils";

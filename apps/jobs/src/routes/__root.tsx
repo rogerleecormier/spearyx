@@ -3,35 +3,34 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { TooltipProvider } from "@spearyx/ui-kit";
 import Header from "../components/Header";
+import { getCurrentUser } from "@/server/functions/auth";
+import type { SessionUser } from "@/lib/cloudflare";
 
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "Spearyx - AI-Powered Precision Project Management",
-      },
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "Spearyx - AI-Powered Precision Project Management" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
     ],
   }),
+
+  beforeLoad: async () => {
+    const user = await getCurrentUser();
+    return { user };
+  },
 
   shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { user } = Route.useRouteContext() as { user: SessionUser | null };
+
   return (
     <html lang="en">
       <head>
@@ -39,13 +38,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <TooltipProvider>
-          <Header />
+          <Header user={user} />
           {children}
           {import.meta.env.DEV && (
             <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
+              config={{ position: "bottom-right" }}
               plugins={[
                 {
                   name: "Tanstack Router",

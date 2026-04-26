@@ -1,37 +1,33 @@
-// Cloudflare Workers AI client wrapper
-
 import { DEFAULT_MODEL, type AIEnv } from './types';
 import { JOB_INSIGHTS_PROMPT, SEMANTIC_SEARCH_PROMPT } from './prompts';
+import { callWorkersAI } from '@/lib/ai-gateway';
+import type { CloudflareEnv } from '@/lib/cloudflare';
+
+type AICapableEnv = Partial<CloudflareEnv> | AIEnv;
 
 /**
- * Robust helper to get AI binding from context, including dev mode proxying
+ * Robust helper to get AI binding from context, including dev mode proxying.
  */
 export async function getAIFromContext(context: any): Promise<AIEnv['AI'] | null> {
-  // 1. Standard Cloudflare context (production)
   let ai = context?.cloudflare?.env?.AI;
 
   if (!ai) ai = context?.env?.AI;
   if (!ai) ai = context?.AI;
 
-  // 2. Check global __CF_ENV__ (set by custom worker entry)
   if (!ai && typeof globalThis !== 'undefined') {
     const cfEnv = (globalThis as any).__CF_ENV__;
     if (cfEnv) ai = cfEnv.AI;
   }
 
-  // 3. Check direct on globalThis
   if (!ai && typeof globalThis !== 'undefined') {
     ai = (globalThis as any).AI;
   }
 
-  // 4. Development mode - use getPlatformProxy to connect to remote AI
+  // Development mode — use getPlatformProxy to connect to remote AI
   if (!ai && (import.meta.env?.DEV || process.env.NODE_ENV === 'development')) {
     try {
-      // Use vite-ignore to prevent bundling wrangler in the client
       const { getPlatformProxy } = await import(/* @vite-ignore */ 'wrangler');
-      const proxy = await getPlatformProxy({
-        configPath: './wrangler.toml',
-      });
+      const proxy = await getPlatformProxy({ configPath: './wrangler.toml' });
       // @ts-ignore
       ai = proxy.env.AI;
     } catch (error) {
@@ -42,7 +38,6 @@ export async function getAIFromContext(context: any): Promise<AIEnv['AI'] | null
   return ai || null;
 }
 
-// Job Insights types
 export interface JobInsights {
   estimatedSalary: {
     min: number | null;
@@ -67,7 +62,6 @@ export interface JobInsights {
   summary: string;
 }
 
-// Semantic Search types
 export interface ParsedSearchQuery {
   keywords: string[];
   skills: string[];
@@ -82,47 +76,26 @@ export interface ParsedSearchQuery {
   excludeTerms: string[];
 }
 
-/**
- * Analyze a job posting and extract insights
- */
 export async function analyzeJobInsights(
-  env: AIEnv,
+  env: AICapableEnv,
   jobDescription: string,
-  jobTitle?: string
+  jobTitle?: string,
 ): Promise<JobInsights> {
   const userContent = jobTitle
     ? `Job Title: ${jobTitle}\n\nJob Description:\n${jobDescription}`
     : jobDescription;
 
   try {
-    const response = await env.AI.run(DEFAULT_MODEL, {
-      messages: [
-        { role: 'system', content: JOB_INSIGHTS_PROMPT },
-        { role: 'user', content: userContent }
-      ],
-      max_tokens: 1000,
-      temperature: 0.3
-    });
+    const responseText = await callWorkersAI(env, [
+      { role: 'system', content: JOB_INSIGHTS_PROMPT },
+      { role: 'user', content: userContent },
+    ], { maxTokens: 1000 });
 
-    let responseText = "";
-    const res = response as any;
-    if (res?.choices?.[0]?.message) {
-      responseText = res.choices[0].message.content || res.choices[0].message.reasoning_content || "";
-    } else if (res?.response) {
-      responseText = res.response;
-    } else if (typeof response === "string") {
-      responseText = response;
-    } else {
-      responseText = JSON.stringify(response);
-    }
-
-    // Extract JSON from response (handle markdown code blocks)
     let jsonStr = responseText.trim();
     const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
       jsonStr = jsonMatch[1];
     } else {
-      // Find the first { and last }
       const bracketMatch = jsonStr.match(/\{[\s\S]*\}/);
       if (bracketMatch) jsonStr = bracketMatch[0];
     }
@@ -139,39 +112,20 @@ export async function analyzeJobInsights(
       seniorityLevel: 'unknown',
       keyRequirements: [],
       niceToHaves: [],
-      summary: 'Unable to analyze this job posting.'
+      summary: 'Unable to analyze this job posting.',
     };
   }
 }
 
-/**
- * Parse natural language search query into structured filters
- */
 export async function parseSearchQuery(
-  env: AIEnv,
-  query: string
+  env: AICapableEnv,
+  query: string,
 ): Promise<ParsedSearchQuery> {
   try {
-    const response = await env.AI.run(DEFAULT_MODEL, {
-      messages: [
-        { role: 'system', content: SEMANTIC_SEARCH_PROMPT },
-        { role: 'user', content: query }
-      ],
-      max_tokens: 500,
-      temperature: 0.2
-    });
-
-    let responseText = "";
-    const res = response as any;
-    if (res?.choices?.[0]?.message) {
-      responseText = res.choices[0].message.content || res.choices[0].message.reasoning_content || "";
-    } else if (res?.response) {
-      responseText = res.response;
-    } else if (typeof response === "string") {
-      responseText = response;
-    } else {
-      responseText = JSON.stringify(response);
-    }
+    const responseText = await callWorkersAI(env, [
+      { role: 'system', content: SEMANTIC_SEARCH_PROMPT },
+      { role: 'user', content: query },
+    ], { maxTokens: 500 });
 
     let jsonStr = responseText.trim();
     const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -186,17 +140,16 @@ export async function parseSearchQuery(
   } catch (error) {
     console.error('Failed to parse search query:', error);
     return {
-      keywords: query.split(/\s+/).filter(w => w.length > 2),
+      keywords: query.split(/\s+/).filter((w) => w.length > 2),
       skills: [],
       jobType: null,
       seniorityLevel: null,
       companyType: null,
       preferences: { workLifeBalance: false, remote: false, highPaying: false },
-      excludeTerms: []
+      excludeTerms: [],
     };
   }
 }
 
-// Re-export types
 export * from './types';
 export * from './prompts';

@@ -7,17 +7,17 @@
     "build": "vite build",
     "serve": "npx wrangler dev",
     "test": "vitest run",
-    "preview": "npm run build && npx wrangler dev",
-    "deploy": "npm run build && wrangler deploy --config wrangler.toml"
+    "preview": "pnpm run build && wrangler dev",
+    "deploy": "pnpm run build && wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@spearyx/shared-config": "*",
-    "@spearyx/shared-utils": "*",
-    "@spearyx/ui-kit": "*",
+    "@spearyx/shared-config": "workspace:*",
+    "@spearyx/shared-utils": "workspace:*",
+    "@spearyx/ui-kit": "workspace:*",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",

@@ -10,12 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SyncRouteImport } from './routes/sync'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AnalyzeRouteImport } from './routes/analyze'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalyzeIndexRouteImport } from './routes/analyze.index'
+import { Route as AnalyzeIdRouteImport } from './routes/analyze.$id'
 import { Route as ApiV3StatsRouteImport } from './routes/api/v3/stats'
 import { Route as ApiV3LogsRouteImport } from './routes/api/v3/logs'
 import { Route as ApiV3JobsRouteImport } from './routes/api/v3/jobs'
 import { Route as ApiV3JobContentRouteImport } from './routes/api/v3/job-content'
 import { Route as ApiV3CategoriesRouteImport } from './routes/api/v3/categories'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiAiUnicornRouteImport } from './routes/api/ai/unicorn'
 import { Route as ApiAiSearchRouteImport } from './routes/api/ai/search'
 import { Route as ApiAiScoreAllRouteImport } from './routes/api/ai/score-all'
@@ -30,10 +39,50 @@ const SyncRoute = SyncRouteImport.update({
   path: '/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyzeRoute = AnalyzeRouteImport.update({
+  id: '/analyze',
+  path: '/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyzeIndexRoute = AnalyzeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AnalyzeRoute,
+} as any)
+const AnalyzeIdRoute = AnalyzeIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AnalyzeRoute,
 } as any)
 const ApiV3StatsRoute = ApiV3StatsRouteImport.update({
   id: '/api/v3/stats',
@@ -58,6 +107,11 @@ const ApiV3JobContentRoute = ApiV3JobContentRouteImport.update({
 const ApiV3CategoriesRoute = ApiV3CategoriesRouteImport.update({
   id: '/api/v3/categories',
   path: '/api/v3/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiUnicornRoute = ApiAiUnicornRouteImport.update({
@@ -103,7 +157,15 @@ const ApiV3JobsPruneRoute = ApiV3JobsPruneRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/analyze': typeof AnalyzeRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
+  '/analyze/$id': typeof AnalyzeIdRoute
+  '/analyze/': typeof AnalyzeIndexRoute
   '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
@@ -111,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -120,7 +183,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
+  '/analyze/$id': typeof AnalyzeIdRoute
+  '/analyze': typeof AnalyzeIndexRoute
   '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
@@ -128,6 +198,7 @@ export interface FileRoutesByTo {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -138,7 +209,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/analyze': typeof AnalyzeRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
+  '/analyze/$id': typeof AnalyzeIdRoute
+  '/analyze/': typeof AnalyzeIndexRoute
   '/api/ai/generate-resume': typeof ApiAiGenerateResumeRoute
   '/api/ai/insights': typeof ApiAiInsightsRoute
   '/api/ai/match': typeof ApiAiMatchRoute
@@ -146,6 +225,7 @@ export interface FileRoutesById {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -157,7 +237,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/analyze'
+    | '/dashboard'
+    | '/history'
+    | '/login'
+    | '/profile'
     | '/sync'
+    | '/analyze/$id'
+    | '/analyze/'
     | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
@@ -165,6 +253,7 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/me'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -174,7 +263,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/history'
+    | '/login'
+    | '/profile'
     | '/sync'
+    | '/analyze/$id'
+    | '/analyze'
     | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
@@ -182,6 +278,7 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/me'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -191,7 +288,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
+    | '/analyze'
+    | '/dashboard'
+    | '/history'
+    | '/login'
+    | '/profile'
     | '/sync'
+    | '/analyze/$id'
+    | '/analyze/'
     | '/api/ai/generate-resume'
     | '/api/ai/insights'
     | '/api/ai/match'
@@ -199,6 +304,7 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/me'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -209,6 +315,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AnalyzeRoute: typeof AnalyzeRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
+  HistoryRoute: typeof HistoryRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
   SyncRoute: typeof SyncRoute
   ApiAiGenerateResumeRoute: typeof ApiAiGenerateResumeRoute
   ApiAiInsightsRoute: typeof ApiAiInsightsRoute
@@ -217,6 +329,7 @@ export interface RootRouteChildren {
   ApiAiScoreAllRoute: typeof ApiAiScoreAllRoute
   ApiAiSearchRoute: typeof ApiAiSearchRoute
   ApiAiUnicornRoute: typeof ApiAiUnicornRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
   ApiV3CategoriesRoute: typeof ApiV3CategoriesRoute
   ApiV3JobContentRoute: typeof ApiV3JobContentRoute
   ApiV3JobsRoute: typeof ApiV3JobsRouteWithChildren
@@ -233,12 +346,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analyze': {
+      id: '/analyze'
+      path: '/analyze'
+      fullPath: '/analyze'
+      preLoaderRoute: typeof AnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/analyze/': {
+      id: '/analyze/'
+      path: '/'
+      fullPath: '/analyze/'
+      preLoaderRoute: typeof AnalyzeIndexRouteImport
+      parentRoute: typeof AnalyzeRoute
+    }
+    '/analyze/$id': {
+      id: '/analyze/$id'
+      path: '/$id'
+      fullPath: '/analyze/$id'
+      preLoaderRoute: typeof AnalyzeIdRouteImport
+      parentRoute: typeof AnalyzeRoute
     }
     '/api/v3/stats': {
       id: '/api/v3/stats'
@@ -273,6 +442,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v3/categories'
       fullPath: '/api/v3/categories'
       preLoaderRoute: typeof ApiV3CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai/unicorn': {
@@ -334,6 +510,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AnalyzeRouteChildren {
+  AnalyzeIdRoute: typeof AnalyzeIdRoute
+  AnalyzeIndexRoute: typeof AnalyzeIndexRoute
+}
+
+const AnalyzeRouteChildren: AnalyzeRouteChildren = {
+  AnalyzeIdRoute: AnalyzeIdRoute,
+  AnalyzeIndexRoute: AnalyzeIndexRoute,
+}
+
+const AnalyzeRouteWithChildren =
+  AnalyzeRoute._addFileChildren(AnalyzeRouteChildren)
+
 interface ApiV3JobsRouteChildren {
   ApiV3JobsPruneRoute: typeof ApiV3JobsPruneRoute
 }
@@ -348,6 +537,12 @@ const ApiV3JobsRouteWithChildren = ApiV3JobsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AnalyzeRoute: AnalyzeRouteWithChildren,
+  DashboardRoute: DashboardRoute,
+  HistoryRoute: HistoryRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
   SyncRoute: SyncRoute,
   ApiAiGenerateResumeRoute: ApiAiGenerateResumeRoute,
   ApiAiInsightsRoute: ApiAiInsightsRoute,
@@ -356,6 +551,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiScoreAllRoute: ApiAiScoreAllRoute,
   ApiAiSearchRoute: ApiAiSearchRoute,
   ApiAiUnicornRoute: ApiAiUnicornRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
   ApiV3CategoriesRoute: ApiV3CategoriesRoute,
   ApiV3JobContentRoute: ApiV3JobContentRoute,
   ApiV3JobsRoute: ApiV3JobsRouteWithChildren,

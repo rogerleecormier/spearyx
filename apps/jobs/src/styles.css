@@ -1,3 +1,10 @@
 @import "@spearyx/shared-config/styles";
 @import "@spearyx/ui-kit/src/typography.css";
 @import "./jobs.css";
+
+/* Jobs app page background */
+body {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}

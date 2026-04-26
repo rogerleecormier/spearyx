@@ -1,8 +1,13 @@
 /**
- * Corporate App Global Styles
- * Imports shared design system styles and custom app-specific overrides
+ * Spearyx Corporate App Styles
+ * Unified glassmorphic design system
  */
 
 @import "@spearyx/shared-config/styles";
 
-/* App-specific styles can be added here */
+/* Corporate app page background — fixed so it stays behind glassmorphic surfaces */
+body {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}

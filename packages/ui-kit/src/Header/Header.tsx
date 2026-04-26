@@ -10,15 +10,15 @@ interface HeaderProps {
 
 export function Header({ logo, label, children }: HeaderProps) {
   return (
-    <header className="border-b bg-white">
+    <header className={styles.glassNav}>
       <div className={styles.headerContainer}>
         <div className="flex items-end gap-3">
           {logo}
-          <Overline className="text-slate-500 leading-none mb-0.5">
-            {label}
-          </Overline>
+          {label && (
+            <span className={styles.appLabel}>{label}</span>
+          )}
         </div>
-        <div className="flex items-center gap-4">{children}</div>
+        <div className="flex items-center gap-2">{children}</div>
       </div>
     </header>
   );

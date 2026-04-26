@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RaciGeneratorRouteImport } from './routes/raci-generator'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RaciGeneratorImportRouteImport } from './routes/raci-generator/import'
+import { Route as ApiAiGenerateRouteImport } from './routes/api/ai/generate'
 
 const RaciGeneratorRoute = RaciGeneratorRouteImport.update({
   id: '/raci-generator',
@@ -28,34 +29,52 @@ const RaciGeneratorImportRoute = RaciGeneratorImportRouteImport.update({
   path: '/import',
   getParentRoute: () => RaciGeneratorRoute,
 } as any)
+const ApiAiGenerateRoute = ApiAiGenerateRouteImport.update({
+  id: '/api/ai/generate',
+  path: '/api/ai/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/raci-generator': typeof RaciGeneratorRouteWithChildren
   '/raci-generator/import': typeof RaciGeneratorImportRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/raci-generator': typeof RaciGeneratorRouteWithChildren
   '/raci-generator/import': typeof RaciGeneratorImportRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/raci-generator': typeof RaciGeneratorRouteWithChildren
   '/raci-generator/import': typeof RaciGeneratorImportRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/raci-generator' | '/raci-generator/import'
+  fullPaths:
+    | '/'
+    | '/raci-generator'
+    | '/raci-generator/import'
+    | '/api/ai/generate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/raci-generator' | '/raci-generator/import'
-  id: '__root__' | '/' | '/raci-generator' | '/raci-generator/import'
+  to: '/' | '/raci-generator' | '/raci-generator/import' | '/api/ai/generate'
+  id:
+    | '__root__'
+    | '/'
+    | '/raci-generator'
+    | '/raci-generator/import'
+    | '/api/ai/generate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RaciGeneratorRoute: typeof RaciGeneratorRouteWithChildren
+  ApiAiGenerateRoute: typeof ApiAiGenerateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -81,6 +100,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RaciGeneratorImportRouteImport
       parentRoute: typeof RaciGeneratorRoute
     }
+    '/api/ai/generate': {
+      id: '/api/ai/generate'
+      path: '/api/ai/generate'
+      fullPath: '/api/ai/generate'
+      preLoaderRoute: typeof ApiAiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -99,6 +125,7 @@ const RaciGeneratorRouteWithChildren = RaciGeneratorRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RaciGeneratorRoute: RaciGeneratorRouteWithChildren,
+  ApiAiGenerateRoute: ApiAiGenerateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

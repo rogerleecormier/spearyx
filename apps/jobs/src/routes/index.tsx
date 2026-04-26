@@ -1,6 +1,6 @@
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { Link, createFileRoute, useLoaderData } from "@tanstack/react-router";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Briefcase, Loader2, X, Sparkles, Info, Target } from "lucide-react";
+import { Briefcase, Loader2, X, Sparkles, Info, Target, Settings2 } from "lucide-react";
 import { Overline, Hero, Body } from "@spearyx/ui-kit";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import JobCard from "../components/JobCard";
@@ -249,6 +249,14 @@ function HomePage() {
             </div>
             {/* Header Actions */}
             <div className="flex items-center gap-2">
+              <Link
+                to="/sync"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              >
+                <Settings2 size={12} />
+                Source Operations
+              </Link>
+
               {/* My Profile Button */}
               <button
                 onClick={() => setShowSkillsModal(true)}
