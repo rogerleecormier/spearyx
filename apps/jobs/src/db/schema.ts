@@ -228,6 +228,59 @@ export const analyticsSummary = sqliteTable('analytics_summary', {
   updatedAt: text('updated_at'),
 })
 
+export const appSettings = sqliteTable('app_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  linkedinRetentionDays: integer('linkedin_retention_days').notNull().default(14),
+  linkedinAutoPrune: integer('linkedin_auto_prune').notNull().default(1),
+  linkedinAllowAllUsersView: integer('linkedin_allow_all_users_view').notNull().default(0),
+  linkedinSearchCronFrequency: text('linkedin_search_cron_frequency').notNull().default('daily'),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const linkedinSavedSearches = sqliteTable('linkedin_saved_searches', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  name: text('name').notNull(),
+  criteria: text('criteria').notNull(),
+  isActive: integer('is_active').notNull().default(1),
+  lastRunAt: text('last_run_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const linkedinJobResults = sqliteTable('linkedin_job_results', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  savedSearchId: integer('saved_search_id').references(() => linkedinSavedSearches.id),
+  externalJobId: text('external_job_id').notNull(),
+  title: text('title').notNull(),
+  company: text('company').notNull(),
+  location: text('location').notNull(),
+  sourceUrl: text('source_url').notNull(),
+  canonicalSourceUrl: text('canonical_source_url').notNull(),
+  sourceName: text('source_name').notNull().default('LinkedIn'),
+  searchUrl: text('search_url'),
+  criteria: text('criteria').notNull(),
+  salary: text('salary'),
+  snippet: text('snippet'),
+  description: text('description'),
+  postDateText: text('post_date_text'),
+  workplaceType: text('workplace_type'),
+  atsScore: integer('ats_score'),
+  careerScore: integer('career_score'),
+  outlookScore: integer('outlook_score'),
+  masterScore: integer('master_score'),
+  atsReason: text('ats_reason'),
+  careerReason: text('career_reason'),
+  outlookReason: text('outlook_reason'),
+  isUnicorn: integer('is_unicorn').notNull().default(0),
+  unicornReason: text('unicorn_reason'),
+  firstSeenAt: text('first_seen_at').notNull(),
+  lastSeenAt: text('last_seen_at').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
 // ─── Inferred Types (user-centric tables) ─────────────────────────────────────
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -239,3 +292,9 @@ export type GeneratedDocument = typeof generatedDocuments.$inferSelect
 export type NewGeneratedDocument = typeof generatedDocuments.$inferInsert
 export type AnalyticsSummary = typeof analyticsSummary.$inferSelect
 export type NewAnalyticsSummary = typeof analyticsSummary.$inferInsert
+export type AppSettings = typeof appSettings.$inferSelect
+export type NewAppSettings = typeof appSettings.$inferInsert
+export type LinkedinSavedSearch = typeof linkedinSavedSearches.$inferSelect
+export type NewLinkedinSavedSearch = typeof linkedinSavedSearches.$inferInsert
+export type LinkedinJobResult = typeof linkedinJobResults.$inferSelect
+export type NewLinkedinJobResult = typeof linkedinJobResults.$inferInsert

@@ -1,11 +1,8 @@
 import { redirect } from "@tanstack/react-router";
 import type { SessionUser } from "./cloudflare";
 
-const LINKEDIN_SEARCH_OWNER_EMAILS = ["rogerleecormier@gmail.com"];
-
 export function canAccessLinkedInSearch(user?: SessionUser | null): boolean {
-  if (!user?.email) return false;
-  return LINKEDIN_SEARCH_OWNER_EMAILS.includes(user.email.toLowerCase());
+  return user?.role === "admin";
 }
 
 export function requireLinkedInSearchOwner(user?: SessionUser | null) {

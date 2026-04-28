@@ -42,8 +42,6 @@ interface AppHeaderProps {
   onLogout?: () => Promise<void> | void;
 }
 
-const LINKEDIN_SEARCH_OWNER_EMAILS = ["rogerleecormier@gmail.com"];
-
 function getAppOrigin(app: AppHeaderProps["app"], currentPath: string): string {
   if (typeof window !== "undefined") {
     return window.location.origin;
@@ -137,10 +135,7 @@ export function AppHeader({
   const appOrigin = getAppOrigin(app, currentPath);
 
   const resolvedUser = user ?? null;
-  const canAccessLinkedInSearch =
-    app === "jobs" &&
-    !!resolvedUser?.email &&
-    LINKEDIN_SEARCH_OWNER_EMAILS.includes(resolvedUser.email.toLowerCase());
+  const canAccessLinkedInSearch = app === "jobs" && resolvedUser?.role === "admin";
 
   const loginHref = useMemo(() => {
     if (app === "corporate") return "/login";
@@ -447,22 +442,40 @@ export function AppHeader({
               )}
             </DropdownMenuItem>
             {canAccessLinkedInSearch && (
-              <DropdownMenuItem asChild className={jobsItem("/linkedin-search")}>
-                {Link && app === "jobs" ? (
-                  <Link to="/linkedin-search" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
-                    <Search size={14} className="text-primary-500" />
-                    <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
-                  </Link>
-                ) : (
-                  <a
-                    href="https://jobs.spearyx.com/linkedin-search"
-                    className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-                  >
-                    <Search size={14} className="text-primary-500" />
-                    <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
-                  </a>
-                )}
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem asChild className={jobsItem("/linkedin-search")}>
+                  {Link && app === "jobs" ? (
+                    <Link to="/linkedin-search" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
+                      <Search size={14} className="text-primary-500" />
+                      <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
+                    </Link>
+                  ) : (
+                    <a
+                      href="https://jobs.spearyx.com/linkedin-search"
+                      className="flex items-center gap-2 rounded-[10px] px-3 py-2"
+                    >
+                      <Search size={14} className="text-primary-500" />
+                      <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
+                    </a>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className={jobsItem("/linkedin-jobs")}>
+                  {Link && app === "jobs" ? (
+                    <Link to="/linkedin-jobs" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
+                      <History size={14} className="text-primary-500" />
+                      <span className="text-sm font-medium text-slate-900">LinkedIn Results</span>
+                    </Link>
+                  ) : (
+                    <a
+                      href="https://jobs.spearyx.com/linkedin-jobs"
+                      className="flex items-center gap-2 rounded-[10px] px-3 py-2"
+                    >
+                      <History size={14} className="text-primary-500" />
+                      <span className="text-sm font-medium text-slate-900">LinkedIn Results</span>
+                    </a>
+                  )}
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuSeparator className="my-1 bg-slate-100" />
             {resolvedUser.role === "admin" && (

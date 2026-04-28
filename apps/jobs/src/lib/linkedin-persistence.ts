@@ -1,0 +1,456 @@
+import { and, desc, eq, inArray, lte, sql } from "drizzle-orm";
+import { getDb } from "@/db/db";
+import {
+  appSettings,
+  linkedinJobResults,
+  linkedinSavedSearches,
+  type AppSettings,
+  type LinkedinJobResult,
+} from "@/db/schema";
+import { getCloudflareEnv } from "@/lib/cloudflare";
+import type { SessionUser } from "@/lib/cloudflare";
+import type { LinkedInScrapedJob, LinkedInSearchParams } from "@/lib/linkedin-search";
+
+export type LinkedinCronFrequency = "hourly" | "every_6_hours" | "daily";
+
+export type LinkedinAppSettings = {
+  linkedinRetentionDays: number;
+  linkedinAutoPrune: boolean;
+  linkedinAllowAllUsersView: boolean;
+  linkedinSearchCronFrequency: LinkedinCronFrequency;
+  updatedAt: string;
+};
+
+export type SavedLinkedinSearchRow = {
+  id: number;
+  userId: number;
+  name: string;
+  criteria: LinkedInSearchParams;
+  isActive: boolean;
+  lastRunAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type LinkedinHistoryRow = LinkedinJobResult & {
+  ownerEmail?: string | null;
+};
+
+const DEFAULT_SETTINGS: LinkedinAppSettings = {
+  linkedinRetentionDays: 14,
+  linkedinAutoPrune: true,
+  linkedinAllowAllUsersView: false,
+  linkedinSearchCronFrequency: "daily",
+  updatedAt: new Date(0).toISOString(),
+};
+
+export function canonicalizeLinkedinJobUrl(rawUrl: string, externalJobId?: string): string {
+  try {
+    const url = new URL(rawUrl);
+    if (url.pathname.match(/\/jobs\/view\/(\d+)/)?.[1]) {
+      return `https://www.linkedin.com${url.pathname.replace(/\/+$/, "")}/`;
+    }
+    const currentJobId = url.searchParams.get("currentJobId");
+    if (currentJobId) {
+      return `https://www.linkedin.com/jobs/view/${currentJobId}/`;
+    }
+  } catch {
+    if (externalJobId && /^\d+$/.test(externalJobId)) {
+      return `https://www.linkedin.com/jobs/view/${externalJobId}/`;
+    }
+  }
+  if (externalJobId && /^\d+$/.test(externalJobId)) {
+    return `https://www.linkedin.com/jobs/view/${externalJobId}/`;
+  }
+  return rawUrl;
+}
+
+function normalizeSettings(row?: AppSettings | null): LinkedinAppSettings {
+  if (!row) return { ...DEFAULT_SETTINGS, updatedAt: new Date().toISOString() };
+  return {
+    linkedinRetentionDays: row.linkedinRetentionDays ?? DEFAULT_SETTINGS.linkedinRetentionDays,
+    linkedinAutoPrune: row.linkedinAutoPrune === 1,
+    linkedinAllowAllUsersView: row.linkedinAllowAllUsersView === 1,
+    linkedinSearchCronFrequency: (row.linkedinSearchCronFrequency as LinkedinCronFrequency) ?? DEFAULT_SETTINGS.linkedinSearchCronFrequency,
+    updatedAt: row.updatedAt,
+  };
+}
+
+export async function getLinkedinSettings(): Promise<LinkedinAppSettings> {
+  const env = getCloudflareEnv();
+  if (!env.DB) return DEFAULT_SETTINGS;
+  const db = getDb(env.DB);
+  const [row] = await db.select().from(appSettings).where(eq(appSettings.id, 1)).limit(1);
+  return normalizeSettings(row);
+}
+
+export async function saveLinkedinSettings(input: Partial<LinkedinAppSettings>): Promise<LinkedinAppSettings> {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const db = getDb(env.DB);
+  const existing = await getLinkedinSettings();
+  const next: LinkedinAppSettings = {
+    linkedinRetentionDays: Math.max(1, Math.min(365, input.linkedinRetentionDays ?? existing.linkedinRetentionDays)),
+    linkedinAutoPrune: input.linkedinAutoPrune ?? existing.linkedinAutoPrune,
+    linkedinAllowAllUsersView: input.linkedinAllowAllUsersView ?? existing.linkedinAllowAllUsersView,
+    linkedinSearchCronFrequency: input.linkedinSearchCronFrequency ?? existing.linkedinSearchCronFrequency,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await db
+    .insert(appSettings)
+    .values({
+      id: 1,
+      linkedinRetentionDays: next.linkedinRetentionDays,
+      linkedinAutoPrune: next.linkedinAutoPrune ? 1 : 0,
+      linkedinAllowAllUsersView: next.linkedinAllowAllUsersView ? 1 : 0,
+      linkedinSearchCronFrequency: next.linkedinSearchCronFrequency,
+      updatedAt: next.updatedAt,
+    })
+    .onConflictDoUpdate({
+      target: appSettings.id,
+      set: {
+        linkedinRetentionDays: next.linkedinRetentionDays,
+        linkedinAutoPrune: next.linkedinAutoPrune ? 1 : 0,
+        linkedinAllowAllUsersView: next.linkedinAllowAllUsersView ? 1 : 0,
+        linkedinSearchCronFrequency: next.linkedinSearchCronFrequency,
+        updatedAt: next.updatedAt,
+      },
+    });
+
+  return next;
+}
+
+export async function upsertLinkedinJobResults(args: {
+  userId: number;
+  savedSearchId?: number | null;
+  searchUrl: string;
+  criteria: LinkedInSearchParams;
+  jobs: LinkedInScrapedJob[];
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const db = getDb(env.DB);
+  const now = new Date().toISOString();
+
+  for (const job of args.jobs) {
+    const canonicalSourceUrl = canonicalizeLinkedinJobUrl(job.sourceUrl, job.id);
+    const [existing] = await db
+      .select()
+      .from(linkedinJobResults)
+      .where(and(eq(linkedinJobResults.userId, args.userId), eq(linkedinJobResults.canonicalSourceUrl, canonicalSourceUrl)))
+      .limit(1);
+
+    if (existing) {
+      continue;
+    }
+
+    const values = {
+      userId: args.userId,
+      savedSearchId: args.savedSearchId ?? null,
+      externalJobId: job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      sourceUrl: job.sourceUrl,
+      canonicalSourceUrl,
+      sourceName: job.sourceName,
+      searchUrl: args.searchUrl,
+      criteria: JSON.stringify(args.criteria),
+      salary: job.salary ?? null,
+      snippet: job.snippet ?? null,
+      description: job.description ?? null,
+      postDateText: job.postDateText ?? null,
+      workplaceType: job.workplaceType ?? null,
+      atsScore: job.score?.atsScore ?? null,
+      careerScore: job.score?.careerScore ?? null,
+      outlookScore: job.score?.outlookScore ?? null,
+      masterScore: job.score?.masterScore ?? null,
+      atsReason: job.score?.atsReason ?? null,
+      careerReason: job.score?.careerReason ?? null,
+      outlookReason: job.score?.outlookReason ?? null,
+      isUnicorn: job.score?.isUnicorn ? 1 : 0,
+      unicornReason: job.score?.unicornReason ?? null,
+      firstSeenAt: now,
+      lastSeenAt: now,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.insert(linkedinJobResults).values(values);
+  }
+
+  if (args.savedSearchId) {
+    await db
+      .update(linkedinSavedSearches)
+      .set({ lastRunAt: now, updatedAt: now })
+      .where(eq(linkedinSavedSearches.id, args.savedSearchId));
+  }
+}
+
+export async function findExistingLinkedinJobs(args: {
+  userId: number;
+  jobs: Pick<LinkedInScrapedJob, "id" | "sourceUrl">[];
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB || args.jobs.length === 0) return new Map<string, LinkedinJobResult>();
+
+  const db = getDb(env.DB);
+  const canonicalUrls = Array.from(
+    new Set(
+      args.jobs
+        .map((job) => canonicalizeLinkedinJobUrl(job.sourceUrl, job.id))
+        .filter((url) => !!url),
+    ),
+  );
+
+  if (canonicalUrls.length === 0) return new Map<string, LinkedinJobResult>();
+
+  const rows = await db
+    .select()
+    .from(linkedinJobResults)
+    .where(
+      and(
+        eq(linkedinJobResults.userId, args.userId),
+        inArray(linkedinJobResults.canonicalSourceUrl, canonicalUrls),
+      ),
+    );
+
+  return new Map(rows.map((row) => [row.canonicalSourceUrl, row]));
+}
+
+export function mapStoredLinkedinJobToScrapedJob(row: LinkedinJobResult): LinkedInScrapedJob {
+  return {
+    id: row.externalJobId,
+    title: row.title,
+    company: row.company,
+    location: row.location,
+    sourceUrl: row.sourceUrl,
+    sourceName: "LinkedIn",
+    postDateText: row.postDateText ?? null,
+    workplaceType: row.workplaceType ?? null,
+    salary: row.salary ?? null,
+    snippet: row.snippet ?? null,
+    description: row.description ?? null,
+    resultSource: "history",
+    score:
+      row.masterScore == null || row.atsScore == null || row.careerScore == null || row.outlookScore == null
+        ? undefined
+        : {
+            jobId: row.externalJobId,
+            atsScore: row.atsScore,
+            careerScore: row.careerScore,
+            outlookScore: row.outlookScore,
+            masterScore: row.masterScore,
+            atsReason: row.atsReason ?? "",
+            careerReason: row.careerReason ?? "",
+            outlookReason: row.outlookReason ?? "",
+            isUnicorn: row.isUnicorn === 1,
+            unicornReason: row.unicornReason ?? null,
+          },
+  };
+}
+
+export async function listSavedLinkedinSearches(userId: number): Promise<SavedLinkedinSearchRow[]> {
+  const env = getCloudflareEnv();
+  if (!env.DB) return [];
+  const db = getDb(env.DB);
+  const rows = await db
+    .select()
+    .from(linkedinSavedSearches)
+    .where(eq(linkedinSavedSearches.userId, userId))
+    .orderBy(desc(linkedinSavedSearches.updatedAt));
+
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    criteria: JSON.parse(row.criteria) as LinkedInSearchParams,
+    isActive: row.isActive === 1,
+    lastRunAt: row.lastRunAt ?? null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }));
+}
+
+export async function saveLinkedinSearchDefinition(args: {
+  userId: number;
+  name: string;
+  criteria: LinkedInSearchParams;
+  id?: number;
+  isActive?: boolean;
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const db = getDb(env.DB);
+  const now = new Date().toISOString();
+  const values = {
+    userId: args.userId,
+    name: args.name.trim(),
+    criteria: JSON.stringify(args.criteria),
+    isActive: args.isActive === false ? 0 : 1,
+    updatedAt: now,
+  };
+
+  if (args.id) {
+    await db.update(linkedinSavedSearches).set(values).where(eq(linkedinSavedSearches.id, args.id));
+    return args.id;
+  }
+
+  const inserted = await db
+    .insert(linkedinSavedSearches)
+    .values({
+      ...values,
+      createdAt: now,
+      lastRunAt: null,
+    })
+    .returning({ id: linkedinSavedSearches.id });
+  return inserted[0]?.id ?? null;
+}
+
+export async function deleteLinkedinSavedSearch(id: number, userId: number) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const db = getDb(env.DB);
+
+  await db
+    .update(linkedinJobResults)
+    .set({
+      savedSearchId: null,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(and(eq(linkedinJobResults.savedSearchId, id), eq(linkedinJobResults.userId, userId)));
+
+  await db.delete(linkedinSavedSearches).where(and(eq(linkedinSavedSearches.id, id), eq(linkedinSavedSearches.userId, userId)));
+}
+
+export async function setLinkedinSavedSearchActive(id: number, userId: number, isActive: boolean) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const db = getDb(env.DB);
+  await db
+    .update(linkedinSavedSearches)
+    .set({
+      isActive: isActive ? 1 : 0,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(and(eq(linkedinSavedSearches.id, id), eq(linkedinSavedSearches.userId, userId)));
+}
+
+export async function listLinkedinHistory(args: {
+  user: SessionUser;
+  page?: number;
+  pageSize?: number;
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) return { rows: [], total: 0, canViewAllUsers: false };
+  const db = getDb(env.DB);
+  const settings = await getLinkedinSettings();
+  const page = args.page ?? 1;
+  const pageSize = args.pageSize ?? 20;
+  const offset = (page - 1) * pageSize;
+  const canViewAllUsers = settings.linkedinAllowAllUsersView;
+
+  const whereClause = canViewAllUsers ? undefined : eq(linkedinJobResults.userId, args.user.id);
+  const rows = await db
+    .select({
+      id: linkedinJobResults.id,
+      userId: linkedinJobResults.userId,
+      savedSearchId: linkedinJobResults.savedSearchId,
+      externalJobId: linkedinJobResults.externalJobId,
+      title: linkedinJobResults.title,
+      company: linkedinJobResults.company,
+      location: linkedinJobResults.location,
+      sourceUrl: linkedinJobResults.sourceUrl,
+      canonicalSourceUrl: linkedinJobResults.canonicalSourceUrl,
+      sourceName: linkedinJobResults.sourceName,
+      searchUrl: linkedinJobResults.searchUrl,
+      criteria: linkedinJobResults.criteria,
+      salary: linkedinJobResults.salary,
+      snippet: linkedinJobResults.snippet,
+      description: linkedinJobResults.description,
+      postDateText: linkedinJobResults.postDateText,
+      workplaceType: linkedinJobResults.workplaceType,
+      atsScore: linkedinJobResults.atsScore,
+      careerScore: linkedinJobResults.careerScore,
+      outlookScore: linkedinJobResults.outlookScore,
+      masterScore: linkedinJobResults.masterScore,
+      atsReason: linkedinJobResults.atsReason,
+      careerReason: linkedinJobResults.careerReason,
+      outlookReason: linkedinJobResults.outlookReason,
+      isUnicorn: linkedinJobResults.isUnicorn,
+      unicornReason: linkedinJobResults.unicornReason,
+      firstSeenAt: linkedinJobResults.firstSeenAt,
+      lastSeenAt: linkedinJobResults.lastSeenAt,
+      createdAt: linkedinJobResults.createdAt,
+      updatedAt: linkedinJobResults.updatedAt,
+      ownerEmail: sql<string | null>`${sql.raw(canViewAllUsers ? "(select email from users where users.id = linkedin_job_results.user_id)" : "null")}`,
+    })
+    .from(linkedinJobResults)
+    .where(whereClause)
+    .orderBy(desc(linkedinJobResults.lastSeenAt), desc(linkedinJobResults.masterScore))
+    .limit(pageSize)
+    .offset(offset);
+
+  const [countRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(linkedinJobResults)
+    .where(whereClause);
+
+  return {
+    rows,
+    total: Number(countRow?.count ?? 0),
+    canViewAllUsers,
+  };
+}
+
+export async function pruneExpiredLinkedinJobResults() {
+  const env = getCloudflareEnv();
+  if (!env.DB) return 0;
+  const db = getDb(env.DB);
+  const settings = await getLinkedinSettings();
+  if (!settings.linkedinAutoPrune) return 0;
+
+  const cutoff = new Date(Date.now() - settings.linkedinRetentionDays * 24 * 60 * 60 * 1000).toISOString();
+  const rows = await db
+    .select({ id: linkedinJobResults.id })
+    .from(linkedinJobResults)
+    .where(lte(linkedinJobResults.lastSeenAt, cutoff));
+
+  if (rows.length === 0) return 0;
+
+  await db.delete(linkedinJobResults).where(lte(linkedinJobResults.lastSeenAt, cutoff));
+  return rows.length;
+}
+
+export async function pruneDuplicateLinkedinJobResults() {
+  const env = getCloudflareEnv();
+  if (!env.DB) return 0;
+
+  const db = getDb(env.DB);
+  const rows = await db
+    .select()
+    .from(linkedinJobResults)
+    .orderBy(
+      desc(linkedinJobResults.lastSeenAt),
+      desc(linkedinJobResults.masterScore),
+      desc(linkedinJobResults.createdAt),
+    );
+
+  const seen = new Set<string>();
+  const duplicateIds: number[] = [];
+
+  for (const row of rows) {
+    const dedupeKey = `${row.userId}:${row.canonicalSourceUrl}`;
+    if (seen.has(dedupeKey)) {
+      duplicateIds.push(row.id);
+      continue;
+    }
+    seen.add(dedupeKey);
+  }
+
+  if (duplicateIds.length === 0) return 0;
+
+  await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, duplicateIds));
+  return duplicateIds.length;
+}

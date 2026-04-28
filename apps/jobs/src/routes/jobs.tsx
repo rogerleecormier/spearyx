@@ -18,7 +18,6 @@ import SearchBar from "../components/SearchBar";
 import FilterDropdown from "../components/FilterDropdown";
 import SortControls from "../components/SortControls";
 import type { JobWithCategory } from "../lib/search-utils";
-import { canAccessLinkedInSearch } from "../lib/private-features";
 
 import { getDbFromContext, schema } from "../db/db";
 import { desc, sql } from "drizzle-orm";
@@ -52,11 +51,10 @@ export const Route = createFileRoute("/jobs")({
         categories: categoriesData,
         totalCount,
         hasMore: jobsData.length >= 30,
-        canAccessLinkedInSearch: canAccessLinkedInSearch((context as any)?.user),
       };
     } catch (error) {
       console.error("Loader error:", error);
-      return { initialJobs: [], categories: [], totalCount: 0, hasMore: false, canAccessLinkedInSearch: false };
+      return { initialJobs: [], categories: [], totalCount: 0, hasMore: false };
     }
   },
   component: HomePage,
@@ -227,15 +225,6 @@ function HomePage() {
               <Settings2 size={14} />
               Sources
             </Link>
-            {loaderData.canAccessLinkedInSearch ? (
-              <Link
-                to="/linkedin-search"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-100"
-              >
-                <Search size={14} />
-                LinkedIn Search
-              </Link>
-            ) : null}
             <button
               onClick={() => setShowAIInfoModal(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100"

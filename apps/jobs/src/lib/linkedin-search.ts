@@ -29,6 +29,7 @@ export interface LinkedInSearchParams {
   easyApply?: boolean;
   sortBy?: LinkedInSortBy;
   page?: number;
+  pagesToScan?: number;
   limit?: number;
 }
 
@@ -44,6 +45,7 @@ export interface LinkedInScrapedJob {
   salary: string | null;
   snippet: string | null;
   description: string | null;
+  resultSource?: "new" | "history";
   score?: {
     jobId: string;
     atsScore: number;
@@ -104,11 +106,15 @@ export function normalizeLinkedInSearchParams(
     easyApply: !!params.easyApply,
     sortBy: params.sortBy || "recent",
     page: Math.max(1, Math.min(20, Number(params.page || 1))),
-    limit: Math.max(1, Math.min(15, Number(params.limit || 10))),
+    pagesToScan: Math.max(1, Math.min(10, Number(params.pagesToScan || 1))),
+    limit: Math.max(1, Math.min(25, Number(params.limit || 10))),
   };
 }
 
-export function buildLinkedInSearchUrl(rawParams: Partial<LinkedInSearchParams>): string {
+export function buildLinkedInSearchUrlForPage(
+  rawParams: Partial<LinkedInSearchParams>,
+  pageNumber?: number,
+): string {
   const params = normalizeLinkedInSearchParams(rawParams);
   const url = new URL("https://www.linkedin.com/jobs/search/");
 
@@ -154,14 +160,19 @@ export function buildLinkedInSearchUrl(rawParams: Partial<LinkedInSearchParams>)
   }
 
   url.searchParams.set("position", "1");
-  url.searchParams.set("pageNum", String(params.page));
+  const effectivePage = Math.max(1, Math.min(20, Number(pageNumber || params.page || 1)));
+  url.searchParams.set("pageNum", String(effectivePage));
   url.searchParams.set("sortBy", params.sortBy === "recent" ? "DD" : "R");
   url.searchParams.set("refresh", "true");
 
-  const offset = ((params.page || 1) - 1) * 25;
+  const offset = (effectivePage - 1) * 25;
   if (offset > 0) {
     url.searchParams.set("start", String(offset));
   }
 
   return url.toString();
+}
+
+export function buildLinkedInSearchUrl(rawParams: Partial<LinkedInSearchParams>): string {
+  return buildLinkedInSearchUrlForPage(rawParams, rawParams.page);
 }

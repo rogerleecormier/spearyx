@@ -2,6 +2,7 @@
 // Wraps TanStack Start's fetch handler and adds the cron scheduled handler.
 
 import { aggregateAnalytics } from './src/server/cron/aggregate-analytics'
+import { runLinkedinSearchMaintenance } from './src/server/cron/linkedin-searches'
 import type { CloudflareEnv } from './src/lib/cloudflare'
 
 export default {
@@ -15,6 +16,9 @@ export default {
   },
 
   async scheduled(_event: ScheduledEvent, env: CloudflareEnv, _ctx: ExecutionContext) {
-    await aggregateAnalytics(env)
+    await runLinkedinSearchMaintenance(env)
+    if (new Date().getUTCHours() % 6 === 0) {
+      await aggregateAnalytics(env)
+    }
   },
 }

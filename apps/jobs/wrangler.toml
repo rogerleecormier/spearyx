@@ -52,6 +52,7 @@ custom_domain = true
 binding = "AI"
 remote = true
 
-# Analytics aggregation cron — runs every 6 hours
+# Hourly scheduler. App settings decide whether LinkedIn saved searches run hourly,
+# every 6 hours, or daily, and analytics remains throttled inside the worker.
 [triggers]
-crons = ["0 */6 * * *"]
+crons = ["0 * * * *"]

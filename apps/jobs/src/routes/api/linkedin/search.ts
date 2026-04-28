@@ -5,9 +5,16 @@ import { getDb, schema } from "../../../db/db";
 import { getAIFromContext } from "../../../lib/ai";
 import { scoreJobAgainstProfile } from "../../../lib/ai/job-score";
 import { getCloudflareEnv } from "../../../lib/cloudflare";
+import {
+  canonicalizeLinkedinJobUrl,
+  findExistingLinkedinJobs,
+  mapStoredLinkedinJobToScrapedJob,
+  upsertLinkedinJobResults,
+} from "../../../lib/linkedin-persistence";
 import { resolveSessionUser } from "../../../lib/resolve-user";
 import {
   buildLinkedInSearchUrl,
+  buildLinkedInSearchUrlForPage,
   normalizeLinkedInSearchParams,
   type LinkedInScrapedJob,
   type LinkedInSearchParams,
@@ -58,6 +65,16 @@ function dedupeJobs(jobs: LinkedInScrapedJob[]) {
   return jobs.filter((job) => {
     if (seen.has(job.id)) return false;
     seen.add(job.id);
+    return true;
+  });
+}
+
+function dedupeJobsByCanonicalUrl(jobs: LinkedInScrapedJob[]) {
+  const seen = new Set<string>();
+  return jobs.filter((job) => {
+    const key = canonicalizeLinkedinJobUrl(job.sourceUrl, job.id);
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -127,7 +144,7 @@ async function extractSearchCards(page: BrowserPage, limit: number): Promise<Lin
         title,
         company: company || "Unknown company",
         location: location || "Location not listed",
-        sourceUrl: `https://www.linkedin.com/jobs/view/${id}/`,
+        sourceUrl: anchor.href,
         sourceName: "LinkedIn",
         postDateText,
         workplaceType: null,
@@ -143,6 +160,26 @@ async function extractSearchCards(page: BrowserPage, limit: number): Promise<Lin
   }, limit);
 
   return dedupeJobs(jobs);
+}
+
+async function expandSearchResults(page: BrowserPage, targetCount: number) {
+  await page.evaluate(async (desiredCount: number) => {
+    let lastCount = 0;
+
+    for (let i = 0; i < 8; i++) {
+      const currentCount = document.querySelectorAll('a[href*="/jobs/view/"], a.base-card__full-link').length;
+      if (currentCount >= desiredCount || currentCount === lastCount) {
+        const button = Array.from(document.querySelectorAll("button, a")).find((el) =>
+          /see more jobs|show more/i.test((el.textContent || "").trim()),
+        ) as HTMLElement | undefined;
+        button?.click?.();
+      }
+
+      lastCount = currentCount;
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    }
+  }, Math.max(targetCount, 10));
 }
 
 async function extractJobDescription(page: BrowserPage): Promise<string | null> {
@@ -190,6 +227,49 @@ async function enrichJobDescriptions(
       await page.close();
     }
   }
+}
+
+async function collectLinkedinJobsAcrossPages(args: {
+  browser: Awaited<ReturnType<typeof import("@cloudflare/puppeteer")["default"]["launch"]>>;
+  kv: KVNamespace | undefined;
+  params: LinkedInSearchParams;
+}) {
+  const allJobs: LinkedInScrapedJob[] = [];
+  const requestedPages = args.params.pagesToScan || 1;
+  const perPageLimit = args.params.limit || 10;
+
+  for (let pageOffset = 0; pageOffset < requestedPages; pageOffset += 1) {
+    const pageNumber = (args.params.page || 1) + pageOffset;
+    const searchUrl = buildLinkedInSearchUrlForPage(args.params, pageNumber);
+    const searchCacheKey = `linkedin:search:${await sha256(searchUrl)}:${perPageLimit}`;
+    let pageJobs = await getCachedJson<LinkedInScrapedJob[]>(args.kv, searchCacheKey);
+
+    if (!pageJobs) {
+      const page = await args.browser.newPage();
+      try {
+        await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await expandSearchResults(page, perPageLimit);
+        pageJobs = await extractSearchCards(page, perPageLimit);
+        pageJobs = pageJobs.map((job) => ({
+          ...job,
+          sourceUrl: canonicalizeLinkedinJobUrl(job.sourceUrl, job.id),
+        }));
+        await putCachedJson(args.kv, searchCacheKey, pageJobs, 30 * 60);
+      } finally {
+        await page.close();
+      }
+    } else {
+      pageJobs = pageJobs.map((job) => ({
+        ...job,
+        sourceUrl: canonicalizeLinkedinJobUrl(job.sourceUrl, job.id),
+      }));
+    }
+
+    allJobs.push(...pageJobs);
+  }
+
+  return dedupeJobsByCanonicalUrl(allJobs);
 }
 
 async function getResumeProfile(userId: number): Promise<string | null> {
@@ -252,6 +332,7 @@ export const Route = createFileRoute("/api/linkedin/search")({
           stage = "reading-request";
           const body = (await request.json()) as Partial<LinkedInSearchParams>;
           const params = normalizeLinkedInSearchParams(body);
+          const savedSearchId = typeof (body as any).savedSearchId === "number" ? (body as any).savedSearchId : null;
 
           if (!params.keywords) {
             return json({ success: false, error: "Keywords are required." }, { status: 400 });
@@ -277,70 +358,143 @@ export const Route = createFileRoute("/api/linkedin/search")({
 
           stage = "building-search-url";
           const searchUrl = buildLinkedInSearchUrl(params);
-          const searchCacheKey = `linkedin:search:${await sha256(searchUrl)}:${params.limit}`;
-          const cached = await getCachedJson<LinkedInScrapedJob[]>(env.KV, searchCacheKey);
+          let jobs: LinkedInScrapedJob[] | null = null;
+          let historicalJobs: LinkedInScrapedJob[] = [];
+          let reusedCount = 0;
+          stage = "launching-browser";
+          const puppeteer = await import("@cloudflare/puppeteer");
+          const browser = await puppeteer.default.launch(env.BROWSER);
 
-          let jobs = cached;
-          if (!jobs) {
-            stage = "launching-browser";
-            const puppeteer = await import("@cloudflare/puppeteer");
-            const browser = await puppeteer.default.launch(env.BROWSER);
+          try {
+            stage = "loading-linkedin-search-page";
+            jobs = await collectLinkedinJobsAcrossPages({
+              browser,
+              kv: env.KV,
+              params,
+            });
 
-            try {
-              stage = "loading-linkedin-search-page";
-              const page = await browser.newPage();
-              await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
-              await new Promise((resolve) => setTimeout(resolve, 2500));
-
-              stage = "extracting-search-cards";
-              jobs = await extractSearchCards(page, params.limit || 10);
-              await page.close();
-
-              if (!jobs || jobs.length === 0) {
-                return json({
-                  success: true,
-                  data: {
-                    searchUrl,
-                    jobs: [],
-                    total: 0,
-                    warnings: [
-                      "LinkedIn returned no parsable jobs for this query. Try fewer filters or run it on deployed Cloudflare infrastructure.",
-                    ],
-                  },
-                });
-              }
-
-              stage = "enriching-job-descriptions";
-              await enrichJobDescriptions(browser, env.KV, jobs);
-              await putCachedJson(env.KV, searchCacheKey, jobs, 30 * 60);
-            } finally {
-              await browser.close();
+            if (!jobs || jobs.length === 0) {
+              return json({
+                success: true,
+                data: {
+                  searchUrl,
+                  jobs: [],
+                  total: 0,
+                  warnings: [
+                    "LinkedIn returned no parsable jobs for this query. Try fewer filters or run it on deployed Cloudflare infrastructure.",
+                  ],
+                },
+              });
             }
+
+            stage = "checking-existing-jobs";
+            const existingJobsByUrl = await findExistingLinkedinJobs({
+              userId: user.id,
+              jobs: jobs.map((job) => ({ id: job.id, sourceUrl: job.sourceUrl })),
+            });
+            historicalJobs = jobs
+              .map((job) => existingJobsByUrl.get(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id)))
+              .filter((row): row is NonNullable<typeof row> => !!row)
+              .map((row) => mapStoredLinkedinJobToScrapedJob(row));
+            reusedCount = existingJobsByUrl.size;
+
+            jobs = jobs.filter(
+              (job) => !existingJobsByUrl.has(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id)),
+            );
+
+            if (jobs.length === 0) {
+              historicalJobs.sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
+              return json({
+                success: true,
+                data: {
+                  searchUrl,
+                  jobs: historicalJobs,
+                  total: historicalJobs.length,
+                  warnings: [`Reused ${existingJobsByUrl.size} previously saved LinkedIn job${existingJobsByUrl.size === 1 ? "" : "s"} without rescoring.`],
+                },
+              });
+            }
+
+            stage = "enriching-job-descriptions";
+            await enrichJobDescriptions(browser, env.KV, jobs);
+          } finally {
+            await browser.close();
+          }
+
+          stage = "checking-existing-jobs";
+          let newJobs = jobs;
+          if (historicalJobs.length === 0 && jobs.length > 0) {
+            const existingJobsByUrl = await findExistingLinkedinJobs({
+              userId: user.id,
+              jobs: jobs.map((job) => ({ id: job.id, sourceUrl: job.sourceUrl })),
+            });
+            historicalJobs = jobs
+              .map((job) => existingJobsByUrl.get(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id)))
+              .filter((row): row is NonNullable<typeof row> => !!row)
+              .map((row) => mapStoredLinkedinJobToScrapedJob(row));
+            reusedCount = existingJobsByUrl.size;
+            newJobs = jobs.filter(
+              (job) => !existingJobsByUrl.has(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id)),
+            );
+          }
+
+          if (newJobs.length === 0) {
+            historicalJobs.sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
+            return json({
+              success: true,
+              data: {
+                searchUrl,
+                jobs: historicalJobs,
+                total: historicalJobs.length,
+                warnings: jobs.length > 0
+                  ? [`Reused ${reusedCount} previously saved LinkedIn job${reusedCount === 1 ? "" : "s"} without rescoring.`]
+                  : ["No LinkedIn jobs were found for that search."],
+              },
+            });
           }
 
           stage = "scoring-jobs";
           const scoredJobs = await Promise.all(
-            jobs.map(async (job) => {
+            newJobs.map(async (job) => {
               const score = await scoreJobAgainstProfile(ai, profile, {
                 id: job.id,
                 title: job.title,
                 description: job.description || job.snippet || `${job.title} ${job.company} ${job.location}`,
               });
-              return { ...job, score };
+              return {
+                ...job,
+                sourceUrl: canonicalizeLinkedinJobUrl(job.sourceUrl, job.id),
+                score,
+              };
             }),
           );
 
-          scoredJobs.sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
+          const combinedJobs = [...historicalJobs, ...scoredJobs];
+          combinedJobs.sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
+
+          stage = "persisting-results";
+          await upsertLinkedinJobResults({
+            userId: user.id,
+            savedSearchId,
+            searchUrl,
+            criteria: params,
+            jobs: scoredJobs,
+          });
 
           return json({
             success: true,
             data: {
               searchUrl,
-              jobs: scoredJobs,
-              total: scoredJobs.length,
-              warnings: scoredJobs.some((job) => !job.description)
-                ? ["Some jobs were scored from snippets because LinkedIn did not expose a full description."]
-                : [],
+              jobs: combinedJobs,
+              total: combinedJobs.length,
+              warnings: [
+                ...(scoredJobs.some((job) => !job.description)
+                  ? ["Some jobs were scored from snippets because LinkedIn did not expose a full description."]
+                  : []),
+                ...(reusedCount > 0
+                  ? [`Reused ${reusedCount} previously saved LinkedIn job${reusedCount === 1 ? "" : "s"} without rescoring.`]
+                  : []),
+              ],
             },
           });
         } catch (error) {

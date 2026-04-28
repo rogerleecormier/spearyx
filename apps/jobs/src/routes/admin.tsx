@@ -1,10 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listUsers, createUser, deleteUser } from "@/server/functions/admin";
+import { getLinkedinAdminSettings, updateLinkedinAdminSettings } from "@/server/functions/linkedin-admin";
 import { PageHero, PageSection } from "@spearyx/ui-kit";
 import { Shield, Trash2 } from "lucide-react";
 
 type AdminUser = { id: number; email: string; role: string; createdAt: string };
+type LinkedinSettings = Awaited<ReturnType<typeof getLinkedinAdminSettings>>;
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: ({ context }) => {
@@ -22,6 +24,8 @@ function AdminPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [settings, setSettings] = useState<LinkedinSettings | null>(null);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   async function fetchUsers() {
     setLoadingUsers(true);
@@ -36,6 +40,11 @@ function AdminPage() {
   }
 
   useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    getLinkedinAdminSettings({})
+      .then(setSettings)
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load settings"));
+  }, []);
 
   async function handleAddUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -60,6 +69,23 @@ function AdminPage() {
       await fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete user");
+    }
+  }
+
+  async function handleSaveSettings(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!settings) return;
+    setSavingSettings(true);
+    setError("");
+    try {
+      const next = await updateLinkedinAdminSettings({
+        data: settings,
+      });
+      setSettings(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setSavingSettings(false);
     }
   }
 
@@ -152,6 +178,70 @@ function AdminPage() {
             )}
           </tbody>
         </table>
+      </PageSection>
+
+      <PageSection
+        title="LinkedIn Search Settings"
+        description="Control retention, pruning, visibility, and how often saved LinkedIn searches are eligible to run."
+      >
+        {!settings ? (
+          <p className="text-sm text-muted-foreground">Loading settings...</p>
+        ) : (
+          <form onSubmit={handleSaveSettings} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <label className="space-y-1.5 text-sm">
+              <span className="font-medium">Retention Days</span>
+              <input
+                type="number"
+                min={1}
+                max={365}
+                value={settings.linkedinRetentionDays}
+                onChange={(e) => setSettings({ ...settings, linkedinRetentionDays: Number(e.target.value || 14) })}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm"
+              />
+            </label>
+
+            <label className="space-y-1.5 text-sm">
+              <span className="font-medium">Cron Frequency</span>
+              <select
+                value={settings.linkedinSearchCronFrequency}
+                onChange={(e) => setSettings({ ...settings, linkedinSearchCronFrequency: e.target.value as LinkedinSettings["linkedinSearchCronFrequency"] })}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm"
+              >
+                <option value="hourly">Hourly</option>
+                <option value="every_6_hours">Every 6 Hours</option>
+                <option value="daily">Daily</option>
+              </select>
+            </label>
+
+            <label className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm">
+              <input
+                type="checkbox"
+                checked={settings.linkedinAutoPrune}
+                onChange={(e) => setSettings({ ...settings, linkedinAutoPrune: e.target.checked })}
+              />
+              Enable Auto Prune
+            </label>
+
+            <label className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm">
+              <input
+                type="checkbox"
+                checked={settings.linkedinAllowAllUsersView}
+                onChange={(e) => setSettings({ ...settings, linkedinAllowAllUsersView: e.target.checked })}
+              />
+              Allow All Users To View Shared History
+            </label>
+
+            <div className="md:col-span-2 xl:col-span-4">
+              <button
+                type="submit"
+                disabled={savingSettings}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingSettings ? "Saving..." : "Save LinkedIn Settings"}
+              </button>
+            </div>
+          </form>
+        )}
       </PageSection>
     </div>
   );
