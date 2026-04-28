@@ -79,7 +79,14 @@ function LinkedinJobsPage() {
         }
       />
 
-      <PageSection title="Job Listings" description="Persisted LinkedIn jobs are pruned according to admin retention settings.">
+      <PageSection
+        title="Job Listings"
+        description={
+          initialData.canViewAllUsers
+            ? `${initialData.total} stored LinkedIn jobs are currently available. Persisted LinkedIn jobs are pruned according to admin retention settings.`
+            : `You currently have ${initialData.total} stored LinkedIn jobs. Persisted LinkedIn jobs are pruned according to admin retention settings.`
+        }
+      >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {rows.map((job) => (
             <article key={job.id} className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm">

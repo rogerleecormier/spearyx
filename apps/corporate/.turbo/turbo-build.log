@@ -22,7 +22,7 @@ dist/client/assets/index-DAn9JqOJ.js       526.32 kB │ gzip: 161.88 kB
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 5.07s
+✓ built in 4.30s
 vite v7.3.2 building ssr environment for production...
 transforming...
 ✓ 226 modules transformed.
@@ -39,25 +39,25 @@ dist/server/assets/typography-Ce1DNouV.js                           24.91 kB
 dist/server/assets/cards-DfZmr3By.js                                79.52 kB
 dist/server/assets/router-COX_q0qg.js                              107.64 kB
 dist/server/server.js                                              157.16 kB
-✓ built in 1.59s
+✓ built in 1.43s
 vite v7.3.2 building spearyx_corporate environment for production...
 transforming...
-✓ 1996 modules transformed.
+✓ 1997 modules transformed.
 rendering chunks...
 dist/spearyx_corporate/wrangler.json                                                     1.67 kB
-dist/spearyx_corporate/.vite/manifest.json                                               4.24 kB
+dist/spearyx_corporate/.vite/manifest.json                                               4.21 kB
 dist/spearyx_corporate/assets/start-HYkvq4Ni-HYkvq4Ni.js                                 0.06 kB
 dist/spearyx_corporate/assets/__23tanstack-start-plugin-adapters-Cwee5PKy-Cwee5PKy.js    0.14 kB
-dist/spearyx_corporate/index.js                                                          0.29 kB
-dist/spearyx_corporate/assets/zap-B9nfSYF0.js                                            0.39 kB
+dist/spearyx_corporate/assets/zap-0knOdo2R.js                                            0.39 kB
 dist/spearyx_corporate/assets/_tanstack-start-manifest_v-DKTn4O4E-DKTn4O4E.js            1.29 kB
 dist/spearyx_corporate/assets/auth-D8dULEM4-C-bIA00e.js                                  2.28 kB
-dist/spearyx_corporate/assets/login-BjGv1fCm-Cpg9gin2.js                                 4.05 kB
-dist/spearyx_corporate/assets/PageHero-C16RHGse-rQl0xM9Q.js                              5.52 kB
-dist/spearyx_corporate/assets/index-B5Hjnuto-ODxDsUM-.js                                19.14 kB
-dist/spearyx_corporate/assets/typography-Ce1DNouV-BCXPgSiz.js                           27.92 kB
-dist/spearyx_corporate/assets/cards-DfZmr3By-CnpA7d2O.js                                94.33 kB
-dist/spearyx_corporate/assets/auth-CtTKJcsQ-DHJ_3fia.js                                183.07 kB
-dist/spearyx_corporate/assets/router-COX_q0qg-BFcLDYxJ.js                              690.20 kB
-dist/spearyx_corporate/assets/worker-entry-C_31rJMP.js                                 723.45 kB
-✓ built in 3.42s
+dist/spearyx_corporate/assets/login-BjGv1fCm-BnBFpUDX.js                                 4.00 kB
+dist/spearyx_corporate/assets/PageHero-C16RHGse-BBuzIxZC.js                              5.51 kB
+dist/spearyx_corporate/index.js                                                         17.79 kB
+dist/spearyx_corporate/assets/index-B5Hjnuto-IyJvGzNy.js                                19.09 kB
+dist/spearyx_corporate/assets/typography-Ce1DNouV-UI3FmMM9.js                           27.86 kB
+dist/spearyx_corporate/assets/cards-DfZmr3By-pd-o4XiW.js                                94.28 kB
+dist/spearyx_corporate/assets/auth-CtTKJcsQ-CGPvIp_M.js                                183.04 kB
+dist/spearyx_corporate/assets/router-COX_q0qg-DoFW23qc.js                              690.19 kB
+dist/spearyx_corporate/assets/server-DvH1kzFW.js                                       706.07 kB
+✓ built in 2.93s
