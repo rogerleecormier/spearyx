@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { Overline } from "../Typography";
 import styles from "./Header.module.css";
 
 interface HeaderProps {
@@ -12,13 +11,11 @@ export function Header({ logo, label, children }: HeaderProps) {
   return (
     <header className={styles.glassNav}>
       <div className={styles.headerContainer}>
-        <div className="flex items-end gap-3">
+        <div className={styles.logoArea}>
           {logo}
-          {label && (
-            <span className={styles.appLabel}>{label}</span>
-          )}
+          {label && <span className={styles.appLabel}>{label}</span>}
         </div>
-        <div className="flex items-center gap-2">{children}</div>
+        <nav className={styles.navArea}>{children}</nav>
       </div>
     </header>
   );

@@ -7,14 +7,15 @@ import { getCloudflareEnv } from "@/lib/cloudflare";
 import type { SessionUser } from "@/lib/cloudflare";
 import {
   SESSION_COOKIE,
+  SESSION_TTL,
   createSession,
   deleteSession,
   extractSessionToken,
-} from "@/lib/session";
+  getSessionCookieDomain,
+  shouldUseSecureSessionCookie,
+} from "@spearyx/shared-utils";
 import { getDb } from "@/db/db";
 import { users } from "@/db/schema";
-
-const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
 
 /**
  * Validate credentials, create a KV session, and set HttpOnly cookie.
@@ -23,6 +24,7 @@ export const loginUser = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }): Promise<{ user: SessionUser }> => {
     const env = getCloudflareEnv();
+    const request = getRequest();
     if (!env.DB || !env.KV) throw new Error("Service unavailable");
 
     const db = getDb(env.DB);
@@ -37,14 +39,15 @@ export const loginUser = createServerFn({ method: "POST" })
     const valid = await bcrypt.compare(data.password, dbUser.passwordHash);
     if (!valid) throw new Error("Invalid credentials");
 
-    const token = await createSession(dbUser.id, env);
+    const token = await createSession(dbUser.id, env.KV);
 
     setCookie(SESSION_COOKIE, token, {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: shouldUseSecureSessionCookie(request),
       sameSite: "lax" as const,
       maxAge: SESSION_TTL,
+      domain: getSessionCookieDomain(request),
     });
 
     return {
@@ -60,13 +63,15 @@ export const logoutUser = createServerFn({ method: "POST" }).handler(
     const env = getCloudflareEnv();
     const request = getRequest();
     const token = extractSessionToken(request);
-    if (token && env.KV) await deleteSession(token, env);
+    if (token) await deleteSession(token, env.KV);
 
     setCookie(SESSION_COOKIE, "", {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: shouldUseSecureSessionCookie(request),
       maxAge: 0,
+      sameSite: "lax" as const,
+      domain: getSessionCookieDomain(request),
     });
 
     return { success: true };
@@ -89,7 +94,14 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
       if (!token) return null;
 
       const raw = await env.KV.get(`session:${token}`);
-      if (!raw) return null;
+      if (!raw) {
+        // Clear with both domain variants to handle cookies set before domain=.spearyx.com was added
+        const secure = shouldUseSecureSessionCookie(request);
+        setCookie(SESSION_COOKIE, "", { path: "/", httpOnly: true, secure, maxAge: 0, sameSite: "lax" as const, domain: ".spearyx.com" });
+        setCookie(SESSION_COOKIE, "", { path: "/", httpOnly: true, secure, maxAge: 0, sameSite: "lax" as const, domain: "jobs.spearyx.com" });
+        setCookie(SESSION_COOKIE, "", { path: "/", httpOnly: true, secure, maxAge: 0, sameSite: "lax" as const });
+        return null;
+      }
 
       const { userId } = JSON.parse(raw) as { userId: number };
       const db = getDb(env.DB);

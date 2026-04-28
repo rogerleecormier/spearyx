@@ -1,340 +1,263 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, X, Sparkles, BarChart3, FileText, Shield, Target, Calendar, Zap, Clock, CheckCircle2, TrendingUp } from "lucide-react";
-import { Body, Headline } from "@spearyx/ui-kit";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  ArrowRight,
+  BarChart3,
+  Briefcase,
+  Calendar,
+  FileText,
+  Shield,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react";
+import { PageHero, PageSection } from "@spearyx/ui-kit";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({ component: ToolsHomePage });
 
 const tools = [
   {
-    title: "RACI Chart Generator",
-    description: "Define roles and responsibilities with crystal clarity",
-    icon: <BarChart3 size={22} className="text-primary-600" />,
-    iconBg: "from-red-50 to-orange-50 border-red-100",
-    link: "/raci-generator",
+    title: "RACI Generator",
+    description: "Define roles and responsibilities with AI-assisted clarity.",
+    icon: <BarChart3 size={18} className="text-primary-600" />,
+    iconBg: "bg-primary-50 border-primary-100",
+    href: "/raci-generator",
     available: true,
-    badge: "Available",
-    badgeStyle: { background: "rgba(16,185,129,0.1)", color: "#059669", border: "1px solid rgba(16,185,129,0.25)" },
+    status: "Available",
   },
   {
     title: "Project Charter Generator",
-    description: "Launch projects with purpose and alignment",
-    icon: <FileText size={22} className="text-indigo-600" />,
-    iconBg: "from-indigo-50 to-violet-50 border-indigo-100",
-    link: "#",
+    description: "Turn project kickoff inputs into a structured charter.",
+    icon: <FileText size={18} className="text-indigo-600" />,
+    iconBg: "bg-indigo-50 border-indigo-100",
+    href: "#",
     available: false,
-    badge: "Coming Soon",
-    badgeStyle: { background: "rgba(148,163,184,0.1)", color: "#64748b", border: "1px solid rgba(148,163,184,0.25)" },
+    status: "Coming Soon",
   },
   {
     title: "Priority Matrix Generator",
-    description: "Make smarter prioritization decisions instantly",
-    icon: <Target size={22} className="text-amber-600" />,
-    iconBg: "from-amber-50 to-yellow-50 border-amber-100",
-    link: "#",
+    description: "Clarify what matters most when everything feels urgent.",
+    icon: <Target size={18} className="text-amber-600" />,
+    iconBg: "bg-amber-50 border-amber-100",
+    href: "#",
     available: false,
-    badge: "Coming Soon",
-    badgeStyle: { background: "rgba(148,163,184,0.1)", color: "#64748b", border: "1px solid rgba(148,163,184,0.25)" },
+    status: "Coming Soon",
   },
   {
     title: "Communications Plan",
-    description: "Keep stakeholders informed and engaged",
-    icon: <Zap size={22} className="text-sky-600" />,
-    iconBg: "from-sky-50 to-blue-50 border-sky-100",
-    link: "#",
+    description: "Map messaging, audiences, and cadence for delivery alignment.",
+    icon: <Zap size={18} className="text-sky-600" />,
+    iconBg: "bg-sky-50 border-sky-100",
+    href: "#",
     available: false,
-    badge: "Coming Soon",
-    badgeStyle: { background: "rgba(148,163,184,0.1)", color: "#64748b", border: "1px solid rgba(148,163,184,0.25)" },
+    status: "Coming Soon",
   },
   {
-    title: "Risk Register Generator",
-    description: "Identify and mitigate threats proactively",
-    icon: <Shield size={22} className="text-rose-600" />,
-    iconBg: "from-rose-50 to-pink-50 border-rose-100",
-    link: "#",
+    title: "Risk Register",
+    description: "Capture threats, mitigation plans, and ownership in one place.",
+    icon: <Shield size={18} className="text-rose-600" />,
+    iconBg: "bg-rose-50 border-rose-100",
+    href: "#",
     available: false,
-    badge: "Coming Soon",
-    badgeStyle: { background: "rgba(148,163,184,0.1)", color: "#64748b", border: "1px solid rgba(148,163,184,0.25)" },
+    status: "Coming Soon",
   },
   {
-    title: "Gantt Chart Builder",
-    description: "Visualize your timeline with precision",
-    icon: <Calendar size={22} className="text-emerald-600" />,
-    iconBg: "from-emerald-50 to-teal-50 border-emerald-100",
-    link: "#",
+    title: "Gantt Builder",
+    description: "Translate planning inputs into a timeline your team can scan.",
+    icon: <Calendar size={18} className="text-emerald-600" />,
+    iconBg: "bg-emerald-50 border-emerald-100",
+    href: "#",
     available: false,
-    badge: "Coming Soon",
-    badgeStyle: { background: "rgba(148,163,184,0.1)", color: "#64748b", border: "1px solid rgba(148,163,184,0.25)" },
+    status: "Coming Soon",
   },
 ];
 
-const whyItems = [
+const principles = [
   {
-    icon: <Clock size={18} className="text-amber-600" />,
-    iconBg: "from-amber-50 to-yellow-50 border-amber-100",
-    title: "Save 10+ Hours Weekly",
-    description: "AI generators handle the heavy lifting. Create comprehensive project documents in minutes.",
+    title: "Built for working PMs",
+    description:
+      "Dense enough for real execution work, simple enough to move quickly.",
   },
   {
-    icon: <Target size={18} className="text-primary-600" />,
-    iconBg: "from-red-50 to-orange-50 border-red-100",
-    title: "Eliminate Ambiguity",
-    description: "Define roles, risks, and communication strategies upfront. Reduce scope creep and confusion.",
+    title: "Consistent outputs",
+    description:
+      "Shared structure and defaults keep teams aligned across documents.",
   },
   {
-    icon: <TrendingUp size={18} className="text-emerald-600" />,
-    iconBg: "from-emerald-50 to-teal-50 border-emerald-100",
-    title: "Deliver on Time",
-    description: "Better upfront planning leads to better execution and consistent on-time delivery.",
+    title: "AI where it helps",
+    description:
+      "Automation for drafting and structure — without obscuring judgment.",
   },
 ];
 
-function App() {
-  const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
+function ToolsHomePage() {
+  const availableCount = tools.filter((t) => t.available).length;
+  const plannedCount = tools.length - availableCount;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%)" }}>
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <PageHero
+        eyebrow="Project Tools"
+        icon={<Sparkles className="h-3.5 w-3.5" />}
+        title="AI tools for structured delivery"
+        description="Focused project-management tools with clear inputs, practical outputs, and interfaces built for repeat work."
+        stats={[
+          { label: "Available Now", value: String(availableCount) },
+          { label: "Planned", value: String(plannedCount) },
+          { label: "Focus", value: "PM" },
+        ]}
+        actions={
+          <Link
+            to="/raci-generator"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+          >
+            Open RACI Generator
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        }
+      />
 
-      {/* Mesh glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
-        <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "50vw", height: "50vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(220,38,38,0.06) 0%, transparent 70%)" }} />
-        <div style={{ position: "absolute", bottom: "5%", right: "-5%", width: "45vw", height: "45vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)" }} />
+      {/* Cross-link: Jobs app */}
+      <div
+        className="relative overflow-hidden rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0.02) 100%)",
+          border: "1px solid rgba(99,102,241,0.15)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+            style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}
+          >
+            <Briefcase className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">
+              Also looking for your next role?
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Spearyx Jobs offers AI match scoring, gap analysis, and application tracking for PM roles.
+            </p>
+          </div>
+        </div>
+        <a
+          href="https://jobs.spearyx.com"
+          className="inline-flex flex-shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2.5 text-sm font-semibold text-indigo-700 transition-all hover:bg-indigo-100"
+        >
+          Explore Jobs
+          <ArrowRight className="h-4 w-4" />
+        </a>
       </div>
 
-      {/* ── Hero ── */}
-      <section className="relative py-28 px-4">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-primary-600 bg-white/70 border border-red-100 shadow-sm mb-8 backdrop-blur-sm">
-            <Sparkles size={12} />
-            AI-Powered Project Management
-          </div>
-
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-950 mb-6 tracking-tight leading-none">
-            AI Precision for<br />
-            <span style={{ background: "linear-gradient(135deg, #dc2626 0%, #9333ea 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              Every PM
-            </span>
-          </h1>
-
-          <p className="text-lg text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Project managers are the tip of the spear — we arm you with AI-driven precision tools to deliver strategic clarity. Replace your spreadsheets and hit every delivery target.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
-            <button
-              disabled
-              className="group px-8 py-3.5 rounded-xl font-semibold text-white flex items-center gap-2.5 cursor-not-allowed opacity-60"
-              style={{ background: "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" }}
-            >
-              Waitlist Coming Soon
-              <ArrowRight size={16} />
-            </button>
-            <button
-              onClick={() => setShowLearnMoreModal(true)}
-              className="px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 text-slate-900"
-              style={{ background: "rgba(255,255,255,0.75)", backdropFilter: "blur(12px)", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 4px 16px rgba(15,23,42,0.06)" }}
-            >
-              Learn More
-            </button>
-          </div>
-
-          <p className="text-sm text-slate-500 font-medium">
-            Join 500+ project managers on our waitlist · Launching Q1 2026
-          </p>
-        </div>
-      </section>
-
-      {/* ── Why Spearyx ── */}
-      <section className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="overline text-primary-600 mb-3">Why PMs Choose Spearyx</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">AI-Enhanced Tools for Strategic Excellence</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {whyItems.map(({ icon, iconBg, title, description }) => (
-              <div
-                key={title}
-                className="rounded-2xl p-7 transition-all duration-200 hover:-translate-y-1"
-                style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(16px)", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 4px 16px rgba(15,23,42,0.06)" }}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${iconBg} border mb-4`}>
-                  {icon}
-                </div>
-                <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Tools Grid ── */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="overline text-primary-600 mb-3">AI-Powered Tools</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-3">Your AI-Augmented PM Arsenal</h2>
-            <p className="text-slate-600 max-w-xl mx-auto text-sm">Six intelligent generators designed to cover every critical phase of project planning and execution.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tools.map(({ title, description, icon, iconBg, link, available, badge, badgeStyle }) => (
-              <a
-                key={title}
-                href={link}
-                className={`group rounded-2xl p-6 transition-all duration-200 block ${available ? "hover:-translate-y-1 cursor-pointer" : "cursor-default"}`}
-                style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(16px)", border: available ? "1px solid rgba(220,38,38,0.12)" : "1px solid rgba(226,232,240,0.7)", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}
-                onClick={(e) => { if (!available) e.preventDefault(); }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${iconBg} border`}>
-                    {icon}
-                  </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={badgeStyle}>{badge}</span>
-                </div>
-                <h3 className={`font-bold text-slate-900 mb-1.5 transition-colors ${available ? "group-hover:text-primary-600" : ""}`}>{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
-                {available && (
-                  <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-primary-600">
-                    Open tool <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                )}
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── How It Works ── */}
-      <section className="py-20 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">How Spearyx Works</h2>
-          </div>
-
-          <div className="space-y-6">
-            {[
-              { n: "1", title: "Answer Key Questions", body: "Tell us about your project scope, team, timeline, and goals. Our AI analyzes your requirements intelligently." },
-              { n: "2", title: "AI Generates Instantly", body: "Professionally formatted documents, charts, and plans using best practices — ready to share immediately." },
-              { n: "3", title: "Execute with Clarity", body: "Crystal-clear documentation keeps your team aligned. Reduce ambiguity, prevent delays, deliver on time." },
-            ].map(({ n, title, body }) => (
-              <div
-                key={n}
-                className="flex gap-5 rounded-2xl p-6"
-                style={{ background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", border: "1px solid rgba(226,232,240,0.7)", boxShadow: "0 2px 8px rgba(15,23,42,0.04)" }}
-              >
-                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}>
-                  {n}
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Final CTA ── */}
-      <section className="py-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <div
-            className="rounded-3xl p-12 relative overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(16px)", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 8px 32px rgba(15,23,42,0.08)" }}
-          >
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at top, rgba(220,38,38,0.05) 0%, transparent 70%)" }} />
-            <div className="relative">
-              <CheckCircle2 size={40} className="text-primary-600 mx-auto mb-4" />
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 tracking-tight">
-                Ready for AI-Powered PM?
-              </h2>
-              <p className="text-slate-600 mb-8 text-sm leading-relaxed">
-                Join hundreds of project managers waiting for Spearyx. Be among the first to experience AI-augmented clarity, precision, and control.
-              </p>
-              <button
-                disabled
-                className="px-8 py-3.5 rounded-xl font-semibold text-white cursor-not-allowed opacity-60 inline-flex items-center gap-2"
-                style={{ background: "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" }}
-              >
-                Waitlist Coming Soon
-                <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
-      <footer className="mt-auto border-t py-8 px-4" style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)", borderColor: "rgba(226,232,240,0.7)" }}>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/images/spearyx-logo.svg" alt="Spearyx" className="h-6 w-auto opacity-80" />
-            <Body size="sm" className="text-slate-500">© 2025 Spearyx. All rights reserved.</Body>
-          </div>
-        </div>
-      </footer>
-
-      {/* ── Learn More Modal ── */}
-      {showLearnMoreModal && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
+      <section className="grid gap-6 xl:grid-cols-[1.5fr_0.75fr]">
+        {/* Tool Library */}
+        <PageSection
+          title="Tool Library"
+          description="A growing set of focused planning tools built with consistent interaction patterns."
         >
-          <div
-            className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl p-8"
-            style={{ background: "rgba(255,255,255,0.95)", backdropFilter: "blur(24px)", border: "1px solid rgba(226,232,240,0.9)", boxShadow: "0 24px 64px rgba(15,23,42,0.18)" }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Why Spearyx?</h2>
-              <button onClick={() => setShowLearnMoreModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <X size={18} />
-              </button>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {tools.map((tool) =>
+              tool.available ? (
+                <Link
+                  key={tool.title}
+                  to={tool.href}
+                  className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-primary-200/50 hover:shadow-md"
+                >
+                  <ToolCardContent tool={tool} />
+                </Link>
+              ) : (
+                <div
+                  key={tool.title}
+                  className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/50 p-5 opacity-70"
+                >
+                  <ToolCardContent tool={tool} />
+                </div>
+              )
+            )}
+          </div>
+        </PageSection>
 
-            <div className="space-y-6">
-              {[
-                { title: "The Problem", body: "Project managers spend hours creating the same documents every project: RACI charts, charters, risk registers, communication plans. Critical, yet tedious — and often incomplete." },
-                { title: "The Solution", body: "Spearyx uses AI to generate professional, comprehensive project documents in minutes. Our tools guide you through the right questions and produce publication-ready outputs." },
-              ].map(({ title, body }) => (
-                <div key={title}>
-                  <Headline as="h3" className="text-slate-900 mb-2 text-base font-bold">{title}</Headline>
-                  <Body size="base" className="text-slate-600">{body}</Body>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Design principles */}
+          <PageSection
+            title="Design Principles"
+            description="Shared patterns across Tools and Jobs."
+          >
+            <div className="space-y-3">
+              {principles.map((principle, i) => (
+                <div
+                  key={principle.title}
+                  className="rounded-xl border border-slate-100 bg-slate-50 p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
+                      {i + 1}
+                    </span>
+                    <h3 className="text-sm font-semibold text-slate-900">{principle.title}</h3>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{principle.description}</p>
                 </div>
               ))}
-
-              <div>
-                <Headline as="h3" className="text-slate-900 mb-3 text-base font-bold">What You Get</Headline>
-                <ul className="space-y-2">
-                  {["Crystal-clear project documentation", "10+ hours saved per project", "Reduced scope creep and ambiguity", "Better stakeholder communication", "On-time project delivery"].map((i) => (
-                    <li key={i} className="flex items-center gap-2.5 text-sm text-slate-600">
-                      <CheckCircle2 size={15} className="text-emerald-500 flex-shrink-0" />
-                      {i}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-xl p-4" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.15)" }}>
-                <p className="text-sm text-slate-700">
-                  <span className="font-semibold text-primary-600">Perfect for:</span>{" "}
-                  Program managers, project leads, scrum masters, PMO teams, and anyone responsible for defining project scope and managing stakeholder expectations.
-                </p>
-              </div>
             </div>
+          </PageSection>
 
-            <button
-              onClick={() => setShowLearnMoreModal(false)}
-              className="w-full mt-8 px-4 py-2.5 rounded-xl font-semibold text-slate-700 transition-colors text-sm"
-              style={{ background: "rgba(241,245,249,0.9)", border: "1px solid rgba(226,232,240,0.8)" }}
+          {/* Start here CTA */}
+          <PageSection title="Start here">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: "rgba(220,38,38,0.04)",
+                border: "1px solid rgba(220,38,38,0.12)",
+              }}
             >
-              Got it, thanks!
-            </button>
-          </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary-600" />
+                <h3 className="text-sm font-semibold text-slate-900">RACI Generator</h3>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-600">
+                Build responsibility matrices, clean up role ambiguity, and export a shareable chart — no reformatting by hand.
+              </p>
+              <Link
+                to="/raci-generator"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+              >
+                Open Tool
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </PageSection>
         </div>
-      )}
+      </section>
     </div>
+  );
+}
+
+function ToolCardContent({ tool }: { tool: (typeof tools)[number] }) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${tool.iconBg}`}>
+          {tool.icon}
+        </div>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+            tool.available
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+              : "bg-slate-100 text-slate-500"
+          }`}
+        >
+          {tool.status}
+        </span>
+      </div>
+
+      <h3 className="mt-4 text-sm font-semibold text-slate-900">{tool.title}</h3>
+      <p className="mt-1.5 text-xs leading-5 text-slate-500">{tool.description}</p>
+
+      <div className="mt-4 text-xs font-semibold text-primary-600">
+        {tool.available ? "Open tool →" : "Planned"}
+      </div>
+    </>
   );
 }

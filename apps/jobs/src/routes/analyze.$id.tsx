@@ -6,9 +6,9 @@ import { DocumentActions } from "@/components/features/document-actions";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/analyze/$id")({
-  beforeLoad: ({ context, params }) => {
+  beforeLoad: ({ context, location }) => {
     const ctx = context as { user?: { id: number } | null };
-    if (!ctx.user) requireLoginRedirect(`/analyze/${params.id}`, "saved analysis");
+    if (!ctx.user) requireLoginRedirect(location, "saved analysis");
   },
   loader: async ({ params }) => getAnalysis({ data: { id: Number(params.id) } }),
   component: AnalysisDetailPage,
@@ -19,9 +19,10 @@ function AnalysisDetailPage() {
   const analysis = Route.useLoaderData();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
       <Link
         to="/history"
+        search={{ page: 1 }}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -35,7 +36,7 @@ function AnalysisDetailPage() {
 
 function AnalysisDetailLoading() {
   return (
-    <div className="mx-auto max-w-3xl space-y-4 px-4 py-8 animate-pulse">
+    <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 animate-pulse">
       <div className="h-5 w-32 rounded bg-muted" />
       <div className="h-40 w-full rounded-xl bg-muted" />
       <div className="h-64 w-full rounded-xl bg-muted" />

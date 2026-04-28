@@ -1,16 +1,31 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { AppHeader } from "@spearyx/ui-kit";
+import type { SessionUser } from "@/lib/cloudflare";
+import { logoutUser } from "@/server/functions/auth";
 
-export default function Header() {
+interface HeaderProps {
+  user?: SessionUser | null;
+}
+
+export default function Header({ user }: HeaderProps) {
   const isDev = import.meta.env.DEV;
   const location = useLocation();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await logoutUser();
+    await router.invalidate();
+    window.location.href = "/";
+  }
 
   return (
-    <AppHeader 
-      app="tools" 
-      isDev={isDev} 
+    <AppHeader
+      app="tools"
+      isDev={isDev}
       currentPath={location.pathname}
       Link={Link}
+      user={user}
+      onLogout={handleLogout}
     />
   );
 }

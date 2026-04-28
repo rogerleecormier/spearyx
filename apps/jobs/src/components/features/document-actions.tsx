@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Textarea } from "@spearyx/ui-kit";
-import { FileText, Mail, Loader2, Download, RefreshCw } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Button, Textarea } from "@spearyx/ui-kit";
+import { FileText, Mail, Loader2, Download, RefreshCw, Wand2 } from "lucide-react";
+import { useState } from "react";
 import { generateResume } from "@/server/functions/generate-resume";
 import { generateCoverLetter } from "@/server/functions/generate-cover-letter";
 import { getDocumentDownload, getDocumentsForAnalysis } from "@/server/functions/get-history";
@@ -11,7 +12,7 @@ interface DocumentActionsProps {
   applied?: boolean;
 }
 
-type DocResult = { documentId: number; fileName: string; r2Key: string };
+type DocResult = { documentId: number; fileName: string | null; r2Key: string };
 
 async function triggerDownload(r2Key: string, fileName: string) {
   const result = await getDocumentDownload({ data: { r2Key } });
@@ -25,122 +26,130 @@ async function triggerDownload(r2Key: string, fileName: string) {
 }
 
 export function DocumentActions({ analysisId, applied = false }: DocumentActionsProps) {
-  const [resumeLoading, setResumeLoading] = useState(false);
-  const [coverLoading, setCoverLoading] = useState(false);
-  const [resumeDownloading, setResumeDownloading] = useState(false);
-  const [coverDownloading, setCoverDownloading] = useState(false);
-  const [resumeResult, setResumeResult] = useState<DocResult | null>(null);
-  const [coverResult, setCoverResult] = useState<DocResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [extraGuidance, setExtraGuidance] = useState("");
 
-  useEffect(() => {
-    getDocumentsForAnalysis({ data: { analysisId } })
-      .then((docs) => {
-        if (docs.resume) setResumeResult(docs.resume);
-        if (docs.coverLetter) setCoverResult(docs.coverLetter);
-      })
-      .catch(() => {});
-  }, [analysisId]);
+  // ── Fetch existing documents ──────────────────────────────────────
+  const { data: docs } = useQuery({
+    queryKey: ["documents", analysisId],
+    queryFn: () => getDocumentsForAnalysis({ data: { analysisId } }),
+    staleTime: Infinity, // documents don't change behind the scenes
+  });
 
-  const busy = resumeLoading || coverLoading;
+  const resumeResult: DocResult | null = docs?.resume ?? null;
+  const coverResult: DocResult | null = docs?.coverLetter ?? null;
 
-  async function handleGenerateResume() {
-    setResumeLoading(true);
-    setError(null);
-    try {
-      setResumeResult(await generateResume({ data: { analysisId, extraGuidance: extraGuidance.trim() || undefined } }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Resume generation failed");
-    } finally {
-      setResumeLoading(false);
-    }
-  }
+  // ── Generate resume ───────────────────────────────────────────────
+  const resumeMutation = useMutation({
+    mutationFn: () =>
+      generateResume({ data: { analysisId, extraGuidance: extraGuidance.trim() || undefined } }),
+  });
 
-  async function handleGenerateCover() {
-    setCoverLoading(true);
-    setError(null);
-    try {
-      setCoverResult(await generateCoverLetter({ data: { analysisId, extraGuidance: extraGuidance.trim() || undefined } }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Cover letter generation failed");
-    } finally {
-      setCoverLoading(false);
-    }
-  }
+  // ── Generate cover letter ─────────────────────────────────────────
+  const coverMutation = useMutation({
+    mutationFn: () =>
+      generateCoverLetter({ data: { analysisId, extraGuidance: extraGuidance.trim() || undefined } }),
+  });
 
-  async function handleDownload(r2Key: string, fileName: string, setDownloading: (v: boolean) => void) {
-    setDownloading(true);
-    setError(null);
-    try {
-      await triggerDownload(r2Key, fileName);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Download failed");
-    } finally {
-      setDownloading(false);
-    }
-  }
+  // ── Download (fire-and-forget, no cache needed) ───────────────────
+  const resumeDownloadMutation = useMutation({
+    mutationFn: (doc: DocResult) => triggerDownload(doc.r2Key, doc.fileName ?? "resume.pdf"),
+  });
+
+  const coverDownloadMutation = useMutation({
+    mutationFn: (doc: DocResult) => triggerDownload(doc.r2Key, doc.fileName ?? "cover-letter.pdf"),
+  });
+
+  const busy = resumeMutation.isPending || coverMutation.isPending;
+
+  // Merge server state with optimistic mutation results
+  const resolvedResume = resumeMutation.data ?? resumeResult;
+  const resolvedCover = coverMutation.data ?? coverResult;
+
+  const error =
+    resumeMutation.error?.message ??
+    coverMutation.error?.message ??
+    resumeDownloadMutation.error?.message ??
+    coverDownloadMutation.error?.message ??
+    null;
 
   return (
     <div className="space-y-4">
+      {/* Section header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Generate Documents</h3>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 border border-violet-100">
+            <Wand2 className="h-3.5 w-3.5 text-violet-600" />
+          </div>
+          <span className="text-sm font-semibold text-slate-800">Generate Documents</span>
+        </div>
         <AppliedToggle analysisId={analysisId} initialApplied={applied} />
       </div>
 
-      {/* Guidance textarea */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Extra Tailoring Guidance</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Tailoring guidance card */}
+      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 bg-slate-50/60">
+          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Extra Tailoring Guidance</span>
+          <span className="text-[10px] text-slate-400 font-medium">(optional)</span>
+        </div>
+        <div className="px-4 py-3">
           <Textarea
             value={extraGuidance}
-            onChange={(e) => setExtraGuidance(e.target.value)}
-            placeholder="Optional: e.g. emphasize healthcare domain experience and vendor management leadership."
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setExtraGuidance(e.target.value)}
+            placeholder="e.g. emphasize healthcare domain experience and vendor management leadership."
             disabled={busy}
             rows={3}
-            className="resize-y text-sm"
+            className="resize-y text-sm border-slate-200 focus:border-primary-300 focus:ring-primary-100"
           />
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-slate-400 mt-2">
             Applied to both resume and cover letter generation.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Document panels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <DocPanel
-          icon={<FileText className="h-4 w-4 text-primary" />}
+          icon={<FileText className="h-4 w-4 text-emerald-600" />}
+          iconBg="bg-emerald-50 border-emerald-100"
           label="ATS Resume"
-          result={resumeResult}
-          generating={resumeLoading}
-          downloading={resumeDownloading}
+          result={resolvedResume}
+          generating={resumeMutation.isPending}
+          downloading={resumeDownloadMutation.isPending}
           busy={busy}
-          onGenerate={handleGenerateResume}
-          onDownload={() => resumeResult && handleDownload(resumeResult.r2Key, resumeResult.fileName, setResumeDownloading)}
+          onGenerate={() => resumeMutation.mutate()}
+          onDownload={() => resolvedResume && resumeDownloadMutation.mutate(resolvedResume)}
           generateLabel="Create Resume"
+          accentClass="text-emerald-700"
+          buttonVariant="default"
         />
         <DocPanel
-          icon={<Mail className="h-4 w-4 text-primary" />}
+          icon={<Mail className="h-4 w-4 text-sky-600" />}
+          iconBg="bg-sky-50 border-sky-100"
           label="Cover Letter"
-          result={coverResult}
-          generating={coverLoading}
-          downloading={coverDownloading}
+          result={resolvedCover}
+          generating={coverMutation.isPending}
+          downloading={coverDownloadMutation.isPending}
           busy={busy}
-          onGenerate={handleGenerateCover}
-          onDownload={() => coverResult && handleDownload(coverResult.r2Key, coverResult.fileName, setCoverDownloading)}
+          onGenerate={() => coverMutation.mutate()}
+          onDownload={() => resolvedCover && coverDownloadMutation.mutate(resolvedCover)}
           generateLabel="Create Cover Letter"
+          accentClass="text-sky-700"
+          buttonVariant="secondary"
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
     </div>
   );
 }
 
 interface DocPanelProps {
   icon: React.ReactNode;
+  iconBg: string;
   label: string;
   result: DocResult | null;
   generating: boolean;
@@ -149,38 +158,79 @@ interface DocPanelProps {
   onGenerate: () => void;
   onDownload: () => void;
   generateLabel: string;
+  accentClass: string;
+  buttonVariant: "default" | "secondary";
 }
 
-function DocPanel({ icon, label, result, generating, downloading, busy, onGenerate, onDownload, generateLabel }: DocPanelProps) {
+function DocPanel({
+  icon,
+  iconBg,
+  label,
+  result,
+  generating,
+  downloading,
+  busy,
+  onGenerate,
+  onDownload,
+  generateLabel,
+  accentClass,
+  buttonVariant,
+}: DocPanelProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-sm font-medium">{label}</span>
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+      {/* Panel header */}
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 bg-slate-50/60">
+        <div className={`flex h-7 w-7 items-center justify-center rounded-lg border ${iconBg}`}>
+          {icon}
+        </div>
+        <span className={`text-sm font-semibold ${accentClass}`}>{label}</span>
+        {result && (
+          <span className="ml-auto text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+            Ready
+          </span>
+        )}
       </div>
-      {result ? (
-        <div className="flex gap-2">
-          <Button onClick={onDownload} disabled={downloading} size="sm" className="flex-1">
-            {downloading ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <Download className="h-3.5 w-3.5" />}
-            Download
-          </Button>
+
+      {/* Panel body */}
+      <div className="px-4 py-3">
+        {result ? (
+          <div className="flex gap-2">
+            <Button onClick={onDownload} disabled={downloading} size="sm" className="flex-1">
+              {downloading ? (
+                <Loader2 className="animate-spin h-3.5 w-3.5" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Download
+            </Button>
+            <Button
+              onClick={onGenerate}
+              disabled={busy}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-slate-400 hover:text-slate-700"
+              title="Regenerate"
+            >
+              {generating ? (
+                <Loader2 className="animate-spin h-3.5 w-3.5" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          </div>
+        ) : (
           <Button
             onClick={onGenerate}
             disabled={busy}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            title="Regenerate"
+            size="sm"
+            className="w-full"
+            variant={buttonVariant}
           >
-            {generating ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {generating ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : icon}
+            {generating ? "Creating…" : generateLabel}
           </Button>
-        </div>
-      ) : (
-        <Button onClick={onGenerate} disabled={busy} size="sm" className="w-full" variant={label === "Cover Letter" ? "secondary" : "default"}>
-          {generating ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : icon}
-          {generating ? "Creating…" : generateLabel}
-        </Button>
-      )}
+        )}
+      </div>
     </div>
   );
 }

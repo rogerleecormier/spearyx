@@ -49,13 +49,7 @@ export default function SyncModal({ isOpen, onClose, activeSyncId, onSyncStart, 
   const terminalBodyRef = useRef<HTMLDivElement>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
   
-  // Get query client only on client side (not during SSR)
-  let queryClient: ReturnType<typeof useQueryClient> | null = null
-  try {
-    queryClient = useQueryClient()
-  } catch {
-    // QueryClient not available during SSR, that's fine
-  }
+  const queryClient = useQueryClient()
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -208,9 +202,7 @@ export default function SyncModal({ isOpen, onClose, activeSyncId, onSyncStart, 
         setIsComplete(true)
         
         // Invalidate all job-related queries to trigger UI refresh
-        if (queryClient) {
-          queryClient.invalidateQueries()
-        }
+        queryClient.invalidateQueries()
         
         onSyncComplete()
         eventSource.close()

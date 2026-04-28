@@ -221,6 +221,9 @@ export async function generateCoverLetterPdf(content: {
   drawText(content.opening);
 
   if (content.bullets && content.bullets.length > 0) {
+    y -= 4;
+    drawText("Some of my notable achievements include:");
+    y -= 4;
     const bulletPrefix = "•  ";
     const hangingIndent = fontRegular.widthOfTextAtSize(bulletPrefix, 11);
     for (const bullet of content.bullets) {

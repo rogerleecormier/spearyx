@@ -15,7 +15,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Loader2, AlertCircle, CheckCircle, Info } from "lucide-react";
-import { aiService, AIError } from "@/lib/ai";
+import { aiService, AIError, AI_FALLBACKS } from "@/lib/ai";
 import { getTemplates, getTemplateById } from "@/lib/templates";
 import { Body, Caption, Title, Label } from "@spearyx/ui-kit";
 import { Button } from "@spearyx/ui-kit";
@@ -178,6 +178,51 @@ function generateMatrixFromTemplate(
 }
 
 /**
+ * Enforce exactly one Accountable (A) per task across all roles.
+ * - If a task has multiple A's, keep only the first and downgrade extras to C.
+ * - If a task has no A, ask AI which role should be accountable; fall back to
+ *   the first role that has any assignment for that task, or role[0].
+ */
+async function enforceOneAccountablePerTask(
+  matrix: RaciChart["matrix"],
+  roleIds: string[],
+  roleNames: string[],
+  taskObjects: RaciTask[],
+  taskIds: string[],
+  projectType: string
+): Promise<RaciChart["matrix"]> {
+  const result: RaciChart["matrix"] = {};
+  for (const roleId of roleIds) {
+    result[roleId] = { ...(matrix[roleId] || {}) };
+  }
+
+  for (let ti = 0; ti < taskIds.length; ti++) {
+    const taskId = taskIds[ti];
+    const accountableRoles = roleIds.filter((r) => result[r]?.[taskId] === "A");
+
+    if (accountableRoles.length > 1) {
+      // Keep first A, downgrade the rest to C
+      for (let i = 1; i < accountableRoles.length; i++) {
+        result[accountableRoles[i]][taskId] = "C";
+      }
+    } else if (accountableRoles.length === 0) {
+      // Ask AI which role should own this task
+      const taskName = taskObjects[ti]?.name || taskId;
+      const aiPick = await aiService.resolveAccountable(taskName, projectType, roleNames);
+      const aiRoleIndex = aiPick ? roleNames.indexOf(aiPick) : -1;
+      const target = aiRoleIndex >= 0 ? roleIds[aiRoleIndex]
+        : roleIds.find((r) => result[r]?.[taskId]) || roleIds[0];
+      if (target) {
+        if (!result[target]) result[target] = {};
+        result[target][taskId] = "A";
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Description Panel with AI integration
  */
 export default function DescriptionPanel({
@@ -225,23 +270,32 @@ export default function DescriptionPanel({
     requestIdRef.current = requestId;
 
     try {
-      // Step 1: Classify project type
-      const typeResult = await aiService.classifyProjectType(
-        description,
-        requestId
-      );
+      // Step 1: Classify project type and generate title in parallel
+      const [typeResult, generatedTitle] = await Promise.all([
+        aiService.classifyProjectType(description, requestId),
+        aiService.generateTitle(description, requestId),
+      ]);
       const projectType = typeResult.type || "Mobile App";
+      if (generatedTitle) {
+        onTitleChange(generatedTitle);
+      }
 
       // Step 2: Extract roles
       const rolesResult = await aiService.extractRoles(description, requestId);
       console.log("Roles result:", rolesResult);
       let roleNames: string[] = [];
       if (Array.isArray(rolesResult.roles)) {
-        roleNames = rolesResult.roles as string[];
+        roleNames = (rolesResult.roles as any[])
+          .map((r) => (typeof r === "string" ? r : r?.name || r?.role || ""))
+          .map((r) => String(r).trim())
+          .filter(Boolean)
+          .filter((r, i, arr) => arr.indexOf(r) === i); // dedupe
       } else if (typeof rolesResult.roles === "string") {
         roleNames = (rolesResult.roles as string)
           .split(",")
-          .map((r: string) => r.trim());
+          .map((r: string) => r.trim())
+          .filter(Boolean)
+          .filter((r, i, arr) => arr.indexOf(r) === i); // dedupe
       }
       console.log("Extracted role names:", roleNames);
 
@@ -263,9 +317,8 @@ export default function DescriptionPanel({
         roleNames,
         requestId
       );
-      const tasks = Array.isArray(tasksResult.tasks)
-        ? tasksResult.tasks
-        : [{ name: "Task", description: "" }];
+      const rawTasks = Array.isArray(tasksResult.tasks) ? tasksResult.tasks : [];
+      const tasks = rawTasks.length > 0 ? rawTasks : AI_FALLBACKS.getTasks(projectType);
 
       // Create role objects with IDs
       const roleObjects: RaciRole[] = roleNames.map(
@@ -277,15 +330,22 @@ export default function DescriptionPanel({
       );
       console.log("Calling onGenerateRoles with:", roleObjects);
 
-      // Create task objects with IDs
-      const taskObjects: RaciTask[] = tasks.map(
-        (task: { name: string; description?: string }, idx: number) => ({
-          id: `task-${Date.now()}-${idx}`,
-          name: task.name,
-          description: task.description || "",
-          order: idx,
+      // Create task objects with IDs — normalize field names the model might use
+      console.log("Raw tasks from AI:", JSON.stringify(tasks));
+      const taskObjects: RaciTask[] = tasks
+        .map((task: any, idx: number) => {
+          const name = typeof task === "string"
+            ? task
+            : task.name || task.title || task.task || task.phase || task.milestone || "";
+          if (!name) return null;
+          return {
+            id: `task-${Date.now()}-${idx}`,
+            name: String(name).trim(),
+            description: typeof task === "string" ? "" : String(task.description || task.desc || "").trim(),
+            order: idx,
+          };
         })
-      );
+        .filter(Boolean) as RaciTask[];
       console.log("Calling onGenerateTasks with:", taskObjects);
 
       // Check if fallback was used
@@ -295,64 +355,37 @@ export default function DescriptionPanel({
         onFallbackStatusChange(fallbackUsed);
       }
 
-      // Generate matrix if in fallback mode
+      // Always generate a matrix — try template first, then functional team model
+      const roleIds = roleObjects.map((r) => r.id);
+      const taskIds = taskObjects.map((t) => t.id);
       let generatedMatrix: RaciChart["matrix"] | undefined;
-      if (fallbackUsed) {
-        const roleIds = roleObjects.map((r) => r.id);
-        const taskIds = taskObjects.map((t) => t.id);
 
-        // Try to use template-based matrix first
-        const templateId = mapProjectTypeToTemplateId(projectType);
-        let templateMatrix: RaciChart["matrix"] | null = null;
-
-        console.log("Fallback mode - trying to load template", {
-          projectType,
-          templateId,
-          extractedRoleNames: roleNames,
-          extractedRoleIds: roleIds,
-          extractedTaskNames: taskObjects.map((t) => t.name),
-          extractedTaskIds: taskIds,
-        });
-
-        if (templateId) {
-          const template = getTemplateById(templateId);
-          console.log("Template loaded:", {
-            templateId,
-            found: !!template,
-            templateRoles: template?.roles.map((r: any) => ({
-              id: r.id,
-              name: r.name,
-            })),
-            templateTasks: template?.tasks.map((t: any) => ({
-              id: t.id,
-              name: t.name,
-            })),
-            templateMatrix: template?.matrix,
-          });
-
-          if (template) {
-            templateMatrix = generateMatrixFromTemplate(
-              template,
-              roleNames,
-              roleIds,
-              taskIds
-            );
-            console.log("Template matrix generated:", {
-              generated: !!templateMatrix,
-              matrix: templateMatrix,
-            });
-          }
+      const templateId = mapProjectTypeToTemplateId(projectType);
+      if (templateId) {
+        const template = getTemplateById(templateId);
+        if (template) {
+          generatedMatrix = generateMatrixFromTemplate(
+            template,
+            roleNames,
+            roleIds,
+            taskIds
+          ) ?? undefined;
         }
-
-        // Fall back to functionalTeamModel if template not found or failed
-        generatedMatrix =
-          templateMatrix || QUICK_PRESETS.functionalTeamModel(roleIds, taskIds);
-        console.log("Final generated matrix for fallback:", {
-          fromTemplate: !!templateMatrix,
-          templateId,
-          matrix: generatedMatrix,
-        });
       }
+
+      if (!generatedMatrix) {
+        generatedMatrix = QUICK_PRESETS.functionalTeamModel(roleIds, taskIds);
+      }
+
+      // Enforce exactly one A per task row — AI picks the accountable for any gaps
+      generatedMatrix = await enforceOneAccountablePerTask(
+        generatedMatrix,
+        roleIds,
+        roleNames,
+        taskObjects,
+        taskIds,
+        projectType
+      );
 
       // Call combined callback if available, otherwise call individual ones
       if (onGenerateComplete) {

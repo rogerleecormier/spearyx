@@ -91,10 +91,7 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
         .replace("{extraGuidance}", extraGuidance || "None provided");
 
       const rawResponse = await callClaude(env, [
-        {
-          role: "system",
-          content: "You are an expert cover letter writer. You produce professional, compelling cover letters as valid JSON only. You connect the candidate's REAL achievements from their resume to the target job's requirements. Never fabricate or generalize — use specific details from the candidate's actual experience.",
-        },
+        { role: "system", content: "You are a JSON-only API. Output valid JSON and nothing else. No markdown, no prose, no code fences." },
         { role: "user", content: prompt },
       ], { maxTokens: COVER_LETTER_OUTPUT_TOKEN_BUDGET });
 
@@ -103,9 +100,7 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
       const letterContent: CoverLetterContent = JSON.parse(jsonMatch[0]);
 
       letterContent.candidateName = resume.fullName;
-      if (!letterContent.signoff || letterContent.signoff.length < 2) {
-        letterContent.signoff = resume.fullName;
-      }
+      letterContent.signoff = resume.fullName;
 
       const contactParts = [resume.email, resume.phone, resume.linkedin, resume.website].filter(Boolean);
       const contactInfo = contactParts.join(" | ");

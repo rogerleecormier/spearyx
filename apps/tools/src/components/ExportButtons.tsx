@@ -274,17 +274,10 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({
                       </span>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="max-w-xs bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg"
-                  >
+                  <TooltipContent side="top" className="max-w-xs">
                     <div className="space-y-1">
-                      <p className="font-semibold text-sm text-slate-900">
-                        {fmt.label}
-                      </p>
-                      <p className="text-xs text-slate-600">
-                        {fmt.description}
-                      </p>
+                      <p className="font-semibold text-sm">{fmt.label}</p>
+                      <p className="text-xs text-slate-500">{fmt.description}</p>
                     </div>
                   </TooltipContent>
                 </Tooltip>

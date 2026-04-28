@@ -100,67 +100,62 @@ export function MatrixHintsAndStatus({
             <HelpCircle className="w-4 h-4 text-slate-500 hover:text-slate-700" />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
+        <TooltipContent
+          side="top"
+          align="end"
+          sideOffset={8}
+          className="w-64 p-4"
+        >
           <div className="space-y-3">
-            {/* Quick Tips Section */}
             <div>
-              <p className="font-semibold mb-2 text-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-red-500 mb-2">
                 Tips & Navigation
               </p>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• Click cells to cycle RACI values</li>
-                <li>• Use presets to auto-fill patterns</li>
-                <li>• Drag to reorder roles & tasks</li>
-                <li>• Column/row headers stay visible</li>
-                <li>• Use scroll bars to navigate</li>
+              <ul className="space-y-1">
+                <li className="text-xs text-slate-600">• Click cells to cycle RACI values</li>
+                <li className="text-xs text-slate-600">• Use presets to auto-fill patterns</li>
+                <li className="text-xs text-slate-600">• Drag to reorder roles & tasks</li>
+                <li className="text-xs text-slate-600">• Column/row headers stay visible</li>
+                <li className="text-xs text-slate-600">• Use scroll bars to navigate</li>
               </ul>
             </div>
 
-            <div className="border-t border-border" />
+            <div className="border-t border-slate-100" />
 
-            {/* Keyboard Shortcuts */}
             <div>
-              <p className="font-semibold mb-2 text-foreground">Shortcuts</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-red-500 mb-2">
+                Shortcuts
+              </p>
               <div className="grid grid-cols-2 gap-1.5">
-                <div className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] font-mono flex-shrink-0">
-                    Space
-                  </kbd>
-                  <span className="text-sm text-muted-foreground">Cycle</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] font-mono flex-shrink-0">
-                    Tab
-                  </kbd>
-                  <span className="text-sm text-muted-foreground">Next</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] font-mono flex-shrink-0">
-                    Esc
-                  </kbd>
-                  <span className="text-sm text-muted-foreground">Cancel</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] font-mono flex-shrink-0">
-                    ↑↓
-                  </kbd>
-                  <span className="text-sm text-muted-foreground">Move</span>
-                </div>
+                {[
+                  { key: "Space", label: "Cycle" },
+                  { key: "Tab", label: "Next" },
+                  { key: "Esc", label: "Cancel" },
+                  { key: "↑↓", label: "Move" },
+                ].map(({ key, label }) => (
+                  <div key={key} className="flex items-center gap-1.5">
+                    <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono text-slate-700 flex-shrink-0">
+                      {key}
+                    </kbd>
+                    <span className="text-xs text-slate-500">{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Error Details (only if invalid) */}
             {!validation.isValid && validation.errors.length > 0 && (
               <>
-                <div className="border-t border-border" />
+                <div className="border-t border-slate-100" />
                 <div>
-                  <p className="font-semibold mb-2 text-destructive">Issues</p>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-red-500 mb-2">
+                    Issues
+                  </p>
+                  <ul className="space-y-1">
                     {errorDetails.map((error, i) => (
-                      <li key={i}>• {error}</li>
+                      <li key={i} className="text-xs text-slate-600">• {error}</li>
                     ))}
                     {hasMoreErrors && (
-                      <li className="text-muted-foreground">
+                      <li className="text-xs text-slate-400">
                         • +{validation.errors.length - 3} more
                       </li>
                     )}

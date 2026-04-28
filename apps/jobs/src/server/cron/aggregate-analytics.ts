@@ -7,6 +7,60 @@ interface KeywordCount { keyword: string; count: number }
 interface TitleCount { title: string; count: number }
 interface IndustryCount { industry: string; count: number }
 
+function canonicalizeJobTitle(rawTitle: string): string {
+  let title = rawTitle.toLowerCase().trim();
+  title = title.replace(/\([^)]*\)/g, " ");
+  title = title.replace(/\[[^\]]*\]/g, " ");
+  title = title.split(/\s+\|\s+|\s+@\s+|\s+at\s+/)[0] ?? title;
+  title = title.split(/\s+-\s+/)[0] ?? title;
+  title = title.replace(/[^a-z0-9\s/&-]/g, " ");
+  title = title.replace(/\s+/g, " ").trim();
+
+  const seniorityPrefix = (() => {
+    if (/^(chief|cxo|vp|vice president|svp|evp)\b/.test(title)) return "executive";
+    if (/^(principal|head|director)\b/.test(title)) return "principal";
+    if (/^(senior|sr)\b/.test(title)) return "senior";
+    if (/^(lead|staff)\b/.test(title)) return "lead";
+    if (/^(associate|assoc|asc)\b/.test(title)) return "associate";
+    if (/^(junior|jr)\b/.test(title)) return "junior";
+    return "";
+  })();
+
+  const withoutPrefix = title
+    .replace(/^(chief|cxo|vp|vice president|svp|evp|principal|head|director|senior|sr|lead|staff|associate|assoc|asc|junior|jr)\b\s*/g, "")
+    .replace(/\b(ii|iii|iv|i)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const normalizedBase = (() => {
+    if (/technical project manager/.test(withoutPrefix)) return "technical project manager";
+    if (/technical program manager/.test(withoutPrefix)) return "technical program manager";
+    if (/project manager/.test(withoutPrefix)) return "project manager";
+    if (/program manager/.test(withoutPrefix)) return "program manager";
+    if (/product manager/.test(withoutPrefix)) return "product manager";
+    return withoutPrefix;
+  })();
+
+  if (!normalizedBase) return "";
+  return seniorityPrefix ? `${seniorityPrefix} ${normalizedBase}` : normalizedBase;
+}
+
+function toDisplayWord(word: string): string {
+  if (word === "vp") return "VP";
+  if (word === "cxo") return "CXO";
+  if (word === "sr") return "Sr";
+  if (word === "jr") return "Jr";
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function toDisplayTitle(canonicalTitle: string): string {
+  return canonicalTitle
+    .split(" ")
+    .filter(Boolean)
+    .map(toDisplayWord)
+    .join(" ");
+}
+
 function topN<T extends Record<string, unknown>>(arr: T[], key: keyof T, n: number): T[] {
   return arr
     .sort((a, b) => (b as Record<string, number>).count - (a as Record<string, number>).count)
@@ -46,6 +100,7 @@ export async function aggregateAnalytics(env: CloudflareEnv, userId?: number): P
       totalAnalyses: 0,
       totalResumesGenerated: 0,
       totalApplied: 0,
+      totalPursued: 0,
       updatedAt: now,
     };
     if (existing) {
@@ -88,16 +143,27 @@ export async function aggregateAnalytics(env: CloudflareEnv, userId?: number): P
     "count", 20,
   );
 
-  // Top job titles (applied only)
-  const titleMap = new Map<string, number>();
+  // Top job titles / focus areas (applied only, normalized so near-identical titles roll up together)
+  const titleMap = new Map<string, { count: number; displayTitle: string }>();
   for (const a of allAnalyses) {
     if (a.applied === 1) {
-      const title = (a.jobTitle ?? "").trim();
-      if (title) titleMap.set(title, (titleMap.get(title) ?? 0) + 1);
+      const rawTitle = (a.jobTitle ?? "").trim();
+      if (!rawTitle) continue;
+      const canonicalTitle = canonicalizeJobTitle(rawTitle);
+      if (!canonicalTitle) continue;
+      const existing = titleMap.get(canonicalTitle);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        titleMap.set(canonicalTitle, {
+          count: 1,
+          displayTitle: toDisplayTitle(canonicalTitle),
+        });
+      }
     }
   }
   const topJobTitles: TitleCount[] = topN(
-    Array.from(titleMap.entries()).map(([title, count]) => ({ title, count })),
+    Array.from(titleMap.values()).map(({ displayTitle, count }) => ({ title: displayTitle, count })),
     "count", 5,
   );
 
@@ -125,6 +191,7 @@ export async function aggregateAnalytics(env: CloudflareEnv, userId?: number): P
     totalAnalyses: allAnalyses.length,
     totalResumesGenerated: allResumeDocs.length,
     totalApplied: allAnalyses.filter((a) => a.applied === 1).length,
+    totalPursued: allAnalyses.filter((a) => a.pursue === 1).length,
     updatedAt: now,
   };
 

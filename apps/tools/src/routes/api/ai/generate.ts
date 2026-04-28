@@ -1,17 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import { getCloudflareEnv } from "@/lib/cloudflare";
 
 const MODEL = "@cf/meta/llama-3.2-3b-instruct";
+
+async function getAI(context: any): Promise<any | null> {
+  let ai = context?.cloudflare?.env?.AI;
+  if (!ai) ai = context?.env?.AI;
+  if (!ai) ai = context?.AI;
+  if (!ai) ai = (globalThis as any).__CF_ENV__?.AI;
+  if (!ai) ai = (globalThis as any).AI;
+  return ai || null;
+}
 
 export const Route = createFileRoute("/api/ai/generate")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request, context }) => {
         try {
-          const env = getCloudflareEnv();
+          const ai = await getAI(context);
 
-          if (!env.AI) {
+          if (!ai) {
             return json(
               { success: false, error: "AI binding not available" },
               { status: 503 }
@@ -21,7 +29,6 @@ export const Route = createFileRoute("/api/ai/generate")({
           const body = (await request.json()) as {
             prompt: string;
             maxTokens?: number;
-            temperature?: number;
           };
 
           if (!body.prompt) {
@@ -31,10 +38,10 @@ export const Route = createFileRoute("/api/ai/generate")({
             );
           }
 
-          const result = (await env.AI.run(MODEL as Parameters<Ai["run"]>[0], {
+          const result = (await ai.run(MODEL, {
             messages: [{ role: "user", content: body.prompt }],
             max_tokens: body.maxTokens ?? 500,
-          } as any)) as any;
+          })) as any;
 
           let text: string;
           if (typeof result === "string") {
@@ -51,8 +58,7 @@ export const Route = createFileRoute("/api/ai/generate")({
           return json(
             {
               success: false,
-              error:
-                error instanceof Error ? error.message : "AI request failed",
+              error: error instanceof Error ? error.message : "AI request failed",
             },
             { status: 500 }
           );

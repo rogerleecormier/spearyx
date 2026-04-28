@@ -1,12 +1,18 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@spearyx/ui-kit";
 import Header from "../components/Header";
 import { getCurrentUser } from "@/server/functions/auth";
 import type { SessionUser } from "@/lib/cloudflare";
 
 import appCss from "../styles.css?url";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 5_000, gcTime: 60_000, retry: 2, refetchOnWindowFocus: true },
+    mutations: { retry: 0 },
+  },
+});
 
 export const Route = createRootRoute({
   head: () => ({
@@ -37,21 +43,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <TooltipProvider>
-          <Header user={user} />
-          {children}
-          {import.meta.env.DEV && (
-            <TanStackDevtools
-              config={{ position: "bottom-right" }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-          )}
-        </TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Header user={user} />
+            {children}
+          </TooltipProvider>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>

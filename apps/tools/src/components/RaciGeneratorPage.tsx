@@ -30,13 +30,13 @@ import { QuickPresetsGrid } from "./QuickPresetsGrid";
 import { MatrixHintsAndStatus } from "./MatrixHintsAndStatus";
 import { Card, CardContent, CardHeader, CardTitle } from "@spearyx/ui-kit";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@spearyx/ui-kit";
+import { PageHero } from "@spearyx/ui-kit";
 import {
-  Hero,
   Headline,
   Body,
+  Caption,
   Label,
   Overline,
-  Caption,
 } from "@spearyx/ui-kit";
 import { RaciChart } from "@/types/raci";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
@@ -196,11 +196,11 @@ export default function RaciGeneratorPage() {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%)" }}>
+    <main className="min-h-screen">
       {/* Import Notification */}
       {importNotification && (
         <div className="bg-indigo-50 border-b border-indigo-200">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
             <Info className="w-5 h-5 text-indigo-600 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-indigo-900">
@@ -224,28 +224,20 @@ export default function RaciGeneratorPage() {
         </div>
       )}
 
-      {/* Page Header — consistent with Spearyx glassmorphic system */}
-      <header className="spx-page-header">
-        <div className="max-w-7xl mx-auto px-6 py-5">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 shadow-sm" style={{ background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)", border: "1px solid rgba(220,38,38,0.15)" }}>
-                📊
-              </div>
-              <div>
-                <p className="overline text-primary-600 mb-1">Project Tools</p>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
-                  RACI Matrix Generator
-                </h1>
-                <p className="text-sm text-slate-500 mt-1">Define roles and responsibilities with AI-powered clarity</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+        <PageHero
+          eyebrow="Project Tools"
+          icon={<span className="text-sm">📊</span>}
+          title="RACI Matrix Generator"
+          description="Define roles and responsibilities with AI-assisted clarity using the same product pattern shared across Spearyx apps."
+          stats={[
+            { label: "Roles", value: String(chart.roles.length) },
+            { label: "Tasks", value: String(chart.tasks.length) },
+            { label: "Theme", value: highContrast ? "High Contrast" : "Default" },
+          ]}
+        />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Content: Steps 1-5 and Matrix */}
           <div className="lg:col-span-9 space-y-6 order-1 lg:order-1">
@@ -319,7 +311,7 @@ export default function RaciGeneratorPage() {
                         <TooltipTrigger asChild>
                           <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg">
+                        <TooltipContent>
                           Describe your project and use AI to generate initial
                           roles and tasks
                         </TooltipContent>
@@ -338,37 +330,14 @@ export default function RaciGeneratorPage() {
                   onTitleChange={updateTitle}
                   onChange={(desc: string) => updateDescription(desc)}
                   onGenerateRoles={(roles) => {
-                    console.log("RaciGeneratorPage received roles:", roles);
-                    console.log("Current chart before update:", chart);
-                    const newChart = { ...chart, roles };
-                    console.log("New chart after spread:", newChart);
-                    setChart(newChart);
+                    setChart({ ...chart, roles });
                   }}
                   onGenerateTasks={(tasks) => {
-                    console.log("RaciGeneratorPage received tasks:", tasks);
-                    // Merge tasks with current chart (which should now have the roles from the previous setState)
-                    // But since setState is async, we need to use the current rendered chart
                     setChart({ ...chart, tasks });
                   }}
                   onGenerateComplete={(roles, tasks, matrix) => {
-                    console.log(
-                      "RaciGeneratorPage received roles, tasks, and matrix:",
-                      roles,
-                      tasks,
-                      matrix
-                    );
-                    console.log("Current chart before update:", chart);
-                    // Single setState call with roles, tasks, and optional matrix
                     const newChart = { ...chart, roles, tasks };
-                    // Apply matrix if provided (from fallback mode)
-                    if (matrix) {
-                      newChart.matrix = matrix;
-                      console.log(
-                        "Applied generated matrix from fallback:",
-                        matrix
-                      );
-                    }
-                    console.log("New chart after spread:", newChart);
+                    if (matrix) newChart.matrix = matrix;
                     setChart(newChart);
                   }}
                   onFallbackStatusChange={setIsFallbackActive}
@@ -397,7 +366,7 @@ export default function RaciGeneratorPage() {
                         <TooltipTrigger asChild>
                           <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg">
+                        <TooltipContent>
                           Add team members and their positions/titles
                         </TooltipContent>
                       </Tooltip>
@@ -445,7 +414,7 @@ export default function RaciGeneratorPage() {
                         <TooltipTrigger asChild>
                           <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg">
+                        <TooltipContent>
                           Define activities, deliverables, and work items
                         </TooltipContent>
                       </Tooltip>
@@ -493,7 +462,7 @@ export default function RaciGeneratorPage() {
                             <TooltipTrigger asChild>
                               <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help flex-shrink-0" />
                             </TooltipTrigger>
-                            <TooltipContent className="bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg">
+                            <TooltipContent>
                               Apply patterns or assign R, A, C, I values to each
                               role-task combination
                             </TooltipContent>

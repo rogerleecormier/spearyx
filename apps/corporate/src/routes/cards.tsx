@@ -37,9 +37,10 @@ import {
   ComingSoonCard,
   StatsCard,
   InteractiveCard,
+  PageHero,
+  PageSection,
 } from "@spearyx/ui-kit";
 import {
-  Display,
   Headline,
   Title,
   Body,
@@ -52,26 +53,25 @@ export const Route = createFileRoute("/cards")({
 
 function CardsLibrary() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Section */}
-      <section className="border-b bg-gradient-to-r from-slate-50 to-slate-100 py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Package className="w-8 h-8 text-red-500" />
-            <Overline className="text-red-500">Component Library</Overline>
-          </div>
-          <Display className="mb-3">Card Library</Display>
-          <Body size="lg" className="text-neutral max-w-2xl">
-            A comprehensive collection of reusable card components. Each card
-            type is fully modular and customizable for your application.
-          </Body>
-        </div>
-      </section>
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <PageHero
+          eyebrow="Component Library"
+          icon={<Package className="h-3.5 w-3.5" />}
+          title="Card Library"
+          description="A comprehensive collection of reusable card components with the same glass-forward Spearyx presentation used across the product suite."
+          stats={[
+            { label: "Families", value: "18+" },
+            { label: "Usage", value: "Shared UI" },
+            { label: "Focus", value: "Product surfaces" },
+          ]}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-10 [&>section]:rounded-[28px] [&>section]:border [&>section]:border-slate-200 [&>section]:bg-white/80 [&>section]:p-8 [&>section]:shadow-sm [&>section]:backdrop-blur-sm md:[&>section]:p-10">
         {/* Basic Card Section */}
-        <section className="mb-24">
+        <PageSection className="mb-24">
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Grid className="w-6 h-6 text-red-500" />
@@ -96,10 +96,10 @@ function CardsLibrary() {
               description="Works perfectly on mobile, tablet, and desktop devices out of the box."
             />
           </div>
-        </section>
+        </PageSection>
 
         {/* Specialized Cards Section - NEW */}
-        <section className="mb-24">
+        <PageSection className="mb-24">
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-2">
               <Palette className="w-6 h-6 text-indigo-500" />
@@ -239,7 +239,7 @@ function CardsLibrary() {
               />
             </div>
           </div>
-        </section>
+        </PageSection>
 
         {/* Featured Card Section */}
         <section className="mb-24">

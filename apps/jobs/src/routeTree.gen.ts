@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SyncRouteImport } from './routes/sync'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LinkedinSearchRouteImport } from './routes/linkedin-search'
+import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
@@ -24,7 +26,9 @@ import { Route as ApiV3LogsRouteImport } from './routes/api/v3/logs'
 import { Route as ApiV3JobsRouteImport } from './routes/api/v3/jobs'
 import { Route as ApiV3JobContentRouteImport } from './routes/api/v3/job-content'
 import { Route as ApiV3CategoriesRouteImport } from './routes/api/v3/categories'
+import { Route as ApiLinkedinSearchRouteImport } from './routes/api/linkedin/search'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAiUnicornRouteImport } from './routes/api/ai/unicorn'
 import { Route as ApiAiSearchRouteImport } from './routes/api/ai/search'
 import { Route as ApiAiScoreAllRouteImport } from './routes/api/ai/score-all'
@@ -47,6 +51,16 @@ const ProfileRoute = ProfileRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinkedinSearchRoute = LinkedinSearchRouteImport.update({
+  id: '/linkedin-search',
+  path: '/linkedin-search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsRoute = JobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -109,9 +123,19 @@ const ApiV3CategoriesRoute = ApiV3CategoriesRouteImport.update({
   path: '/api/v3/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLinkedinSearchRoute = ApiLinkedinSearchRouteImport.update({
+  id: '/api/linkedin/search',
+  path: '/api/linkedin/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
   id: '/api/auth/me',
   path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiUnicornRoute = ApiAiUnicornRouteImport.update({
@@ -161,6 +185,8 @@ export interface FileRoutesByFullPath {
   '/analyze': typeof AnalyzeRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/jobs': typeof JobsRoute
+  '/linkedin-search': typeof LinkedinSearchRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
@@ -173,7 +199,9 @@ export interface FileRoutesByFullPath {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/linkedin/search': typeof ApiLinkedinSearchRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -186,6 +214,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/jobs': typeof JobsRoute
+  '/linkedin-search': typeof LinkedinSearchRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
@@ -198,7 +228,9 @@ export interface FileRoutesByTo {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/linkedin/search': typeof ApiLinkedinSearchRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -213,6 +245,8 @@ export interface FileRoutesById {
   '/analyze': typeof AnalyzeRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
+  '/jobs': typeof JobsRoute
+  '/linkedin-search': typeof LinkedinSearchRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/sync': typeof SyncRoute
@@ -225,7 +259,9 @@ export interface FileRoutesById {
   '/api/ai/score-all': typeof ApiAiScoreAllRoute
   '/api/ai/search': typeof ApiAiSearchRoute
   '/api/ai/unicorn': typeof ApiAiUnicornRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/linkedin/search': typeof ApiLinkedinSearchRoute
   '/api/v3/categories': typeof ApiV3CategoriesRoute
   '/api/v3/job-content': typeof ApiV3JobContentRoute
   '/api/v3/jobs': typeof ApiV3JobsRouteWithChildren
@@ -241,6 +277,8 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/dashboard'
     | '/history'
+    | '/jobs'
+    | '/linkedin-search'
     | '/login'
     | '/profile'
     | '/sync'
@@ -253,7 +291,9 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/linkedin/search'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -266,6 +306,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/history'
+    | '/jobs'
+    | '/linkedin-search'
     | '/login'
     | '/profile'
     | '/sync'
@@ -278,7 +320,9 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/linkedin/search'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -292,6 +336,8 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/dashboard'
     | '/history'
+    | '/jobs'
+    | '/linkedin-search'
     | '/login'
     | '/profile'
     | '/sync'
@@ -304,7 +350,9 @@ export interface FileRouteTypes {
     | '/api/ai/score-all'
     | '/api/ai/search'
     | '/api/ai/unicorn'
+    | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/linkedin/search'
     | '/api/v3/categories'
     | '/api/v3/job-content'
     | '/api/v3/jobs'
@@ -319,6 +367,8 @@ export interface RootRouteChildren {
   AnalyzeRoute: typeof AnalyzeRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   HistoryRoute: typeof HistoryRoute
+  JobsRoute: typeof JobsRoute
+  LinkedinSearchRoute: typeof LinkedinSearchRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   SyncRoute: typeof SyncRoute
@@ -329,7 +379,9 @@ export interface RootRouteChildren {
   ApiAiScoreAllRoute: typeof ApiAiScoreAllRoute
   ApiAiSearchRoute: typeof ApiAiSearchRoute
   ApiAiUnicornRoute: typeof ApiAiUnicornRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiLinkedinSearchRoute: typeof ApiLinkedinSearchRoute
   ApiV3CategoriesRoute: typeof ApiV3CategoriesRoute
   ApiV3JobContentRoute: typeof ApiV3JobContentRoute
   ApiV3JobsRoute: typeof ApiV3JobsRouteWithChildren
@@ -358,6 +410,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linkedin-search': {
+      id: '/linkedin-search'
+      path: '/linkedin-search'
+      fullPath: '/linkedin-search'
+      preLoaderRoute: typeof LinkedinSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs': {
+      id: '/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof JobsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -444,11 +510,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV3CategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/linkedin/search': {
+      id: '/api/linkedin/search'
+      path: '/api/linkedin/search'
+      fullPath: '/api/linkedin/search'
+      preLoaderRoute: typeof ApiLinkedinSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/me': {
       id: '/api/auth/me'
       path: '/api/auth/me'
       fullPath: '/api/auth/me'
       preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai/unicorn': {
@@ -541,6 +621,8 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyzeRoute: AnalyzeRouteWithChildren,
   DashboardRoute: DashboardRoute,
   HistoryRoute: HistoryRoute,
+  JobsRoute: JobsRoute,
+  LinkedinSearchRoute: LinkedinSearchRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   SyncRoute: SyncRoute,
@@ -551,7 +633,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiScoreAllRoute: ApiAiScoreAllRoute,
   ApiAiSearchRoute: ApiAiSearchRoute,
   ApiAiUnicornRoute: ApiAiUnicornRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiLinkedinSearchRoute: ApiLinkedinSearchRoute,
   ApiV3CategoriesRoute: ApiV3CategoriesRoute,
   ApiV3JobContentRoute: ApiV3JobContentRoute,
   ApiV3JobsRoute: ApiV3JobsRouteWithChildren,

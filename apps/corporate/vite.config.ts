@@ -3,25 +3,26 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 const config = defineConfig({
   plugins: [
     tailwindcss(),
-    // TanStack Start must come first for proper routing
     tanstackStart(),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
+    cloudflare({ configPath: "./wrangler.toml" }),
+    viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
     viteReact(),
   ],
   optimizeDeps: {
     exclude: ["wrangler"],
+  },
+  build: {
+    rollupOptions: {
+      external: ["cloudflare:workers"],
+    },
+  },
+  ssr: {
+    external: ["cloudflare:workers"],
   },
 });
 

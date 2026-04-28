@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Type } from "lucide-react";
 import {
   Hero,
-  Display,
   Headline,
   Title,
   Subtitle,
@@ -10,6 +9,7 @@ import {
   Caption,
   Label,
   Overline,
+  PageHero,
 } from "@spearyx/ui-kit";
 
 export const Route = createFileRoute("/typography")({
@@ -160,32 +160,31 @@ function TypographyLibrary() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Section */}
-      <section className="border-b bg-gradient-to-r from-slate-50 to-slate-100 py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Type className="w-8 h-8 text-red-500" />
-            <Overline className="text-red-500">Component Library</Overline>
-          </div>
-          <Display className="mb-3">Typography Styles</Display>
-          <Body size="lg" className="text-neutral max-w-2xl">
-            Comprehensive showcase of all typography styles, colors, and
-            variations. Explore the complete typography system including sizes,
-            weights, spacing, and semantic color options.
-          </Body>
-        </div>
-      </section>
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <PageHero
+          eyebrow="Component Library"
+          icon={<Type className="h-3.5 w-3.5" />}
+          title="Typography Styles"
+          description="Explore the shared typography system, color roles, and spacing choices used to keep Spearyx readable, modern, and consistent across apps."
+          stats={[
+            { label: "Type Scale", value: "Hero to Caption" },
+            { label: "Color Roles", value: "14" },
+            { label: "Brand Tone", value: "Red glass" },
+          ]}
+        />
+      </div>
 
       {/* Typography Hierarchy Section */}
-      <section className="py-16 px-4">
+      <section className="px-4 py-10">
         <div className="max-w-6xl mx-auto">
-          <Overline className="mb-8 text-red-500">
-            Typography Hierarchy
-          </Overline>
-          <Headline className="mb-12">Text Styles & Variants</Headline>
+          <div className="rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
+            <Overline className="mb-8 text-red-500">
+              Typography Hierarchy
+            </Overline>
+            <Headline className="mb-12">Text Styles & Variants</Headline>
 
-          <div className="space-y-16">
+            <div className="space-y-16">
             {/* Hero */}
             <div className="space-y-4">
               <Title>Hero</Title>
@@ -279,11 +278,12 @@ function TypographyLibrary() {
               </div>
             </div>
 
-            {/* Overline */}
-            <div className="space-y-4">
-              <Title>Overline</Title>
-              <div className="space-y-3 bg-slate-50 p-8 rounded-lg border border-slate-200">
-                <Overline>Overline Text</Overline>
+              {/* Overline */}
+              <div className="space-y-4">
+                <Title>Overline</Title>
+                <div className="space-y-3 bg-slate-50 p-8 rounded-lg border border-slate-200">
+                  <Overline>Overline Text</Overline>
+                </div>
               </div>
             </div>
           </div>
@@ -291,8 +291,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Text Colors Section */}
-      <section className="border-b py-16 px-4 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
           <Overline className="mb-8 text-red-500">Color System</Overline>
           <Headline className="mb-12">Text Colors</Headline>
 
@@ -328,8 +328,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Font Weights Section */}
-      <section className="border-b py-16 px-4">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
           <Overline className="mb-8 text-red-500">Typography Settings</Overline>
           <Headline className="mb-12">Font Weights</Headline>
 
@@ -360,8 +360,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Letter Spacing Section */}
-      <section className="border-b py-16 px-4 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
           <Overline className="mb-8 text-red-500">Spacing</Overline>
           <Headline className="mb-12">Letter Spacing</Headline>
 
@@ -392,8 +392,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Line Height Section */}
-      <section className="border-b py-16 px-4">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
           <Overline className="mb-8 text-red-500">Spacing</Overline>
           <Headline className="mb-12">Line Heights</Headline>
 
@@ -428,8 +428,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Combined Examples Section */}
-      <section className="py-16 px-4 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
           <Overline className="mb-8 text-red-500">Examples</Overline>
           <Headline className="mb-12">Combined Typography Examples</Headline>
 
@@ -545,8 +545,8 @@ function TypographyLibrary() {
       </section>
 
       {/* Footer Section */}
-      <section className="border-t bg-slate-50 py-12 px-4">
-        <div className="max-w-6xl mx-auto text-center">
+      <section className="px-4 pb-12 pt-2">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-200 bg-white/80 px-8 py-10 text-center shadow-sm backdrop-blur-sm">
           <Body className="text-neutral mb-2">
             Explore these typography styles in your designs
           </Body>

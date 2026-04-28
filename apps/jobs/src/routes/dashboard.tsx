@@ -4,7 +4,6 @@ import { manuallyAggregateAnalytics } from "@/server/functions/manually-aggregat
 import {
   BarChart3,
   Briefcase,
-  CircleDashed,
   FileText,
   Gauge,
   RefreshCw,
@@ -15,11 +14,12 @@ import {
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
+import { PageActionBar, PageHero, PageSection } from "@spearyx/ui-kit";
 
 export const Route = createFileRoute("/dashboard")({
-  beforeLoad: ({ context }) => {
+  beforeLoad: ({ context, location }) => {
     const ctx = context as { user?: { id: number } | null };
-    if (!ctx.user) requireLoginRedirect("/dashboard", "search insights");
+    if (!ctx.user) requireLoginRedirect(location, "search insights");
   },
   loader: async () => getAnalytics({ data: { period: "all_time" } }),
   component: DashboardPage,
@@ -35,10 +35,14 @@ function DashboardPage() {
     const analyses = data?.totalAnalyses ?? 0;
     const resumes = data?.totalResumesGenerated ?? 0;
     const applied = data?.totalApplied ?? 0;
+    const pursued = data?.totalPursued ?? 0;
     const avgMatch = data?.averageMatchScore ?? 0;
 
     const applicationRate = analyses > 0 ? Math.round((applied / analyses) * 100) : 0;
     const resumeCoverage = analyses > 0 ? Math.round((resumes / analyses) * 100) : 0;
+    const pursueRate = analyses > 0 ? Math.round((pursued / analyses) * 100) : 0;
+    // of roles recommended to pursue, how many were actually applied to
+    const pursueToApplyRate = pursued > 0 ? Math.round((applied / pursued) * 100) : 0;
     const analysisGap = Math.max(analyses - applied, 0);
 
     let matchLabel = "Needs attention";
@@ -59,6 +63,8 @@ function DashboardPage() {
     return {
       applicationRate,
       resumeCoverage,
+      pursueRate,
+      pursueToApplyRate,
       analysisGap,
       matchLabel,
       matchTone,
@@ -81,7 +87,7 @@ function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8 text-center text-muted-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-8 text-center text-muted-foreground">
         No analytics data yet. Analyze some job postings to get started.
       </div>
     );
@@ -89,29 +95,42 @@ function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
-      <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-6 py-6 text-white shadow-sm sm:px-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">
-              <BarChart3 className="h-3.5 w-3.5" />
-              Search Insights
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight">Search Insights</h1>
-              <p className="max-w-2xl text-sm leading-6 text-slate-300">
-                Monitor match quality, application momentum, and where your strongest positioning is emerging.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <HeroStat label="Analyses" value={String(data.totalAnalyses)} />
-            <HeroStat label="Applied" value={String(data.totalApplied)} />
-            <HeroStat label="Avg Match" value={`${data.averageMatchScore.toFixed(1)}%`} />
-            <HeroStat label="Resume Coverage" value={`${derived.resumeCoverage}%`} />
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Search Insights"
+        icon={<BarChart3 className="h-3.5 w-3.5" />}
+        title="Search Insights"
+        description="Monitor match quality, application momentum, and where your strongest positioning is emerging."
+        stats={[
+          { label: "Analyses", value: String(data.totalAnalyses) },
+          { label: "Applied", value: String(data.totalApplied) },
+          { label: "Avg Match", value: `${data.averageMatchScore.toFixed(1)}%` },
+          { label: "Resume Coverage", value: `${derived.resumeCoverage}%` },
+        ]}
+        actions={
+          <>
+            <button
+              onClick={handleResync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing..." : "Resync"}
+            </button>
+            <Link
+              to="/history" search={{ page: 1 }}
+              className="inline-flex items-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+            >
+              View History
+            </Link>
+            <Link
+              to="/analyze"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+            >
+              Analyze a Job
+            </Link>
+          </>
+        }
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -122,66 +141,71 @@ function DashboardPage() {
           accent="bg-violet-50 border-violet-100"
         />
         <MetricCard
-          icon={<Target className="h-5 w-5 text-emerald-600" />}
-          label="Application Rate"
-          value={`${derived.applicationRate}%`}
-          note={`${data.totalApplied} of ${data.totalAnalyses} analyzed roles pursued`}
-          accent="bg-emerald-50 border-emerald-100"
-        />
-        <MetricCard
-          icon={<FileText className="h-5 w-5 text-sky-600" />}
-          label="Resumes Generated"
-          value={String(data.totalResumesGenerated)}
-          note={`${derived.resumeCoverage}% of analyses turned into tailored resumes`}
+          icon={<Sparkles className="h-5 w-5 text-sky-600" />}
+          label="Pursue Rate"
+          value={`${derived.pursueRate}%`}
+          note={`${data.totalPursued ?? 0} of ${data.totalAnalyses} roles flagged to pursue`}
           accent="bg-sky-50 border-sky-100"
         />
         <MetricCard
-          icon={<CircleDashed className="h-5 w-5 text-amber-600" />}
-          label="Open Follow-Up"
-          value={String(derived.analysisGap)}
-          note="Analyzed roles that have not been marked applied"
+          icon={<Target className="h-5 w-5 text-emerald-600" />}
+          label="Apply Rate"
+          value={`${derived.applicationRate}%`}
+          note={`${data.totalApplied} of ${data.totalAnalyses} analyzed roles applied to`}
+          accent="bg-emerald-50 border-emerald-100"
+        />
+        <MetricCard
+          icon={<FileText className="h-5 w-5 text-amber-600" />}
+          label="Resume Coverage"
+          value={`${derived.resumeCoverage}%`}
+          note={`${data.totalResumesGenerated} tailored resumes across ${data.totalAnalyses} analyses`}
           accent="bg-amber-50 border-amber-100"
         />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Performance Snapshot</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                A quick read on momentum and alignment across your saved analyses.
-              </p>
+        <PageSection
+          title="Performance Snapshot"
+          description="A quick read on momentum and alignment across your saved analyses."
+        >
+          <div className="grid gap-5 md:grid-cols-2">
+            {/* Rate breakdown */}
+            <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-5">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Rate breakdown</h3>
+                <p className="mt-0.5 text-xs text-slate-500">Each rate is calculated out of total analyses ({data.totalAnalyses})</p>
+              </div>
+              <RateBar label="Pursue rate" value={derived.pursueRate} count={data.totalPursued ?? 0} color="bg-sky-500" />
+              <RateBar label="Resume generated" value={derived.resumeCoverage} count={data.totalResumesGenerated} color="bg-violet-500" />
+              <RateBar label="Applied" value={derived.applicationRate} count={data.totalApplied} color="bg-emerald-500" />
+              <RateBar label="Avg match score" value={data.averageMatchScore} count={null} color="bg-primary" />
             </div>
-            <button
-              onClick={handleResync}
-              disabled={syncing}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Syncing..." : "Resync"}
-            </button>
-          </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <InsightPanel
-              title="Match Quality"
-              subtitle="How close your analyzed roles are to your current profile."
-              value={`${data.averageMatchScore.toFixed(1)}%`}
-              toneClass={derived.matchTone}
-              bars={[
-                { label: "Average alignment", value: data.averageMatchScore },
-                { label: "Resume coverage", value: derived.resumeCoverage },
-                { label: "Application rate", value: derived.applicationRate },
-              ]}
-            />
+            {/* Funnel comparison */}
+            <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-5">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Pipeline funnel</h3>
+                <p className="mt-0.5 text-xs text-slate-500">How analyses progress through your pipeline</p>
+              </div>
+              <FunnelStep label="Analyzed" count={data.totalAnalyses} total={data.totalAnalyses} color="bg-slate-400" />
+              <FunnelStep label="Recommended to pursue" count={data.totalPursued ?? 0} total={data.totalAnalyses} color="bg-sky-500" />
+              <FunnelStep label="Resumes generated" count={data.totalResumesGenerated} total={data.totalAnalyses} color="bg-violet-500" />
+              <FunnelStep label="Applied" count={data.totalApplied} total={data.totalAnalyses} color="bg-emerald-500" />
+              <div className="mt-2 border-t border-slate-100 pt-3">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Pursue → Apply conversion</span>
+                  <span className="font-semibold text-slate-700">{derived.pursueToApplyRate}%</span>
+                </div>
+              </div>
+            </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            {/* What stands out — full width */}
+            <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-5">
               <div className="flex items-center gap-2 text-slate-900">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold">What stands out</h3>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <HighlightRow
                   label="Primary role focus"
                   value={derived.topRole ? `${derived.topRole.title} (${derived.topRole.count})` : "No dominant title yet"}
@@ -199,7 +223,6 @@ function DashboardPage() {
                   value={derived.topResumeKeyword ? `${derived.topResumeKeyword.keyword} (${derived.topResumeKeyword.count})` : "No resume keyword data yet"}
                 />
               </div>
-
               <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-white p-4">
                 <p className="text-sm font-medium text-slate-900">Recommended next move</p>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -210,15 +233,13 @@ function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
+        </PageSection>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Focus Areas</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            The titles and industries appearing most often in your search activity.
-          </p>
-
-          <div className="mt-6 space-y-6">
+        <PageSection
+          title="Focus Areas"
+          description="The titles and industries appearing most often in your search activity."
+        >
+          <div className="space-y-6">
             <RankedList
               title="Top Applied Job Titles"
               emptyLabel="Applied titles will appear here after you start marking roles as applied."
@@ -239,7 +260,7 @@ function DashboardPage() {
               }))}
             />
           </div>
-        </div>
+        </PageSection>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
@@ -262,13 +283,13 @@ function DashboardPage() {
         />
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+      <PageActionBar>
         <div>
           Last updated: {data.updatedAt?.slice(0, 16).replace("T", " ")} UTC
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            to="/history"
+            to="/history" search={{ page: 1 }}
             className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
           >
             View History
@@ -280,16 +301,7 @@ function DashboardPage() {
             Analyze a Job
           </Link>
         </div>
-      </section>
-    </div>
-  );
-}
-
-function HeroStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-300">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
+      </PageActionBar>
     </div>
   );
 }
@@ -308,57 +320,57 @@ function MetricCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div
+      className="rounded-2xl p-5"
+      style={{
+        background: "rgba(255,255,255,0.84)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid rgba(226,232,240,0.7)",
+        boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+      }}
+    >
       <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border ${accent}`}>
         {icon}
       </div>
       <p className="mt-4 text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{note}</p>
+      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
+      <p className="mt-1.5 text-xs leading-5 text-slate-500">{note}</p>
     </div>
   );
 }
 
-function InsightPanel({
-  title,
-  subtitle,
-  value,
-  toneClass,
-  bars,
-}: {
-  title: string;
-  subtitle: string;
-  value: string;
-  toneClass: string;
-  bars: Array<{ label: string; value: number }>;
-}) {
+function RateBar({ label, value, count, color }: { label: string; value: number; count: number | null; color: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-500">{subtitle}</p>
-        </div>
-        <div className={`rounded-full border px-3 py-1 text-xs font-semibold ${toneClass}`}>
-          {value}
-        </div>
+    <div>
+      <div className="mb-1.5 flex items-center justify-between text-sm">
+        <span className="text-slate-600">{label}</span>
+        <span className="font-semibold text-slate-900">
+          {Math.round(value)}%{count !== null ? <span className="ml-1.5 font-normal text-slate-400">({count})</span> : null}
+        </span>
       </div>
+      <div className="h-2 rounded-full bg-slate-100">
+        <div
+          className={`h-2 rounded-full ${color} transition-all`}
+          style={{ width: `${Math.max(4, Math.min(value, 100))}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
-      <div className="mt-5 space-y-4">
-        {bars.map((bar) => (
-          <div key={bar.label}>
-            <div className="mb-1.5 flex items-center justify-between text-sm">
-              <span className="text-slate-600">{bar.label}</span>
-              <span className="font-medium text-slate-900">{Math.round(bar.value)}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-slate-100">
-              <div
-                className="h-2 rounded-full bg-gradient-to-r from-primary to-red-400"
-                style={{ width: `${Math.max(6, Math.min(bar.value, 100))}%` }}
-              />
-            </div>
-          </div>
-        ))}
+function FunnelStep({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-36 shrink-0 text-xs text-slate-600 truncate">{label}</div>
+      <div className="flex-1 h-5 rounded-md bg-slate-100 relative overflow-hidden">
+        <div
+          className={`absolute inset-y-0 left-0 rounded-md ${color} opacity-80`}
+          style={{ width: `${Math.max(4, pct)}%` }}
+        />
+      </div>
+      <div className="w-16 shrink-0 text-right text-xs font-semibold text-slate-700">
+        {count} <span className="font-normal text-slate-400">({pct}%)</span>
       </div>
     </div>
   );
@@ -433,12 +445,20 @@ function KeywordSection({
   toneClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div
+      className="rounded-2xl p-6"
+      style={{
+        background: "rgba(255,255,255,0.84)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid rgba(226,232,240,0.7)",
+        boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+      }}
+    >
       <div className="flex items-center gap-2 text-slate-900">
         {icon}
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
       </div>
-      <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
 
       {items.length === 0 ? (
         <p className="mt-5 text-sm leading-6 text-slate-500">{emptyLabel}</p>

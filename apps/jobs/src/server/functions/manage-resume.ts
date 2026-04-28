@@ -6,7 +6,6 @@ import { getCloudflareEnv } from "@/lib/cloudflare";
 import { getDb } from "@/db/db";
 import { masterResume } from "@/db/schema";
 import { callWorkersAI } from "@/lib/ai-gateway";
-import { jsonrepair } from "jsonrepair";
 
 export interface ExperienceEntry {
   title: string;
@@ -153,66 +152,59 @@ export const parseResumeText = createServerFn({ method: "POST" })
     const env = getCloudflareEnv();
     if (!env.AI) return regexFields;
 
-    const systemMsg = `You are a resume parser. Extract structured fields from raw resume text and return ONLY valid JSON. Never fabricate information — only extract what is explicitly present in the text.`;
+    // Send the full resume text — Llama 3.3 70B handles long context well.
+    // Typical resumes are 3-8K chars; even 4-page resumes fit easily.
+    const resumeText = data.text;
 
-    const userMsg = `Extract the following fields from this resume text. Return ONLY a JSON object with these fields (omit any field that isn't clearly present):
+    const system = `You are an expert resume parser that outputs ONLY valid JSON.
+Extract ALL information from the resume and output a single JSON object.
+Do not output any text before or after the JSON.
+Do not use markdown code fences.
 
-{
-  "fullName": "string",
-  "email": "string",
-  "phone": "string",
-  "linkedin": "string (full URL)",
-  "website": "string (full URL, not LinkedIn)",
-  "summary": "string (professional summary or objective)",
-  "competencies": ["string"],
-  "tools": ["string (tools and technologies only)"],
-  "experience": [
-    {
-      "title": "string",
-      "company": "string",
-      "startDate": "string",
-      "endDate": "string",
-      "description": "string (bullets or prose)"
-    }
-  ],
-  "education": [
-    {
-      "degree": "string",
-      "fieldOfStudy": "string",
-      "institution": "string",
-      "graduationDate": "string"
-    }
-  ],
-  "certifications": ["string"]
-}
+IMPORTANT: Extract COMPLETE details — include ALL bullet points, achievements, metrics, numbers, percentages, and quantifiable results for each experience entry. The description field for each experience entry should contain ALL bullet points/achievements from that role, separated by newlines.
 
-RESUME TEXT:
-${data.text.slice(0, 12000)}`;
+CERTIFICATIONS: Extract EVERY certification mentioned in the resume, including abbreviated names with special characters like CompTIA A+, Network+, Security+, CCNA, PMP, ITIL, AWS Certified, etc. Do NOT skip any certifications.
+
+SUMMARY: Extract the FULL professional summary or objective statement — do not truncate or shorten it.
+
+TOOLS & METHODOLOGIES: Extract ALL tools, technologies, platforms, methodologies, and frameworks mentioned in the resume. This includes: programming languages, cloud platforms (AWS, Azure, GCP), databases, frameworks, libraries, software (Jira, Asana, Smartsheet, Monday.com, etc.), project management tools, methodologies (Agile, Scrum, Kanban, Waterfall, Hybrid, SAFe, etc.), and any other technologies or approaches explicitly mentioned. Be comprehensive — include tools mentioned in job descriptions, achievements, and skills sections.
+
+Use these exact keys (omit any you cannot find):
+fullName, email, phone, linkedin, website, summary,
+competencies (array of strings — include ALL skills, competencies, and domain expertise areas mentioned in the resume, including soft skills, technical competencies, methodologies, and leadership areas),
+tools (array of strings — include ALL technical tools, technologies, platforms, software, PM tools, methodologies, and frameworks explicitly mentioned in the resume),
+certifications (array of strings — include EVERY certification, license, or credential mentioned ANYWHERE in the resume),
+experience (array of {title,company,startDate,endDate,description} — description should contain ALL bullet points/details for that role),
+education (array of {degree,institution,fieldOfStudy,graduationDate}).
+
+Example output:
+{"fullName":"Jane Smith","email":"jane@example.com","competencies":["Leadership","Project Management","Agile","Strategic Planning","Team Development"],"tools":["Python","AWS","Kubernetes","Terraform","Jira","Asana","Agile","Scrum","SAFe","Docker"],"certifications":["PMP","CompTIA Network+","AWS Solutions Architect"],"experience":[{"title":"Senior Engineer","company":"Acme Corp","startDate":"2020","endDate":"Present","description":"Led migration of 15 microservices to AWS, reducing infrastructure costs by 40%\\nManaged team of 8 engineers delivering $2M platform rebuild\\nImplemented CI/CD pipeline reducing deployment time from 4 hours to 15 minutes"}],"education":[{"degree":"B.S.","institution":"State U","fieldOfStudy":"CS","graduationDate":"2018"}]}`;
 
     try {
-      const rawResponse = await callWorkersAI(env, [
-        { role: "system", content: systemMsg },
-        { role: "user", content: userMsg },
-      ], { maxTokens: 3000 });
+      const raw = await callWorkersAI(env, [
+        { role: "system", content: system },
+        { role: "user", content: `Parse this resume:\n\n${resumeText}` },
+      ], { maxTokens: 8192 });
 
-      const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return regexFields;
+      const rawStr = typeof raw === "string" ? raw : JSON.stringify(raw);
+      const start = rawStr.indexOf("{");
+      const end = rawStr.lastIndexOf("}");
 
-      let parsed: Partial<ResumeData>;
-      try {
-        parsed = JSON.parse(jsonMatch[0]) as Partial<ResumeData>;
-      } catch {
-        parsed = JSON.parse(jsonrepair(jsonMatch[0])) as Partial<ResumeData>;
+      if (start === -1 || end === -1 || end <= start) {
+        return regexFields;
       }
 
-      // Regex fields win for contact info since they are exact-match extractions.
+      const parsed = JSON.parse(rawStr.slice(start, end + 1)) as Partial<ResumeData>;
+
+      // Merge: regex wins for contact fields (more reliable), AI wins for rich fields
       return {
+        ...regexFields,
         ...parsed,
-        fullName: regexFields.fullName ?? parsed.fullName,
-        email: regexFields.email ?? parsed.email,
-        phone: regexFields.phone ?? parsed.phone,
-        linkedin: regexFields.linkedin ?? parsed.linkedin,
-        website: regexFields.website ?? parsed.website,
+        fullName: parsed.fullName || regexFields.fullName,
+        email:    parsed.email    || regexFields.email,
+        phone:    parsed.phone    || regexFields.phone,
+        linkedin: parsed.linkedin || regexFields.linkedin,
+        website:  parsed.website  || regexFields.website,
       };
     } catch (err) {
       console.error("[parseResumeText] AI parse failed:", err);

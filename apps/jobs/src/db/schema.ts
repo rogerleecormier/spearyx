@@ -224,6 +224,7 @@ export const analyticsSummary = sqliteTable('analytics_summary', {
   totalAnalyses: integer('total_analyses'),
   totalResumesGenerated: integer('total_resumes_generated'),
   totalApplied: integer('total_applied').default(0),
+  totalPursued: integer('total_pursued').default(0),
   updatedAt: text('updated_at'),
 })
 

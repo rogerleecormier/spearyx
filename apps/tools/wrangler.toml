@@ -21,6 +21,15 @@ head_sampling_rate = 1
 [assets]
 directory = "dist/client"
 
+[[kv_namespaces]]
+binding = "KV"
+id = "07de8044b8154750a0cfc2e5eaa60f2c"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearyx-jobs"
+database_id = "991bbe3f-8b3a-4ce4-9de8-c2110052662f"
+
 [ai]
 binding = "AI"
 remote = true

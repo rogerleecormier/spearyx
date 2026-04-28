@@ -8,6 +8,9 @@ export * from "./Typography";
 export * from "./Header";
 export * from "./AppHeader";
 export * from "./PageHeader";
+export * from "./PageHero";
+export * from "./PageSection";
+export * from "./PageActionBar";
 
 // UI Components
 export * from "./ui/avatar";

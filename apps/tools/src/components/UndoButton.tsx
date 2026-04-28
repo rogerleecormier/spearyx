@@ -27,15 +27,7 @@ export default function UndoButton({ canUndo, onUndo }: UndoButtonProps) {
           <span className="text-xs text-muted-foreground ml-1">(Ctrl+Z)</span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        className="bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg p-2"
-        style={{
-          backgroundColor: "#ffffff",
-          color: "#0f172a",
-          borderColor: "#e2e8f0",
-        }}
-      >
+      <TooltipContent side="top">
         Undo last action (Ctrl+Z)
       </TooltipContent>
     </Tooltip>

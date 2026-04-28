@@ -2,8 +2,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCloudflareEnv } from "@/lib/cloudflare";
 import { getDb } from "@/db/db";
-import { analyticsSummary } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { analyticsSummary, jobAnalyses } from "@/db/schema";
+import { eq, and, sql } from "drizzle-orm";
 import { resolveSessionUser } from "@/lib/resolve-user";
 
 export interface AnalyticsSummaryData {
@@ -16,6 +16,7 @@ export interface AnalyticsSummaryData {
   totalAnalyses: number;
   totalResumesGenerated: number;
   totalApplied: number;
+  totalPursued: number;
   updatedAt: string;
 }
 
@@ -29,6 +30,7 @@ const EMPTY = (period: string): AnalyticsSummaryData => ({
   totalAnalyses: 0,
   totalResumesGenerated: 0,
   totalApplied: 0,
+  totalPursued: 0,
   updatedAt: new Date().toISOString(),
 });
 
@@ -53,6 +55,13 @@ export const getAnalytics = createServerFn({ method: "GET" })
 
       if (!row) return null;
 
+      // Always compute totalPursued live — the aggregated column may be stale
+      const [pursuedResult] = await db
+        .select({ count: sql<number>`sum(case when ${jobAnalyses.pursue} = 1 then 1 else 0 end)` })
+        .from(jobAnalyses)
+        .where(eq(jobAnalyses.userId, user.id));
+      const totalPursued = Number(pursuedResult?.count ?? 0);
+
       return {
         period: row.period,
         topJdKeywords: JSON.parse(row.topJdKeywords ?? "[]"),
@@ -63,6 +72,7 @@ export const getAnalytics = createServerFn({ method: "GET" })
         totalAnalyses: row.totalAnalyses ?? 0,
         totalResumesGenerated: row.totalResumesGenerated ?? 0,
         totalApplied: row.totalApplied ?? 0,
+        totalPursued,
         updatedAt: row.updatedAt ?? "",
       };
     } catch (error) {

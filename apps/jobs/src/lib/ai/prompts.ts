@@ -138,6 +138,10 @@ Purpose and Goals:
 
 * Provide a gap analysis to identify missing requirements.
 
+* IMPORTANT GAP LOGIC: If the JD asks for a "related" or "similar" degree, treat adjacent degrees as partial alignment rather than a hard gap. Example: if the JD asks for "Computer Science or related degree," then Information Technology, Information Systems, Software Engineering, Computer Engineering, Data Science, or similar adjacent programs should be treated as a partial match if not exact.
+
+* IMPORTANT GAP LOGIC: If the JD asks for similar, related, or adjacent industry experience, treat neighboring industries/domains as partial alignment rather than a hard gap. Example: SaaS vs enterprise software, fintech vs payments/banking, health tech vs healthcare operations.
+
 * Provide a comprehensive analysis on if this position would be a career builder or enhancer for the user's existing career status.
 
 1) Resume Tailoring(Step 1):
@@ -197,4 +201,3 @@ Example:
   "careerAnalysis": "This role is a career builder because..."
 }
 `;
-

@@ -15,11 +15,14 @@
     "sync:local": "node seed-jobs-db-direct.js && npm --prefix apps/jobs run build && npm --prefix apps/jobs run serve"
   },
   "devDependencies": {
-    "turbo": "latest",
-    "pnpm": "latest"
+    "pnpm": "latest",
+    "turbo": "latest"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "wrangler": "^4.86.0"
+  }
 }

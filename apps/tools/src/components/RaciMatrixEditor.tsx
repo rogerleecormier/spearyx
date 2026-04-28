@@ -178,55 +178,39 @@ export default function RaciMatrixEditor({
         return;
       }
 
-      // Arrow Up
-      if (e.key === "ArrowUp" && roleIndex > 0) {
+      // Arrow Up — move to previous task (row above)
+      if (e.key === "ArrowUp" && taskIndex > 0) {
         e.preventDefault();
-        const newRoleIndex = roleIndex - 1;
-        const nextRoleId = chart.roles[newRoleIndex].id;
-        setFocusedCell({ roleId: nextRoleId, taskId });
-        const cellKey = `${nextRoleId}-${taskId}`;
-        setTimeout(() => {
-          cellRefs.current.get(cellKey)?.element?.focus();
-        }, 0);
-        return;
-      }
-
-      // Arrow Down
-      if (e.key === "ArrowDown" && roleIndex < totalRoles - 1) {
-        e.preventDefault();
-        const newRoleIndex = roleIndex + 1;
-        const nextRoleId = chart.roles[newRoleIndex].id;
-        setFocusedCell({ roleId: nextRoleId, taskId });
-        const cellKey = `${nextRoleId}-${taskId}`;
-        setTimeout(() => {
-          cellRefs.current.get(cellKey)?.element?.focus();
-        }, 0);
-        return;
-      }
-
-      // Arrow Left
-      if (e.key === "ArrowLeft" && taskIndex > 0) {
-        e.preventDefault();
-        const newTaskIndex = taskIndex - 1;
-        const nextTaskId = chart.tasks[newTaskIndex].id;
+        const nextTaskId = chart.tasks[taskIndex - 1].id;
         setFocusedCell({ roleId, taskId: nextTaskId });
-        const cellKey = `${roleId}-${nextTaskId}`;
-        setTimeout(() => {
-          cellRefs.current.get(cellKey)?.element?.focus();
-        }, 0);
+        setTimeout(() => cellRefs.current.get(`${roleId}-${nextTaskId}`)?.element?.focus(), 0);
         return;
       }
 
-      // Arrow Right
-      if (e.key === "ArrowRight" && taskIndex < totalTasks - 1) {
+      // Arrow Down — move to next task (row below)
+      if (e.key === "ArrowDown" && taskIndex < totalTasks - 1) {
         e.preventDefault();
-        const newTaskIndex = taskIndex + 1;
-        const nextTaskId = chart.tasks[newTaskIndex].id;
+        const nextTaskId = chart.tasks[taskIndex + 1].id;
         setFocusedCell({ roleId, taskId: nextTaskId });
-        const cellKey = `${roleId}-${nextTaskId}`;
-        setTimeout(() => {
-          cellRefs.current.get(cellKey)?.element?.focus();
-        }, 0);
+        setTimeout(() => cellRefs.current.get(`${roleId}-${nextTaskId}`)?.element?.focus(), 0);
+        return;
+      }
+
+      // Arrow Left — move to previous role (column left)
+      if (e.key === "ArrowLeft" && roleIndex > 0) {
+        e.preventDefault();
+        const nextRoleId = chart.roles[roleIndex - 1].id;
+        setFocusedCell({ roleId: nextRoleId, taskId });
+        setTimeout(() => cellRefs.current.get(`${nextRoleId}-${taskId}`)?.element?.focus(), 0);
+        return;
+      }
+
+      // Arrow Right — move to next role (column right)
+      if (e.key === "ArrowRight" && roleIndex < totalRoles - 1) {
+        e.preventDefault();
+        const nextRoleId = chart.roles[roleIndex + 1].id;
+        setFocusedCell({ roleId: nextRoleId, taskId });
+        setTimeout(() => cellRefs.current.get(`${nextRoleId}-${taskId}`)?.element?.focus(), 0);
         return;
       }
     },
@@ -331,111 +315,105 @@ export default function RaciMatrixEditor({
               className="bg-muted border-b border-border"
               style={{ overflow: "visible" }}
             >
-              <th className="px-4 py-3 text-left text-xs font-semibold text-foreground min-w-[150px] border-r border-border bg-muted">
-                Role / Task
+              <th className="px-4 py-3 text-left text-xs font-semibold text-foreground min-w-[180px] border-r border-border bg-muted">
+                Task / Role
               </th>
-              {chart.tasks.map((task) => {
-                const isValid = getTaskValidationStatus(task.id);
-                return (
-                  <th
-                    key={task.id}
-                    className={`px-3 py-2 text-center text-xs font-semibold min-w-[90px] border-r border-border last:border-r-0 ${
-                      !isValid ? "bg-destructive/10 dark:bg-destructive/20" : ""
-                    }`}
-                    style={{ overflow: "visible" }}
-                  >
+              {chart.roles.map((role) => (
+                <th
+                  key={role.id}
+                  className="px-3 py-2 text-center text-xs font-semibold min-w-[90px] border-r border-border last:border-r-0"
+                >
+                  <div className="font-medium text-foreground break-words">
+                    {role.name}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {chart.tasks.map((task, taskIndex) => {
+              const isValid = getTaskValidationStatus(task.id);
+              return (
+                <tr
+                  key={task.id}
+                  className={`border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors ${!isValid ? "bg-destructive/5" : ""}`}
+                >
+                  <td className="px-4 py-3 text-sm font-medium text-foreground border-r border-border bg-muted/50">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div
-                          className="break-words relative cursor-help"
-                          style={{ overflow: "visible" }}
-                        >
-                          <div className="font-medium text-foreground">
-                            {task.name}
-                          </div>
+                        <div className="cursor-help">
+                          <div>{task.name}</div>
                           {!isValid && (
-                            <div className="text-xs text-destructive dark:text-destructive-foreground font-semibold mt-1">
+                            <div className="text-xs text-destructive font-semibold mt-0.5">
                               ⚠️ Missing A
                             </div>
                           )}
                         </div>
                       </TooltipTrigger>
                       {task.description && (
-                        <TooltipContent side="top" className="max-w-xs">
-                          <Caption className="text-xs text-popover-foreground">{task.description}</Caption>
+                        <TooltipContent side="right" className="max-w-xs">
+                          <Caption className="text-xs">{task.description}</Caption>
                         </TooltipContent>
                       )}
                     </Tooltip>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {chart.roles.map((role, roleIndex) => (
-              <tr
-                key={role.id}
-                className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
-              >
-                <td className="px-4 py-3 text-sm font-medium text-foreground border-r border-border bg-muted/50">
-                  {role.name}
-                </td>
-                {chart.tasks.map((task, taskIndex) => {
-                  const value = chart.matrix[role.id]?.[task.id] || null;
-                  const isFocused =
-                    focusedCell?.roleId === role.id &&
-                    focusedCell?.taskId === task.id;
-                  const colors = getCellColor(value, isFocused);
-                  const cellKey = `${role.id}-${task.id}`;
+                  </td>
+                  {chart.roles.map((role, roleIndex) => {
+                    const value = chart.matrix[role.id]?.[task.id] || null;
+                    const isFocused =
+                      focusedCell?.roleId === role.id &&
+                      focusedCell?.taskId === task.id;
+                    const colors = getCellColor(value, isFocused);
+                    const cellKey = `${role.id}-${task.id}`;
 
-                  return (
-                    <td
-                      key={cellKey}
-                      className="px-1 py-1 text-center border-r border-border last:border-r-0"
-                    >
-                      <button
-                        ref={(el) => {
-                          if (el) {
-                            cellRefs.current.set(cellKey, {
-                              roleId: role.id,
-                              taskId: task.id,
-                              element: el,
-                            });
-                          }
-                        }}
-                        onFocus={() =>
-                          setFocusedCell({ roleId: role.id, taskId: task.id })
-                        }
-                        onBlur={() => setFocusedCell(null)}
-                        onKeyDown={(e) =>
-                          handleCellKeyDown(
-                            e,
-                            roleIndex,
-                            taskIndex,
-                            role.id,
-                            task.id
-                          )
-                        }
-                        onClick={() => cycleCellForward(role.id, task.id)}
-                        style={{
-                          backgroundColor: colors.background,
-                          borderColor: colors.border,
-                          color: colors.text,
-                          ...(isFocused && {
-                            boxShadow: `0 0 0 2px rgba(0, 0, 0, 0.05), 0 0 0 4px rgba(59, 130, 246, 0.5)`,
-                          }),
-                        }}
-                        className={`w-full h-12 flex items-center justify-center border-2 rounded font-bold text-lg transition-all hover:shadow-md active:scale-95 focus:outline-none`}
-                        aria-label={`RACI cell for ${role.name} and ${task.name}. Current: ${value || "unassigned"}. Press Space to cycle (${raciCycle.join("→")})`}
-                        title={`${role.name} - ${task.name}: ${value || "-"}`}
+                    return (
+                      <td
+                        key={cellKey}
+                        className="px-1 py-1 text-center border-r border-border last:border-r-0"
                       >
-                        {value || "-"}
-                      </button>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                        <button
+                          ref={(el) => {
+                            if (el) {
+                              cellRefs.current.set(cellKey, {
+                                roleId: role.id,
+                                taskId: task.id,
+                                element: el,
+                              });
+                            }
+                          }}
+                          onFocus={() =>
+                            setFocusedCell({ roleId: role.id, taskId: task.id })
+                          }
+                          onBlur={() => setFocusedCell(null)}
+                          onKeyDown={(e) =>
+                            handleCellKeyDown(
+                              e,
+                              roleIndex,
+                              taskIndex,
+                              role.id,
+                              task.id
+                            )
+                          }
+                          onClick={() => cycleCellForward(role.id, task.id)}
+                          style={{
+                            backgroundColor: colors.background,
+                            borderColor: colors.border,
+                            color: colors.text,
+                            ...(isFocused && {
+                              boxShadow: `0 0 0 2px rgba(0, 0, 0, 0.05), 0 0 0 4px rgba(59, 130, 246, 0.5)`,
+                            }),
+                          }}
+                          className="w-full h-12 flex items-center justify-center border-2 rounded font-bold text-lg transition-all hover:shadow-md active:scale-95 focus:outline-none"
+                          aria-label={`RACI cell for ${task.name} and ${role.name}. Current: ${value || "unassigned"}. Press Space to cycle`}
+                          title={`${task.name} - ${role.name}: ${value || "-"}`}
+                        >
+                          {value || "-"}
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

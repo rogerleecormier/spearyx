@@ -146,14 +146,11 @@ export const generateResume = createServerFn({ method: "POST" })
         .replace("{company}", analysis.company ?? "")
         .replace("{jobDescription}", jobDescription)
         .replace("{keywords}", analysis.keywords ?? "[]")
+        .replace("{experienceCount}", String(experienceCount))
         .replace("{extraGuidance}", extraGuidance || "None provided");
 
-      const systemContent = experienceCount > 0
-        ? `You are an expert Executive Resume Strategist specializing in ATS-optimized resume generation. You produce resumes as valid JSON only. CRITICAL RULES: (1) You NEVER fabricate experience. (2) You SELECT which achievements to highlight based on the TARGET JOB. (3) The candidate has exactly ${experienceCount} job(s) — your output MUST contain exactly ${experienceCount} experience entries. (4) Use metrics and details from the resume text; do not fabricate outcomes.`
-        : `You are an expert Executive Resume Strategist specializing in ATS-optimized resume generation. You produce resumes as valid JSON only. CRITICAL RULES: (1) You NEVER fabricate experience. (2) Extract ALL distinct work history entries directly from the CANDIDATE ORIGINAL RESUME TEXT. (3) For each role, SELECT the 6 achievements that best demonstrate the skills the TARGET JOB requires.`;
-
       const messages: Array<{ role: "system" | "user"; content: string }> = [
-        { role: "system", content: systemContent },
+        { role: "system", content: "You are a JSON-only API. Output valid JSON and nothing else. No markdown, no prose, no code fences." },
         { role: "user", content: prompt },
       ];
 

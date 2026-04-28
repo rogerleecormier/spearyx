@@ -2,41 +2,48 @@ import { cn } from "@spearyx/ui-kit";
 
 interface ScoreBadgeProps {
   score: number;
+  label?: string;
   size?: "sm" | "md" | "lg";
 }
 
 function getScoreConfig(score: number) {
-  if (score >= 80) return { color: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/20", label: "Strong" };
-  if (score >= 60) return { color: "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/20", label: "Moderate" };
-  return { color: "bg-red-500/15 text-red-700 dark:text-red-400 ring-red-500/20", label: "Weak" };
+  if (score >= 80) return { border: "border-emerald-400", text: "text-emerald-700", bg: "bg-emerald-50", label: "Strong" };
+  if (score >= 60) return { border: "border-amber-400",  text: "text-amber-700",  bg: "bg-amber-50",  label: "Moderate" };
+  return              { border: "border-red-400",    text: "text-red-700",    bg: "bg-red-50",    label: "Weak" };
 }
 
-export function ScoreBadge({ score, size = "md" }: ScoreBadgeProps) {
-  const config = getScoreConfig(score);
+export function ScoreBadge({ score, label, size = "md" }: ScoreBadgeProps) {
+  const cfg = getScoreConfig(score);
+  const displayLabel = label ?? cfg.label;
+
+  const circleSize = size === "sm" ? "h-10 w-10" : size === "lg" ? "h-16 w-16" : "h-12 w-12";
+  const numSize    = size === "sm" ? "text-sm"   : size === "lg" ? "text-xl"   : "text-base";
+  const subSize    = size === "sm" ? "text-[9px]" : size === "lg" ? "text-[11px]" : "text-[10px]";
+  const borderW    = size === "lg" ? "border-4"  : "border-[3px]";
+
   return (
-    <div className={cn(
-      "inline-flex flex-col items-center justify-center rounded-lg ring-1 font-mono tabular-nums",
-      config.color,
-      size === "sm" && "px-2 py-1 min-w-10",
-      size === "md" && "px-3 py-1.5 min-w-14",
-      size === "lg" && "px-4 py-2 min-w-20",
-    )}>
-      <span className={cn(
-        "font-bold leading-none",
-        size === "sm" && "text-sm",
-        size === "md" && "text-base",
-        size === "lg" && "text-2xl",
+    <div className="flex flex-col items-center gap-1">
+      <div className={cn(
+        "relative flex flex-col items-center justify-center rounded-full bg-white shadow-sm",
+        circleSize, borderW, cfg.border,
       )}>
-        {score}
-      </span>
-      <span className={cn(
-        "opacity-70 leading-none mt-0.5",
-        size === "sm" && "text-[10px]",
-        size === "md" && "text-[11px]",
-        size === "lg" && "text-xs",
-      )}>
-        {config.label}
-      </span>
+        <span className={cn("font-bold leading-none tabular-nums", numSize, cfg.text)}>{score}</span>
+      </div>
+      <span className={cn("font-medium text-slate-500 leading-tight", subSize)}>{displayLabel}</span>
+    </div>
+  );
+}
+
+// Inline mini bar used on JobCard and listings
+export function ScoreMiniRow({ label, score }: { label: string; score: number }) {
+  const cfg = getScoreConfig(score);
+  const barColor = score >= 80 ? "bg-emerald-400" : score >= 60 ? "bg-amber-400" : "bg-red-400";
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="h-1.5 w-14 rounded-full bg-slate-100 overflow-hidden">
+        <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${score}%` }} />
+      </div>
+      <span className={cn("text-[9px] font-semibold tabular-nums", cfg.text)}>{label} {score}</span>
     </div>
   );
 }

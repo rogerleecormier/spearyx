@@ -49,6 +49,7 @@ export const analyzeJob = createServerFn({ method: "POST" })
       tools: resumeRow.tools,
       certifications: resumeRow.certifications,
       experience: resumeRow.experience,
+      education: resumeRow.education,
     });
 
     const analysis = await runAnalysisPipeline(jdText, resumeText, resumeEvidenceText, env);

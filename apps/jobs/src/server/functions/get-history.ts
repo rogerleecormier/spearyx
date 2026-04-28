@@ -1,6 +1,6 @@
 'use server';
 import { createServerFn } from "@tanstack/react-start";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, sql } from "drizzle-orm";
 import { getCloudflareEnv } from "@/lib/cloudflare";
 import type { CloudflareEnv } from "@/lib/cloudflare";
 import { getDb } from "@/db/db";
@@ -23,13 +23,13 @@ export interface HistoryRow {
 
 export const getHistory = createServerFn({ method: "GET" })
   .inputValidator((data: { page?: number; pageSize?: number }) => data)
-  .handler(async ({ data }): Promise<{ rows: HistoryRow[]; total: number }> => {
+  .handler(async ({ data }): Promise<{ rows: HistoryRow[]; total: number; totalApplied: number; totalPursued: number; totalDocuments: number }> => {
     try {
       const env = getCloudflareEnv();
-      if (!env.DB) return { rows: [], total: 0 };
+      if (!env.DB) return { rows: [], total: 0, totalApplied: 0, totalPursued: 0, totalDocuments: 0 };
 
       const user = await resolveSessionUser();
-      if (!user) return { rows: [], total: 0 };
+      if (!user) return { rows: [], total: 0, totalApplied: 0, totalPursued: 0, totalDocuments: 0 };
 
       const page = data.page ?? 1;
       const pageSize = data.pageSize ?? 20;
@@ -44,9 +44,19 @@ export const getHistory = createServerFn({ method: "GET" })
         .limit(pageSize)
         .offset(offset);
 
-      const countResult = await db
-        .select({ id: jobAnalyses.id })
+      const [aggregates] = await db
+        .select({
+          total: sql<number>`count(*)`,
+          totalApplied: sql<number>`sum(case when ${jobAnalyses.applied} = 1 then 1 else 0 end)`,
+          totalPursued: sql<number>`sum(case when ${jobAnalyses.pursue} = 1 then 1 else 0 end)`,
+        })
         .from(jobAnalyses)
+        .where(eq(jobAnalyses.userId, user.id));
+
+      const [docCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(generatedDocuments)
+        .innerJoin(jobAnalyses, eq(generatedDocuments.jobAnalysisId, jobAnalyses.id))
         .where(eq(jobAnalyses.userId, user.id));
 
       const rows: HistoryRow[] = await Promise.all(
@@ -77,10 +87,16 @@ export const getHistory = createServerFn({ method: "GET" })
         }),
       );
 
-      return { rows, total: countResult.length };
+      return {
+        rows,
+        total: Number(aggregates?.total ?? 0),
+        totalApplied: Number(aggregates?.totalApplied ?? 0),
+        totalPursued: Number(aggregates?.totalPursued ?? 0),
+        totalDocuments: Number(docCountResult?.count ?? 0),
+      };
     } catch (error) {
       console.error("[getHistory] error:", error);
-      return { rows: [], total: 0 };
+      return { rows: [], total: 0, totalApplied: 0, totalPursued: 0, totalDocuments: 0 };
     }
   });
 

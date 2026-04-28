@@ -32,7 +32,7 @@ export default function FilterDropdown({
   const isActive = value !== null;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border outline-none focus:ring-2 focus:ring-primary-500/10 h-10 ${

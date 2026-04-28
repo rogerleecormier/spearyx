@@ -2,10 +2,85 @@ import { AI_CONFIG } from "../config/workers";
 import promptsData from "../config/prompts.json";
 import { RaciValue } from "@/types/raci";
 
+function extractJSON(text: string): string {
+  // Strip markdown code fences
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) return fenceMatch[1].trim();
+  // Extract first JSON object or array
+  const objMatch = text.match(/\{[\s\S]*\}/);
+  if (objMatch) return objMatch[0];
+  const arrMatch = text.match(/\[[\s\S]*\]/);
+  if (arrMatch) return arrMatch[0];
+  return text.trim();
+}
+
+function parseNumberedList(raw: string): Array<{ name: string; description: string }> {
+  const lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
+  const tasks: Array<{ name: string; description: string }> = [];
+  for (const line of lines) {
+    // Match "1. Name: description" or "1. Name - description" or "1. Name"
+    const match = line.match(/^\d+[\.\)]\s+(.+)/);
+    if (!match) continue;
+    const rest = match[1].replace(/\*\*/g, "").trim();
+    const sepIdx = rest.search(/[:\-–]/);
+    if (sepIdx > 0) {
+      tasks.push({
+        name: rest.slice(0, sepIdx).trim(),
+        description: rest.slice(sepIdx + 1).trim(),
+      });
+    } else {
+      tasks.push({ name: rest.trim(), description: "" });
+    }
+  }
+  return tasks;
+}
+
+function parseAIResponse(raw: string, promptType: AIPromptType): Record<string, unknown> {
+  // For task generation, try numbered list first (more reliable for small models)
+  if (promptType === "taskGeneration") {
+    const listTasks = parseNumberedList(raw);
+    if (listTasks.length > 0) return { tasks: listTasks };
+  }
+
+  try {
+    const json = extractJSON(raw);
+    const parsed = JSON.parse(json);
+
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      if (promptType === "taskGeneration" && Array.isArray(parsed.tasks)) {
+        return {
+          ...parsed,
+          tasks: parsed.tasks.map((item: unknown) =>
+            typeof item === "string" ? { name: item, description: "" } : item
+          ),
+        };
+      }
+      return parsed;
+    }
+
+    if (Array.isArray(parsed)) {
+      if (promptType === "roleExtraction") return { roles: parsed };
+      if (promptType === "taskGeneration") {
+        return {
+          tasks: parsed.map((item: unknown) =>
+            typeof item === "string" ? { name: item, description: "" } : item
+          ),
+        };
+      }
+    }
+  } catch {
+    // fall through
+  }
+
+  return { result: raw };
+}
+
 export type AIPromptType =
   | "roleExtraction"
   | "taskGeneration"
   | "raciAdvice"
+  | "accountableResolution"
+  | "titleGeneration"
   | "projectTypeClassification";
 
 export interface AIRoleSuggestion {
@@ -121,6 +196,48 @@ export class AIService {
     );
   }
 
+  async generateTitle(
+    projectDescription: string,
+    requestId?: string
+  ): Promise<string | null> {
+    try {
+      const result = await this.callAI<{ result: string }>(
+        "titleGeneration",
+        { projectDescription },
+        requestId
+      );
+      const raw = (result.result || "").trim().replace(/^["']|["']$/g, "");
+      return raw || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async resolveAccountable(
+    task: string,
+    projectType: string,
+    roles: string[],
+    requestId?: string
+  ): Promise<string | null> {
+    try {
+      const result = await this.callAI<{ result: string }>(
+        "accountableResolution",
+        { task, projectType, roles: roles.join(", ") },
+        requestId
+      );
+      const raw = (result.result || "").trim();
+      // Find the closest matching role name (case-insensitive)
+      const match = roles.find(
+        (r) => r.toLowerCase() === raw.toLowerCase()
+      ) || roles.find(
+        (r) => raw.toLowerCase().includes(r.toLowerCase()) || r.toLowerCase().includes(raw.toLowerCase())
+      );
+      return match || null;
+    } catch {
+      return null;
+    }
+  }
+
   async classifyProjectType(
     projectDescription: string,
     requestId?: string
@@ -189,8 +306,8 @@ export class AIService {
         }
 
         try {
-          const parsed = JSON.parse(data.result);
-          return { ...parsed, confidence: parsed.confidence ?? 0.8 } as T;
+          const parsed = parseAIResponse(data.result, promptType);
+          return { ...parsed, confidence: 0.8 } as T;
         } catch {
           return { result: data.result, confidence: 0.8 } as T;
         }
@@ -310,44 +427,49 @@ export const AI_FALLBACKS = {
   getTasks(projectType: string): Array<{ name: string; description?: string }> {
     const fallbacks: Record<string, Array<{ name: string; description?: string }>> = {
       "mobile app": [
-        { name: "Requirements & Planning", description: "Define scope and requirements" },
-        { name: "System Architecture", description: "Design technical architecture" },
-        { name: "Implementation", description: "Code development" },
-        { name: "Testing", description: "QA and testing cycles" },
-        { name: "Deployment", description: "Release to production" },
-        { name: "Monitoring & Support", description: "Post-launch monitoring" },
+        { name: "Product Requirements & User Stories", description: "Define feature scope, acceptance criteria, and prioritized backlog so the team builds the right product." },
+        { name: "System Architecture & API Design", description: "Design backend services, data models, and API contracts to establish a stable foundation before coding begins." },
+        { name: "UI/UX Wireframes & Prototypes", description: "Create interactive mockups for key user flows so stakeholders can validate experience before development." },
+        { name: "Core Feature Development", description: "Implement authentication, primary user flows, and business logic that form the backbone of the app." },
+        { name: "Third-Party Integrations", description: "Connect payment providers, push notifications, and analytics SDKs required for the app to function end-to-end." },
+        { name: "QA Testing & Bug Resolution", description: "Execute functional, regression, and device-compatibility tests to ship a stable, crash-free release." },
+        { name: "App Store Submission & Launch", description: "Prepare store listings, submit builds for review, and coordinate a go-live rollout with monitoring in place." },
       ],
       "web redesign": [
-        { name: "Discovery & Analysis", description: "Understand current state" },
-        { name: "Design System", description: "Create design system and mockups" },
-        { name: "Frontend Build", description: "Implement new design" },
-        { name: "Backend Integration", description: "Connect to backend services" },
-        { name: "User Testing", description: "Conduct UAT" },
-        { name: "Launch", description: "Rollout to production" },
+        { name: "Stakeholder Discovery & Audit", description: "Interview stakeholders and audit the current site's content, performance, and UX gaps to align on redesign goals." },
+        { name: "Information Architecture & Sitemap", description: "Define the new page hierarchy and navigation structure so users can find content intuitively." },
+        { name: "Brand-Aligned Design System", description: "Build a component library with typography, color, and interaction patterns that reflects the updated brand." },
+        { name: "High-Fidelity Page Design", description: "Design all key page templates in detail so developers have pixel-precise specs to build from." },
+        { name: "Frontend Implementation", description: "Develop responsive, accessible pages using the new design system across all target devices and browsers." },
+        { name: "CMS Migration & Content QA", description: "Migrate existing content to the new CMS structure and verify accuracy, SEO metadata, and broken-link resolution." },
+        { name: "Staged Rollout & Performance Validation", description: "Launch behind a feature flag, validate Core Web Vitals and conversion metrics, then cut over fully." },
       ],
       "crm migration": [
-        { name: "Assessment", description: "Evaluate current system" },
-        { name: "Planning", description: "Plan migration strategy" },
-        { name: "Data Mapping", description: "Map legacy data to new system" },
-        { name: "Configuration", description: "Set up new CRM" },
-        { name: "Training", description: "Train users on new system" },
-        { name: "Cutover", description: "Switch to new system" },
+        { name: "Current-State CRM Audit", description: "Document all existing data structures, custom fields, integrations, and workflows to uncover migration risks early." },
+        { name: "Data Cleansing & Deduplication", description: "Remove duplicate contacts, fix corrupt records, and standardize formats so only clean data moves to the new system." },
+        { name: "Field & Object Mapping", description: "Map every legacy field to its destination in the new CRM to ensure no data is lost or misclassified." },
+        { name: "New CRM Configuration & Customization", description: "Set up pipelines, automation rules, roles, and custom objects in the target CRM to match business processes." },
+        { name: "Integration Reconnection", description: "Reconnect email, marketing, ERP, and support tool integrations to the new CRM and validate data flow end-to-end." },
+        { name: "User Acceptance Testing & Training", description: "Run UAT with key users across sales and support teams and deliver role-specific training before go-live." },
+        { name: "Cutover & Hypercare Support", description: "Execute the final data migration, decommission the legacy system, and provide two-week hypercare to resolve blockers." },
       ],
       "marketing campaign": [
-        { name: "Strategy Development", description: "Define campaign strategy" },
-        { name: "Content Creation", description: "Create marketing materials" },
-        { name: "Channel Setup", description: "Set up marketing channels" },
-        { name: "Campaign Launch", description: "Deploy campaign" },
-        { name: "Monitoring", description: "Track performance metrics" },
-        { name: "Analysis & Optimization", description: "Analyze and iterate" },
+        { name: "Audience Research & Segmentation", description: "Analyze target personas, buying intent signals, and competitor positioning to sharpen campaign focus." },
+        { name: "Campaign Strategy & Messaging Framework", description: "Define campaign goals, key messages per segment, channel mix, and KPIs to guide all downstream work." },
+        { name: "Creative Asset Production", description: "Produce copy, visuals, video, and landing pages aligned to the messaging framework and brand guidelines." },
+        { name: "Channel Configuration & Ad Setup", description: "Configure paid, email, and social channels with targeting rules, UTM tracking, and budget allocations." },
+        { name: "Campaign Launch & QA", description: "Activate the campaign across all channels, verify tracking pixels fire correctly, and confirm assets render as expected." },
+        { name: "Performance Monitoring & Optimization", description: "Monitor CTR, conversion rate, and CPL daily; reallocate budget and iterate creative based on early signals." },
+        { name: "Post-Campaign Analysis & Reporting", description: "Compile final performance data against KPIs, extract learnings, and document recommendations for future campaigns." },
       ],
       "data analytics": [
-        { name: "Requirements", description: "Define analytics requirements" },
-        { name: "Data Pipeline", description: "Build data infrastructure" },
-        { name: "Analytics Setup", description: "Configure analytics tools" },
-        { name: "Dashboard Creation", description: "Build dashboards" },
-        { name: "Training", description: "Train stakeholders" },
-        { name: "Maintenance", description: "Ongoing support and optimization" },
+        { name: "Analytics Requirements & KPI Definition", description: "Work with stakeholders to define the business questions, metrics, and success criteria the analytics platform must answer." },
+        { name: "Data Source Inventory & Access Setup", description: "Catalog all source systems, negotiate data access agreements, and establish secure ingestion credentials." },
+        { name: "Data Pipeline & Warehouse Build", description: "Develop ETL/ELT pipelines that reliably ingest, transform, and load data into the analytics warehouse on schedule." },
+        { name: "Data Modeling & Semantic Layer", description: "Create dimensional models and a semantic layer so analysts query consistent, business-friendly metrics." },
+        { name: "Dashboard & Report Development", description: "Build self-service dashboards for each stakeholder group with drill-down capability and scheduled delivery." },
+        { name: "Data Quality Monitoring & Alerting", description: "Implement automated data quality checks and alerting so issues are caught before they reach business decisions." },
+        { name: "Stakeholder Enablement & Documentation", description: "Run training sessions, publish a data catalog, and hand off runbooks so teams can self-serve analytics independently." },
       ],
     };
     const key = Object.keys(fallbacks).find((k) => projectType.toLowerCase().includes(k));

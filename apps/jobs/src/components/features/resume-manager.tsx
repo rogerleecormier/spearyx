@@ -55,7 +55,10 @@ export function ResumeManager({ initial }: { initial: ResumeData | null }) {
       }
       setRawText(text);
 
-      const parsed = await parseResumeText({ data: { text } }).catch(() => null);
+      const parsed = await Promise.race([
+        parseResumeText({ data: { text } }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 45_000)),
+      ]).catch(() => null);
       if (parsed) {
         if (parsed.fullName && !fullName) setFullName(parsed.fullName);
         if (parsed.email && !email) setEmail(parsed.email);
@@ -160,15 +163,15 @@ export function ResumeManager({ initial }: { initial: ResumeData | null }) {
             )}
             <div className="text-center">
               <p className="text-sm font-medium">
-                {uploadStatus === "parsing" ? "Reading file…" :
+                {uploadStatus === "parsing" ? "AI is parsing your resume…" :
                  uploadStatus === "done" ? "Resume imported — review fields below and save." :
                  uploadStatus === "error" ? "Failed to read file" :
                  "Click to upload or drag & drop"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {uploadStatus === "idle" || uploadStatus === "error" ? "PDF, DOCX, or TXT" :
-                 uploadStatus === "done" ? "Contact fields auto-filled from detected data." :
-                 "This may take a few seconds…"}
+                 uploadStatus === "done" ? "Fields auto-filled — save when ready." :
+                 "Extracting all roles, skills, and certifications. This can take up to 45 seconds…"}
               </p>
             </div>
             {(uploadStatus === "idle" || uploadStatus === "error") && (

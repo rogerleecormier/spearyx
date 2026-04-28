@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listUsers, createUser, deleteUser } from "@/server/functions/admin";
+import { PageHero, PageSection } from "@spearyx/ui-kit";
+import { Shield, Trash2 } from "lucide-react";
 
 type AdminUser = { id: number; email: string; role: string; createdAt: string };
 
@@ -62,41 +64,60 @@ function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="mb-6 text-2xl font-bold">User Management</h1>
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+      <PageHero
+        eyebrow="Admin"
+        icon={<Shield className="h-3.5 w-3.5" />}
+        title="User Management"
+        description="Manage jobs-app access, create accounts, and remove users when needed."
+        stats={[
+          { label: "Users", value: String(userList.length) },
+          { label: "Admins", value: String(userList.filter((user) => user.role === "admin").length) },
+        ]}
+      />
 
-      <form onSubmit={handleAddUser} className="mb-6 flex gap-2">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          Add User
-        </button>
-      </form>
+      <PageSection
+        title="Create User"
+        description="Add a new user to the jobs application with an initial password."
+      >
+        <form onSubmit={handleAddUser} className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {loading ? "Adding..." : "Add User"}
+          </button>
+        </form>
 
-      {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
-      {loadingUsers && <p className="mb-4 text-sm text-muted-foreground">Loading users…</p>}
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+        {loadingUsers && <p className="mt-4 text-sm text-muted-foreground">Loading users...</p>}
+      </PageSection>
 
-      <div className="overflow-hidden rounded-lg border border-border">
+      <PageSection
+        title="Current Users"
+        description="Accounts with access to the jobs workspace."
+        className="overflow-hidden p-0"
+        contentClassName=""
+      >
         <table className="w-full text-sm">
-          <thead className="bg-muted/50">
+          <thead className="bg-slate-50">
             <tr>
               <th className="px-4 py-3 text-left font-medium">Email</th>
               <th className="px-4 py-3 text-left font-medium">Role</th>
@@ -120,8 +141,9 @@ function AdminPage() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDeleteUser(u.id)}
-                      className="text-sm text-destructive hover:underline"
+                      className="inline-flex items-center gap-1 text-sm text-destructive hover:underline"
                     >
+                      <Trash2 className="h-3.5 w-3.5" />
                       Delete
                     </button>
                   </td>
@@ -130,7 +152,7 @@ function AdminPage() {
             )}
           </tbody>
         </table>
-      </div>
+      </PageSection>
     </div>
   );
 }

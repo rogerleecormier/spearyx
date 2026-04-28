@@ -5,13 +5,13 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { PageHero, PageSection } from '@spearyx/ui-kit'
 import {
   RefreshCw,
   CheckCircle,
   XCircle,
-  AlertTriangle,
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
@@ -75,16 +75,6 @@ interface SyncLog {
 // Query Client (singleton for this route)
 // ============================================
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5000,       // 5s before considered stale
-      gcTime: 60000,         // 1 min cache
-      refetchOnWindowFocus: true,
-      retry: 2
-    }
-  }
-})
 
 // ============================================
 // API Functions
@@ -179,22 +169,21 @@ function SyncDashboardContent() {
   const recentErrors = logsData?.meta?.recentErrors || 0
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Source Operations</h1>
-            <p className="text-slate-600 text-sm">Internal sync health, logs, and source status</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {recentErrors > 0 && (
-              <div className="flex items-center gap-2 text-red-600 text-sm">
-                <AlertTriangle className="w-4 h-4" />
-                {recentErrors} errors (last hour)
-              </div>
-            )}
-            <label className="flex items-center gap-2 text-sm">
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
+      <PageHero
+        eyebrow="Operations"
+        icon={<RefreshCw className="h-3.5 w-3.5" />}
+        title="Source Operations"
+        description="Internal sync health, source coverage, and recent worker activity for the jobs ingestion pipeline."
+        stats={[
+          { label: 'Total Jobs', value: String(stats?.totalJobs || 0) },
+          { label: 'Companies', value: String(stats?.totalDiscoveredCompanies || 0) },
+          { label: 'Pending', value: String(stats?.pendingCompanies || 0) },
+          { label: 'Errors', value: String(recentErrors) },
+        ]}
+        actions={
+          <>
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={autoRefresh}
@@ -208,16 +197,17 @@ function SyncDashboardContent() {
                 queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
                 queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
               }}
-              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="h-4 w-4" />
               Refresh
             </button>
-          </div>
-        </div>
+          </>
+        }
+      />
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Total Jobs" value={stats?.totalJobs || 0} />
           <StatCard label="Discovered Companies" value={stats?.totalDiscoveredCompanies || 0} />
           <StatCard label="Pending Discovery" value={stats?.pendingCompanies || 0} />
@@ -229,8 +219,10 @@ function SyncDashboardContent() {
         </div>
 
         {/* Jobs by Source */}
-        <div className="bg-white rounded-lg border p-4 mb-6">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">Jobs by Source</h2>
+        <PageSection
+          title="Jobs by Source"
+          description="Current inventory across ingestion sources."
+        >
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <SourceCard
               source="greenhouse"
@@ -263,10 +255,10 @@ function SyncDashboardContent() {
               accentColor="border-l-amber-500"
             />
           </div>
-        </div>
+        </PageSection>
 
         {/* Worker Status */}
-        <div className="mb-6">
+        <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Sync Workers</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Ordered: Discovery, ATS, Jobicy, RemoteOK, Himalayas */}
@@ -286,11 +278,13 @@ function SyncDashboardContent() {
         </div>
 
         {/* Recent Sync Logs */}
-        <div className="bg-white rounded-lg border">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Recent Sync Runs</h2>
-            <span className="text-xs text-slate-500">{logs.length} logs</span>
-          </div>
+        <PageSection
+          title="Recent Sync Runs"
+          description="Recent job ingestion and discovery activity."
+          className="p-0 overflow-hidden"
+          contentClassName=""
+          actions={<span className="text-xs text-slate-500">{logs.length} logs</span>}
+        >
           <div className="divide-y max-h-[500px] overflow-y-auto">
             {logs.map((log) => (
               <LogEntry
@@ -307,8 +301,7 @@ function SyncDashboardContent() {
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </PageSection>
     </div>
   )
 }
@@ -319,8 +312,8 @@ function SyncDashboardContent() {
 
 function StatCard({ label, value, isText = false }: { label: string; value: string | number; isText?: boolean }) {
   return (
-    <div className="bg-white rounded-lg border p-4">
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
+    <div className="rounded-2xl border border-slate-200 bg-white/82 p-5 shadow-sm backdrop-blur-sm">
+      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-1">{label}</div>
       <div className={`font-bold ${isText ? 'text-sm text-slate-700' : 'text-2xl text-slate-900'}`}>
         {value}
       </div>
@@ -338,7 +331,7 @@ function SourceCard({
   accentColor: string
 }) {
   return (
-    <div className={`bg-white rounded-lg border border-l-4 ${accentColor} p-4`}>
+    <div className={`rounded-xl border border-slate-200 border-l-4 ${accentColor} bg-slate-50 p-4`}>
       <div className="text-xs text-slate-500 mb-1 capitalize">{source}</div>
       <div className="text-2xl font-bold text-slate-900">
         {count.toLocaleString()}
@@ -365,7 +358,7 @@ function WorkerCard({
   }
 
   return (
-    <div className={`rounded-lg border p-4 ${bgColors[workerId] || 'bg-slate-50'}`}>
+    <div className={`rounded-2xl border p-4 shadow-sm ${bgColors[workerId] || 'bg-slate-50'}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xl">{worker.icon}</span>
         <div className="flex items-center gap-2">
@@ -484,9 +477,5 @@ function LogEntry({
 // ============================================
 
 export const Route = createFileRoute('/sync')({
-  component: () => (
-    <QueryClientProvider client={queryClient}>
-      <SyncDashboardContent />
-    </QueryClientProvider>
-  )
+  component: SyncDashboardContent,
 })

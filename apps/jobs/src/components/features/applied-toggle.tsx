@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@spearyx/ui-kit";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { toggleApplied } from "@/server/functions/toggle-applied";
@@ -6,37 +7,44 @@ import { toggleApplied } from "@/server/functions/toggle-applied";
 interface AppliedToggleProps {
   analysisId: number;
   initialApplied: boolean;
+  onAppliedChange?: (applied: boolean) => void;
 }
 
-export function AppliedToggle({ analysisId, initialApplied }: AppliedToggleProps) {
+export function AppliedToggle({ analysisId, initialApplied, onAppliedChange }: AppliedToggleProps) {
   const [applied, setApplied] = useState(initialApplied);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setApplied(initialApplied);
   }, [analysisId, initialApplied]);
 
-  async function handleToggle() {
-    setLoading(true);
-    try {
-      const result = await toggleApplied({ data: { id: analysisId, applied: !applied } });
+  const { mutate, isPending } = useMutation({
+    mutationFn: (next: boolean) =>
+      toggleApplied({ data: { id: analysisId, applied: next } }),
+    onMutate: (next) => {
+      setApplied(next);
+      onAppliedChange?.(next);
+      return { previous: !next };
+    },
+    onError: (_err, _next, ctx) => {
+      if (ctx) {
+        setApplied(ctx.previous);
+        onAppliedChange?.(ctx.previous);
+      }
+    },
+    onSuccess: (result) => {
       setApplied(result.applied);
-    } catch {
-      // revert on error
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+  });
 
   return (
     <Button
       variant={applied ? "default" : "outline"}
       size="sm"
-      onClick={handleToggle}
-      disabled={loading}
+      onClick={() => mutate(!applied)}
+      disabled={isPending}
       className={applied ? "bg-emerald-600 hover:bg-emerald-700 border-emerald-600 text-white" : undefined}
     >
-      {loading ? (
+      {isPending ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
       ) : applied ? (
         <CheckCircle2 className="h-3.5 w-3.5" />

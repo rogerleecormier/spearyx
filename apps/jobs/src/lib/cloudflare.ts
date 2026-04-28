@@ -14,11 +14,6 @@ export interface CloudflareEnv {
   BROWSER: Fetcher;
 }
 
-/**
- * Access Cloudflare bindings from a TanStack Start server function.
- * In production returns real bindings from the Workers runtime.
- * In dev the vite.config.ts alias points this import to the stub returning {}.
- */
 export function getCloudflareEnv(): Partial<CloudflareEnv> {
   return cfEnv as unknown as Partial<CloudflareEnv>;
 }
