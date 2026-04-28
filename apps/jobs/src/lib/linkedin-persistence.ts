@@ -96,8 +96,9 @@ export function buildLinkedinJobSemanticKey(job: LinkedinJobIdentityInput) {
 export function canonicalizeLinkedinJobUrl(rawUrl: string, externalJobId?: string): string {
   try {
     const url = new URL(rawUrl);
-    if (url.pathname.match(/\/jobs\/view\/(\d+)/)?.[1]) {
-      return `https://www.linkedin.com${url.pathname.replace(/\/+$/, "")}/`;
+    const normalizedPath = url.pathname.replace(/\/+$/, "");
+    if (normalizedPath.includes("/jobs/view/")) {
+      return `https://www.linkedin.com${normalizedPath}/`;
     }
     const currentJobId = url.searchParams.get("currentJobId");
     if (currentJobId) {
@@ -530,14 +531,29 @@ export async function pruneDuplicateLinkedinJobResults() {
 
   const seen = new Set<string>();
   const duplicateIds: number[] = [];
+  const updates: Array<{ id: number; canonicalSourceUrl: string }> = [];
 
   for (const row of rows) {
-    const dedupeKey = `${row.userId}:${row.canonicalSourceUrl}`;
+    const canonicalSourceUrl = canonicalizeLinkedinJobUrl(row.sourceUrl, row.externalJobId);
+    if (row.canonicalSourceUrl !== canonicalSourceUrl) {
+      updates.push({ id: row.id, canonicalSourceUrl });
+    }
+    const dedupeKey = `${row.userId}:${canonicalSourceUrl}`;
     if (seen.has(dedupeKey)) {
       duplicateIds.push(row.id);
       continue;
     }
     seen.add(dedupeKey);
+  }
+
+  for (const update of updates) {
+    await db
+      .update(linkedinJobResults)
+      .set({
+        canonicalSourceUrl: update.canonicalSourceUrl,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(linkedinJobResults.id, update.id));
   }
 
   if (duplicateIds.length === 0) return 0;

@@ -112,7 +112,7 @@ function AdminPage() {
       const result = await runLinkedinSemanticDedupe({});
       setSuccessMessage(
         result.deletedCount > 0
-          ? `LinkedIn dedupe complete. Removed ${result.deletedCount} duplicate jobs.`
+          ? `LinkedIn dedupe complete. Removed ${result.deletedCount} duplicate jobs (${result.exactUrlDeletedCount} exact URL matches, ${result.semanticDeletedCount} semantic matches).`
           : "LinkedIn dedupe complete. No duplicate jobs were found.",
       );
     } catch (err) {
