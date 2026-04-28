@@ -7,69 +7,69 @@ The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths r
 The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
 The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
 vite v8.0.10 building client environment for production...
-[2Ktransforming...✓ 4141 modules transformed.
+[2Ktransforming...✓ 4142 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/client/.assetsignore                          0.02 kB
 dist/client/assets/index-Bxcuhip5.css              0.76 kB │ gzip:   0.44 kB
-dist/client/assets/styles-C-lQLOHP.css            70.43 kB │ gzip:  13.63 kB
+dist/client/assets/styles-B86ct64H.css            70.73 kB │ gzip:  13.67 kB
 dist/client/assets/root-CjNcrWFJ.js                0.03 kB │ gzip:   0.05 kB
 dist/client/assets/login-DUaM27T7.js               0.03 kB │ gzip:   0.05 kB
 dist/client/assets/invariant-O_LV4Lg7.js           0.06 kB │ gzip:   0.08 kB
-dist/client/assets/analyze-p2Pfkk9y.js             0.10 kB │ gzip:   0.11 kB
-dist/client/assets/chevron-down-CQdljGm8.js        0.12 kB │ gzip:   0.14 kB
-dist/client/assets/loader-circle-Dut9z9Rg.js       0.14 kB │ gzip:   0.15 kB
-dist/client/assets/arrow-right-B_7KafWB.js         0.16 kB │ gzip:   0.16 kB
-dist/client/assets/scoreUtils-JPnGy49Q.js          0.17 kB │ gzip:   0.13 kB
-dist/client/assets/search-CCEJShg4.js              0.17 kB │ gzip:   0.16 kB
-dist/client/assets/circle-check-CZnknp23.js        0.17 kB │ gzip:   0.16 kB
-dist/client/assets/circle-x-p8rZg9E7.js            0.20 kB │ gzip:   0.17 kB
-dist/client/assets/mail-DVqIopg2.js                0.21 kB │ gzip:   0.20 kB
-dist/client/assets/briefcase-DeEpHIiX.js           0.22 kB │ gzip:   0.19 kB
-dist/client/assets/target-CU3LK7Cv.js              0.22 kB │ gzip:   0.16 kB
-dist/client/assets/history-Dw4xhpj6.js             0.23 kB │ gzip:   0.19 kB
-dist/client/assets/arrow-up-down-CtQDud-x.js       0.24 kB │ gzip:   0.19 kB
-dist/client/assets/external-link-C379gKBP.js       0.25 kB │ gzip:   0.19 kB
-dist/client/assets/zap-BypYx3m_.js                 0.26 kB │ gzip:   0.20 kB
-dist/client/assets/shield-DR6UFYHj.js              0.27 kB │ gzip:   0.22 kB
-dist/client/assets/file-user-MGBbdFs2.js           0.32 kB │ gzip:   0.23 kB
-dist/client/assets/refresh-cw-CWr7VHiF.js          0.32 kB │ gzip:   0.22 kB
-dist/client/assets/trash-2-Cq68Ehm6.js             0.32 kB │ gzip:   0.21 kB
-dist/client/assets/file-text-CrfHP39L.js           0.33 kB │ gzip:   0.21 kB
-dist/client/assets/trending-up-BWE2LwGB.js         0.37 kB │ gzip:   0.25 kB
-dist/client/assets/sparkles-B1kqa0pZ.js            0.49 kB │ gzip:   0.28 kB
-dist/client/assets/wand-sparkles-5mrT18WK.js       0.51 kB │ gzip:   0.29 kB
-dist/client/assets/globe-SEEsmhjP.js               0.57 kB │ gzip:   0.31 kB
-dist/client/assets/triangle-alert-zfgQCIRB.js      0.60 kB │ gzip:   0.35 kB
-dist/client/assets/analyze._id-_5x8CFRr.js         0.70 kB │ gzip:   0.45 kB
+dist/client/assets/analyze-DqG8lwnR.js             0.10 kB │ gzip:   0.11 kB
+dist/client/assets/chevron-down-BrWCJEOz.js        0.12 kB │ gzip:   0.14 kB
+dist/client/assets/loader-circle-DilS_l-9.js       0.14 kB │ gzip:   0.15 kB
+dist/client/assets/arrow-right-CkBEhwnb.js         0.16 kB │ gzip:   0.16 kB
+dist/client/assets/search-COxWBeB5.js              0.17 kB │ gzip:   0.17 kB
+dist/client/assets/circle-check-BuwKOYQ6.js        0.17 kB │ gzip:   0.16 kB
+dist/client/assets/circle-x-CsaKGA66.js            0.20 kB │ gzip:   0.17 kB
+dist/client/assets/mail-CgHw9_YH.js                0.21 kB │ gzip:   0.20 kB
+dist/client/assets/briefcase-D5k6uHvz.js           0.22 kB │ gzip:   0.19 kB
+dist/client/assets/target-C9n1qjcR.js              0.22 kB │ gzip:   0.16 kB
+dist/client/assets/history-WAmH-76V.js             0.23 kB │ gzip:   0.19 kB
+dist/client/assets/arrow-up-down-kRZK0IEg.js       0.24 kB │ gzip:   0.19 kB
+dist/client/assets/external-link-6V4DtkIm.js       0.25 kB │ gzip:   0.19 kB
+dist/client/assets/zap-D34br5UY.js                 0.26 kB │ gzip:   0.20 kB
+dist/client/assets/shield-B7e_ViBd.js              0.27 kB │ gzip:   0.22 kB
+dist/client/assets/scoreUtils-D_EfC43l.js          0.29 kB │ gzip:   0.16 kB
+dist/client/assets/file-user-DfasViKg.js           0.32 kB │ gzip:   0.23 kB
+dist/client/assets/refresh-cw-eL-yd6sq.js          0.32 kB │ gzip:   0.22 kB
+dist/client/assets/trash-2-BUUFC9l-.js             0.32 kB │ gzip:   0.21 kB
+dist/client/assets/file-text-DD5V_j3n.js           0.33 kB │ gzip:   0.21 kB
+dist/client/assets/trending-up-B5I0xZLa.js         0.37 kB │ gzip:   0.25 kB
+dist/client/assets/sparkles-BKTTvYsB.js            0.49 kB │ gzip:   0.28 kB
+dist/client/assets/wand-sparkles-BRtZQEnl.js       0.51 kB │ gzip:   0.29 kB
+dist/client/assets/globe-CB-aBdn7.js               0.57 kB │ gzip:   0.31 kB
+dist/client/assets/triangle-alert-C67QAr81.js      0.60 kB │ gzip:   0.35 kB
+dist/client/assets/analyze._id-KRgr8mBH.js         0.70 kB │ gzip:   0.46 kB
 dist/client/assets/redirect-DZzzWE2w.js            0.94 kB │ gzip:   0.52 kB
 dist/client/assets/chunk-62oNxeRG.js               1.08 kB │ gzip:   0.62 kB
 dist/client/assets/preload-helper-DWTEM3RW.js      1.19 kB │ gzip:   0.68 kB
-dist/client/assets/createLucideIcon-DHuEYo8k.js    1.21 kB │ gzip:   0.70 kB
-dist/client/assets/analyze.index-U6ePfqv-.js       2.35 kB │ gzip:   1.05 kB
-dist/client/assets/applied-toggle-CvZ49sJ_.js      3.27 kB │ gzip:   1.47 kB
-dist/client/assets/analysis-form-C14-3m3Y.js       4.23 kB │ gzip:   1.85 kB
-dist/client/assets/linkedin-jobs-kenF0uvY.js       4.36 kB │ gzip:   1.75 kB
-dist/client/assets/admin-B_1lClGP.js               7.85 kB │ gzip:   2.60 kB
-dist/client/assets/useQuery-CYniRIXY.js            8.77 kB │ gzip:   3.20 kB
-dist/client/assets/profile-DwAEpJx7.js             9.17 kB │ gzip:   3.45 kB
-dist/client/assets/sync-Dm8AhGi5.js                9.24 kB │ gzip:   3.05 kB
-dist/client/assets/dashboard-hRB5dY8Z.js          13.91 kB │ gzip:   4.00 kB
-dist/client/assets/document-actions-BvFgVVV6.js   19.18 kB │ gzip:   5.04 kB
-dist/client/assets/linkedin-search-oOZnUzIg.js    19.72 kB │ gzip:   5.29 kB
-dist/client/assets/routes-PbkIbcjW.js             30.10 kB │ gzip:   7.28 kB
-dist/client/assets/history-CPCQ47HF.js            60.08 kB │ gzip:  15.99 kB
-dist/client/assets/jobs-BjcodPti.js               64.88 kB │ gzip:  17.62 kB
+dist/client/assets/createLucideIcon-DtFVZ460.js    1.21 kB │ gzip:   0.69 kB
+dist/client/assets/analyze.index-CiMsQQyY.js       2.35 kB │ gzip:   1.05 kB
+dist/client/assets/applied-toggle-BLquE-BG.js      3.27 kB │ gzip:   1.47 kB
+dist/client/assets/analysis-form-0jutaQQk.js       4.23 kB │ gzip:   1.85 kB
+dist/client/assets/admin-yokAOawq.js               7.85 kB │ gzip:   2.60 kB
+dist/client/assets/useQuery-fPpdUQ2S.js            8.77 kB │ gzip:   3.20 kB
+dist/client/assets/profile-Bsylb1JS.js             9.17 kB │ gzip:   3.45 kB
+dist/client/assets/sync-Bh82UfX6.js                9.24 kB │ gzip:   3.05 kB
+dist/client/assets/dashboard-Bbg_OUuT.js          13.91 kB │ gzip:   4.00 kB
+dist/client/assets/document-actions-JkSvmcA2.js   19.18 kB │ gzip:   5.04 kB
+dist/client/assets/linkedin-search-DXCG9xIx.js    19.72 kB │ gzip:   5.28 kB
+dist/client/assets/routes-Cq8lP1Rv.js             30.10 kB │ gzip:   7.28 kB
+dist/client/assets/linkedin-jobs-L5zFGL1g.js      31.45 kB │ gzip:  11.06 kB
+dist/client/assets/history-jc285D7e.js            60.08 kB │ gzip:  15.99 kB
+dist/client/assets/jobs-BxJmyB_U.js               64.88 kB │ gzip:  17.62 kB
 dist/client/assets/pdf-BCBaocUK.js               405.11 kB │ gzip: 120.78 kB
 dist/client/assets/mammoth.browser-5v11i10U.js   491.70 kB │ gzip: 118.82 kB
-dist/client/assets/index-BzZcOCm6.js             633.42 kB │ gzip: 189.56 kB
+dist/client/assets/index-fyReSZiW.js             633.43 kB │ gzip: 189.55 kB
 
+✓ built in 2.40s
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 2.75s
 vite v8.0.10 building ssr environment for production...
 [2Ktransforming...✓ 379 modules transformed.
 rendering chunks...
@@ -79,15 +79,15 @@ dist/server/assets/login-D_YbbKx2.js                                 0.13 kB │
 dist/server/assets/__23tanstack-start-plugin-adapters-3QxJs4a0.js    0.18 kB │ gzip:  0.13 kB
 dist/server/assets/analyze-BkUhHp4D.js                               0.25 kB │ gzip:  0.19 kB
 dist/server/assets/start-DCMJgril.js                                 0.29 kB │ gzip:  0.21 kB
-dist/server/assets/scoreUtils-CVqX93Bx.js                            0.33 kB │ gzip:  0.19 kB
 dist/server/assets/createServerRpc-Dx7A4nOF.js                       0.44 kB │ gzip:  0.28 kB
+dist/server/assets/scoreUtils-DDnjJ8aC.js                            0.56 kB │ gzip:  0.24 kB
 dist/server/assets/createSsrRpc-CWALp_Pz.js                          0.58 kB │ gzip:  0.35 kB
 dist/server/assets/analyze.index-DNRCb-U-.js                         0.68 kB │ gzip:  0.39 kB
 dist/server/assets/manage-resume-PHQvu62_.js                         0.73 kB │ gzip:  0.39 kB
-dist/server/assets/linkedin-jobs-CuCkzRUh.js                         0.78 kB │ gzip:  0.42 kB
+dist/server/assets/linkedin-jobs-C_svJ-am.js                         0.78 kB │ gzip:  0.42 kB
 dist/server/assets/auth-redirect-DPVt7LIM.js                         0.84 kB │ gzip:  0.43 kB
 dist/server/assets/profile-C8Vc9BGi.js                               0.92 kB │ gzip:  0.52 kB
-dist/server/assets/linkedin-search-BTBV0knR.js                       0.99 kB │ gzip:  0.49 kB
+dist/server/assets/linkedin-search-BNWpKF4u.js                       0.99 kB │ gzip:  0.49 kB
 dist/server/assets/get-history-DhFZgUFc.js                           1.00 kB │ gzip:  0.47 kB
 dist/server/assets/analyze._id-Dtclpb8z.js                           1.02 kB │ gzip:  0.54 kB
 dist/server/assets/resolve-user-DRk7W6-4.js                          1.21 kB │ gzip:  0.61 kB
@@ -109,13 +109,13 @@ dist/server/assets/linkedin-searches-CnbNK1jz.js                     4.04 kB │
 dist/server/assets/auth-s7tChAJQ.js                                  4.16 kB │ gzip:  1.34 kB
 dist/server/assets/generate-cover-letter-DbejwCfN.js                 5.45 kB │ gzip:  2.09 kB
 dist/server/assets/aggregate-analytics-DKpnhaDI.js                   6.54 kB │ gzip:  1.92 kB
-dist/server/assets/linkedin-jobs-DKB-Vkcz.js                         6.64 kB │ gzip:  2.14 kB
 dist/server/assets/analysis-form-CTUYDRrQ.js                         6.74 kB │ gzip:  2.25 kB
 dist/server/assets/get-history-D6kLN1Mn.js                           6.83 kB │ gzip:  1.95 kB
-dist/server/assets/_tanstack-start-manifest_v-D5POYTbK.js            7.09 kB │ gzip:  1.46 kB
+dist/server/assets/_tanstack-start-manifest_v-C_CeatZU.js            7.16 kB │ gzip:  1.46 kB
 dist/server/assets/generate-resume-C1VTCre9.js                       8.39 kB │ gzip:  2.97 kB
 dist/server/assets/manage-resume-DZx-P4pp.js                         8.85 kB │ gzip:  3.45 kB
 dist/server/assets/ai-DNvcpYVR.js                                   11.52 kB │ gzip:  4.70 kB
+dist/server/assets/linkedin-jobs-B1F_gIPu.js                        11.86 kB │ gzip:  3.37 kB
 dist/server/assets/admin-DuhEhzUP.js                                12.66 kB │ gzip:  3.24 kB
 dist/server/assets/pdf-By5MoyUG.js                                  13.03 kB │ gzip:  4.37 kB
 dist/server/assets/sync-DS0OUFN_.js                                 13.31 kB │ gzip:  3.61 kB
@@ -124,22 +124,22 @@ dist/server/assets/linkedin-persistence-CniVx1B-.js                 16.48 kB │
 dist/server/assets/history-BPkmJvS6.js                              19.25 kB │ gzip:  4.85 kB
 dist/server/assets/dashboard-j16qRZOh.js                            20.45 kB │ gzip:  4.80 kB
 dist/server/assets/document-actions-Dcj3xHrD.js                     27.22 kB │ gzip:  5.78 kB
-dist/server/assets/linkedin-search-C6ehibfS.js                      31.74 kB │ gzip:  6.52 kB
+dist/server/assets/linkedin-search-CYGGeBHF.js                      31.74 kB │ gzip:  6.52 kB
 dist/server/assets/analyze-job-B6wqMmg7.js                          38.20 kB │ gzip: 10.99 kB
 dist/server/assets/routes-Cl7cPZo9.js                               39.33 kB │ gzip:  8.05 kB
 dist/server/assets/src-dLDhOffb.js                                  42.53 kB │ gzip:  7.44 kB
-dist/server/assets/jobs-Bqkvpq3H.js                                 65.32 kB │ gzip: 13.39 kB
-dist/server/assets/router-BzLsjI8-.js                               86.08 kB │ gzip: 21.69 kB
+dist/server/assets/jobs-Dt-NKVko.js                                 65.32 kB │ gzip: 13.39 kB
+dist/server/assets/router-BbVgGB-M.js                               86.08 kB │ gzip: 21.69 kB
 dist/server/assets/cloudflare-EMQpdlMj.js                          152.01 kB │ gzip: 30.92 kB
 dist/server/server.js                                              179.62 kB │ gzip: 45.86 kB
 
-✓ built in 2.04s
+✓ built in 1.83s
 vite v8.0.10 building spearyx_jobs environment for production...
-[2Ktransforming...✓ 2819 modules transformed.
+[2Ktransforming...✓ 2820 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/spearyx_jobs/wrangler.json                                                     1.93 kB │ gzip:   0.92 kB
-dist/spearyx_jobs/.vite/manifest.json                                              33.32 kB │ gzip:   4.08 kB
+dist/spearyx_jobs/.vite/manifest.json                                              33.36 kB │ gzip:   4.07 kB
 dist/spearyx_jobs/assets/start-DCMJgril-Uo0gl9f_.js                                 0.11 kB │ gzip:   0.11 kB
 dist/spearyx_jobs/assets/login-D_YbbKx2-BJ8ACmnM.js                                 0.13 kB │ gzip:   0.12 kB
 dist/spearyx_jobs/assets/__23tanstack-start-plugin-adapters-3QxJs4a0-BMyw28zm.js    0.21 kB │ gzip:   0.15 kB
@@ -152,90 +152,90 @@ dist/spearyx_jobs/assets/circle-x-Dl3_5cqU.js                                   
 dist/spearyx_jobs/assets/zap-CGH4IqJ9.js                                            0.32 kB │ gzip:   0.24 kB
 dist/spearyx_jobs/assets/analyze-BkUhHp4D-CCMo1nHp.js                               0.34 kB │ gzip:   0.24 kB
 dist/spearyx_jobs/assets/target-D3HItT0g.js                                         0.35 kB │ gzip:   0.20 kB
-dist/spearyx_jobs/assets/scoreUtils-CVqX93Bx-D0HOF_4X.js                            0.35 kB │ gzip:   0.21 kB
 dist/spearyx_jobs/assets/external-link-BsrQuNTM.js                                  0.36 kB │ gzip:   0.24 kB
 dist/spearyx_jobs/assets/arrow-up-down-YLTDntB4.js                                  0.37 kB │ gzip:   0.24 kB
-dist/spearyx_jobs/assets/createServerRpc-Dx7A4nOF-Q_nd-LEU.js                       0.37 kB │ gzip:   0.26 kB
+dist/spearyx_jobs/assets/createServerRpc-Dx7A4nOF-BzyYVrvP.js                       0.37 kB │ gzip:   0.25 kB
 dist/spearyx_jobs/assets/refresh-cw-DAzarCLC.js                                     0.44 kB │ gzip:   0.27 kB
 dist/spearyx_jobs/assets/file-user--9CIG172.js                                      0.44 kB │ gzip:   0.28 kB
 dist/spearyx_jobs/assets/trash-2-CGo_uv9D.js                                        0.45 kB │ gzip:   0.26 kB
-dist/spearyx_jobs/assets/createSsrRpc-CWALp_Pz-OEqtNKjB.js                          0.50 kB │ gzip:   0.32 kB
+dist/spearyx_jobs/assets/createSsrRpc-CWALp_Pz-BhUR3u-t.js                          0.50 kB │ gzip:   0.32 kB
+dist/spearyx_jobs/assets/scoreUtils-DDnjJ8aC--GRFVDZ-.js                            0.58 kB │ gzip:   0.26 kB
 dist/spearyx_jobs/assets/sparkles-CT3t61CS.js                                       0.62 kB │ gzip:   0.32 kB
 dist/spearyx_jobs/assets/wand-sparkles-DsTZ4Ixs.js                                  0.69 kB │ gzip:   0.34 kB
-dist/spearyx_jobs/assets/manage-resume-PHQvu62_-B14mi8kv.js                         0.76 kB │ gzip:   0.42 kB
+dist/spearyx_jobs/assets/manage-resume-PHQvu62_-DYXhca_q.js                         0.76 kB │ gzip:   0.42 kB
 dist/spearyx_jobs/assets/globe-CnEDZp39.js                                          0.78 kB │ gzip:   0.36 kB
-dist/spearyx_jobs/assets/linkedin-jobs-CuCkzRUh-Cc9MfdLL.js                         0.85 kB │ gzip:   0.46 kB
+dist/spearyx_jobs/assets/linkedin-jobs-C_svJ-am-BTetHK9w.js                         0.85 kB │ gzip:   0.46 kB
 dist/spearyx_jobs/assets/auth-redirect-DPVt7LIM-t99QFpBC.js                         0.86 kB │ gzip:   0.45 kB
 dist/spearyx_jobs/assets/triangle-alert-DpbWbLna.js                                 0.86 kB │ gzip:   0.42 kB
-dist/spearyx_jobs/assets/linkedin-search-BTBV0knR-Dizet1bv.js                       1.07 kB │ gzip:   0.54 kB
-dist/spearyx_jobs/assets/profile-C8Vc9BGi-ClgmrIS_.js                               1.15 kB │ gzip:   0.60 kB
+dist/spearyx_jobs/assets/linkedin-search-BNWpKF4u-AfpSo1Nz.js                       1.07 kB │ gzip:   0.54 kB
+dist/spearyx_jobs/assets/profile-C8Vc9BGi-1rFU0ibU.js                               1.15 kB │ gzip:   0.60 kB
 dist/spearyx_jobs/assets/BrowserWebSocketTransport-9Nz9-WbD.js                      1.18 kB │ gzip:   0.50 kB
-dist/spearyx_jobs/assets/resolve-user-DRk7W6-4-DaKhNHp3.js                          1.23 kB │ gzip:   0.63 kB
-dist/spearyx_jobs/assets/manually-aggregate-analytics-BrJjsrTA-HDbJ2IOB.js          1.34 kB │ gzip:   0.61 kB
-dist/spearyx_jobs/assets/analyze._id-Dtclpb8z-F28tBjHq.js                           1.40 kB │ gzip:   0.69 kB
-dist/spearyx_jobs/assets/toggle-applied-Pnzo7H87-BQ46EcQf.js                        1.52 kB │ gzip:   0.77 kB
-dist/spearyx_jobs/assets/linkedin-searches-B1UhLjYM-BfGcgxTX.js                     1.55 kB │ gzip:   0.70 kB
-dist/spearyx_jobs/assets/analyze._id-BqKEDbcQ-DRzpkJoF.js                           1.62 kB │ gzip:   0.79 kB
-dist/spearyx_jobs/assets/history-BazS2qjM-Ci-HpFxG.js                               1.63 kB │ gzip:   0.74 kB
-dist/spearyx_jobs/assets/dashboard-D0c4dwiz-BLWflrBx.js                             1.98 kB │ gzip:   0.85 kB
+dist/spearyx_jobs/assets/resolve-user-DRk7W6-4-Rp7ZjZTo.js                          1.23 kB │ gzip:   0.63 kB
+dist/spearyx_jobs/assets/manually-aggregate-analytics-BrJjsrTA-DHOAoVzb.js          1.34 kB │ gzip:   0.61 kB
+dist/spearyx_jobs/assets/analyze._id-Dtclpb8z-ncNexqr8.js                           1.40 kB │ gzip:   0.69 kB
+dist/spearyx_jobs/assets/toggle-applied-Pnzo7H87-7DWO3ClF.js                        1.52 kB │ gzip:   0.77 kB
+dist/spearyx_jobs/assets/linkedin-searches-B1UhLjYM-ClsyCWwF.js                     1.55 kB │ gzip:   0.70 kB
+dist/spearyx_jobs/assets/analyze._id-BqKEDbcQ-CYGw4uiR.js                           1.62 kB │ gzip:   0.78 kB
+dist/spearyx_jobs/assets/history-BazS2qjM-DqnK66A1.js                               1.63 kB │ gzip:   0.74 kB
+dist/spearyx_jobs/assets/dashboard-D0c4dwiz-9cNFB2SN.js                             1.98 kB │ gzip:   0.85 kB
 dist/spearyx_jobs/assets/tty-DH3wKE_-.js                                            2.01 kB │ gzip:   0.73 kB
 dist/spearyx_jobs/assets/chunk-C3P2FGwC.js                                          2.18 kB │ gzip:   0.99 kB
-dist/spearyx_jobs/assets/get-analysis-DlpjVGAj-YMmcdrP5.js                          2.25 kB │ gzip:   1.01 kB
-dist/spearyx_jobs/assets/get-analytics-Cvz6zEY8-BJZyAaT5.js                         2.46 kB │ gzip:   1.05 kB
+dist/spearyx_jobs/assets/get-analysis-DlpjVGAj-Cu0kxuaX.js                          2.25 kB │ gzip:   1.01 kB
+dist/spearyx_jobs/assets/get-analytics-Cvz6zEY8-BaPeWIVR.js                         2.46 kB │ gzip:   1.05 kB
 dist/spearyx_jobs/assets/NodeWebSocketTransport-joFiTsdK.js                         2.51 kB │ gzip:   1.14 kB
-dist/spearyx_jobs/assets/linkedin-admin-DwOmmBoV-fco0M2HV.js                        2.58 kB │ gzip:   0.86 kB
+dist/spearyx_jobs/assets/linkedin-admin-DwOmmBoV-PcA9unsL.js                        2.58 kB │ gzip:   0.86 kB
 dist/spearyx_jobs/assets/auth-B76zS5ze-_kHgB7Gp.js                                  2.59 kB │ gzip:   1.05 kB
 dist/spearyx_jobs/assets/useLoaderData-CcDHzZG8.js                                  2.68 kB │ gzip:   1.03 kB
-dist/spearyx_jobs/assets/admin-CKEQrrVs-a3UGIRaG.js                                 3.33 kB │ gzip:   1.20 kB
-dist/spearyx_jobs/assets/analyze.index-8CxYezDt-C9ufEJBQ.js                         3.71 kB │ gzip:   1.35 kB
-dist/spearyx_jobs/assets/linkedin-searches-CnbNK1jz-BQ2CT27d.js                     4.07 kB │ gzip:   1.10 kB
-dist/spearyx_jobs/assets/auth-s7tChAJQ-DKT9GAbV.js                                  4.19 kB │ gzip:   1.38 kB
+dist/spearyx_jobs/assets/admin-CKEQrrVs-CEjQsZOb.js                                 3.33 kB │ gzip:   1.20 kB
+dist/spearyx_jobs/assets/analyze.index-8CxYezDt-Cca2kH2p.js                         3.71 kB │ gzip:   1.36 kB
+dist/spearyx_jobs/assets/linkedin-searches-CnbNK1jz-CriLArFg.js                     4.07 kB │ gzip:   1.10 kB
+dist/spearyx_jobs/assets/auth-s7tChAJQ-Duxvleky.js                                  4.19 kB │ gzip:   1.39 kB
 dist/spearyx_jobs/assets/search-CGK7q7iE.js                                         4.43 kB │ gzip:   1.58 kB
-dist/spearyx_jobs/assets/generate-cover-letter-DbejwCfN-DFcXsfLv.js                 5.48 kB │ gzip:   2.15 kB
+dist/spearyx_jobs/assets/generate-cover-letter-DbejwCfN-DLlKkcUk.js                 5.48 kB │ gzip:   2.15 kB
 dist/spearyx_jobs/assets/aggregate-analytics-DKpnhaDI-DDsKxT61.js                   6.56 kB │ gzip:   1.94 kB
-dist/spearyx_jobs/assets/applied-toggle-1NV2QYtL-BkpDSnbI.js                        6.66 kB │ gzip:   2.17 kB
+dist/spearyx_jobs/assets/applied-toggle-1NV2QYtL-BcWcl0pb.js                        6.66 kB │ gzip:   2.16 kB
 dist/spearyx_jobs/assets/react-dom-C6KKZPiE.js                                      6.66 kB │ gzip:   1.96 kB
-dist/spearyx_jobs/assets/mutation-CeFYlW0B.js                                       6.78 kB │ gzip:   1.98 kB
-dist/spearyx_jobs/assets/get-history-D6kLN1Mn-3JLDNc62.js                           6.86 kB │ gzip:   2.00 kB
-dist/spearyx_jobs/assets/_tanstack-start-manifest_v-D5POYTbK-041WID16.js            7.12 kB │ gzip:   1.48 kB
-dist/spearyx_jobs/assets/linkedin-jobs-DKB-Vkcz-vPegM5qp.js                         7.84 kB │ gzip:   2.32 kB
-dist/spearyx_jobs/assets/analysis-form-CTUYDRrQ-D6gfa00i.js                         8.24 kB │ gzip:   2.61 kB
-dist/spearyx_jobs/assets/generate-resume-C1VTCre9-B8pEDpsj.js                       8.44 kB │ gzip:   3.03 kB
-dist/spearyx_jobs/assets/manage-resume-DZx-P4pp-lUJ_vzht.js                         8.88 kB │ gzip:   3.50 kB
+dist/spearyx_jobs/assets/mutation-BkNGhlHh.js                                       6.78 kB │ gzip:   1.98 kB
+dist/spearyx_jobs/assets/get-history-D6kLN1Mn-CsHG0y0R.js                           6.86 kB │ gzip:   2.00 kB
+dist/spearyx_jobs/assets/_tanstack-start-manifest_v-C_CeatZU-C_qMogFm.js            7.19 kB │ gzip:   1.48 kB
+dist/spearyx_jobs/assets/analysis-form-CTUYDRrQ-3_sfSwVK.js                         8.24 kB │ gzip:   2.60 kB
+dist/spearyx_jobs/assets/generate-resume-C1VTCre9-DmFh7alF.js                       8.44 kB │ gzip:   3.03 kB
+dist/spearyx_jobs/assets/manage-resume-DZx-P4pp-DwSl3Lta.js                         8.88 kB │ gzip:   3.50 kB
 dist/spearyx_jobs/assets/lazyRouteComponent-BYxQiWj5.js                            13.53 kB │ gzip:   3.52 kB
 dist/spearyx_jobs/assets/query-B6SYeEy7.js                                         13.79 kB │ gzip:   3.70 kB
-dist/spearyx_jobs/assets/admin-DuhEhzUP-DyLHQqqO.js                                14.14 kB │ gzip:   3.36 kB
+dist/spearyx_jobs/assets/admin-DuhEhzUP-BqnfweKe.js                                14.14 kB │ gzip:   3.36 kB
 dist/spearyx_jobs/assets/ai-DNvcpYVR-BzcqLmHp.js                                   15.57 kB │ gzip:   6.01 kB
 dist/spearyx_jobs/assets/sync-DS0OUFN_-BMgLVJqQ.js                                 15.72 kB │ gzip:   3.94 kB
 dist/spearyx_jobs/assets/link-Ih4pGkEi.js                                          15.96 kB │ gzip:   4.37 kB
-dist/spearyx_jobs/assets/profile-DvO7Mq_H-BIOVT9eL.js                              16.05 kB │ gzip:   4.30 kB
+dist/spearyx_jobs/assets/profile-DvO7Mq_H-B5c3AAZL.js                              16.05 kB │ gzip:   4.30 kB
 dist/spearyx_jobs/assets/linkedin-persistence-CniVx1B--FvvC80QZ.js                 16.51 kB │ gzip:   3.85 kB
 dist/spearyx_jobs/assets/QueryClientProvider-Bp79bXao.js                           18.45 kB │ gzip:   5.04 kB
 dist/spearyx_jobs/assets/shim-dDP6RXnG.js                                          19.50 kB │ gzip:   4.93 kB
 dist/spearyx_jobs/assets/jsonrepair-CVSe4FmX.js                                    19.67 kB │ gzip:   4.78 kB
 dist/spearyx_jobs/assets/src-CzYUq_f0.js                                           19.82 kB │ gzip:   6.11 kB
 dist/spearyx_jobs/assets/useQuery-B6Q90aNi.js                                      20.29 kB │ gzip:   4.79 kB
-dist/spearyx_jobs/assets/dashboard-j16qRZOh-B0euOJjV.js                            23.65 kB │ gzip:   5.13 kB
+dist/spearyx_jobs/assets/dashboard-j16qRZOh-DGI5_Q7D.js                            23.65 kB │ gzip:   5.13 kB
 dist/spearyx_jobs/assets/schema-3wVBWRU-.js                                        26.37 kB │ gzip:   5.36 kB
-dist/spearyx_jobs/assets/document-actions-Dcj3xHrD-aRVWOaxY.js                     32.10 kB │ gzip:   6.47 kB
-dist/spearyx_jobs/assets/linkedin-search-C6ehibfS-elaG8MW8.js                      36.30 kB │ gzip:   6.93 kB
+dist/spearyx_jobs/assets/document-actions-Dcj3xHrD-o3rfmx5W.js                     32.10 kB │ gzip:   6.47 kB
+dist/spearyx_jobs/assets/linkedin-search-CYGGeBHF-C8qgfI40.js                      36.30 kB │ gzip:   6.93 kB
 dist/spearyx_jobs/assets/bcryptjs-BZXNaHS8.js                                      36.77 kB │ gzip:  12.10 kB
-dist/spearyx_jobs/assets/analyze-job-B6wqMmg7-Qv6rXTvT.js                          38.15 kB │ gzip:  11.06 kB
+dist/spearyx_jobs/assets/analyze-job-B6wqMmg7-BmeD25A_.js                          38.15 kB │ gzip:  11.06 kB
 dist/spearyx_jobs/assets/drizzle-orm-r_ddWZun.js                                   42.37 kB │ gzip:   9.97 kB
 dist/spearyx_jobs/assets/routes-Cl7cPZo9-BTnN5CSS.js                               46.07 kB │ gzip:   8.66 kB
 dist/spearyx_jobs/assets/useStore-Bn2KFF9p.js                                      51.50 kB │ gzip:  14.03 kB
+dist/spearyx_jobs/assets/linkedin-jobs-B1F_gIPu-Dm_n65BY.js                        57.68 kB │ gzip:  14.83 kB
 dist/spearyx_jobs/assets/Match-B_MQHWDa.js                                        100.45 kB │ gzip:  23.48 kB
-dist/spearyx_jobs/assets/analyze.index-DNRCb-U--Cn1BFir7.js                       100.82 kB │ gzip:  17.64 kB
-dist/spearyx_jobs/assets/history-BPkmJvS6-7FvOGFn7.js                             125.17 kB │ gzip:  24.95 kB
+dist/spearyx_jobs/assets/analyze.index-DNRCb-U--Cimz2N_4.js                       100.82 kB │ gzip:  17.63 kB
+dist/spearyx_jobs/assets/history-BPkmJvS6-BMYM3XxW.js                             125.17 kB │ gzip:  24.95 kB
 dist/spearyx_jobs/index.js                                                        131.07 kB │ gzip:  29.87 kB
-dist/spearyx_jobs/assets/jobs-Bqkvpq3H-CYEmIa4s.js                                141.46 kB │ gzip:  29.52 kB
+dist/spearyx_jobs/assets/jobs-Dt-NKVko-g1Te6qVN.js                                141.46 kB │ gzip:  29.53 kB
 dist/spearyx_jobs/assets/cloudflare-EMQpdlMj-CCp3C2hm.js                          144.28 kB │ gzip:  30.40 kB
 dist/spearyx_jobs/assets/src-dLDhOffb-DjqCxn27.js                                 368.09 kB │ gzip:  72.60 kB
 dist/spearyx_jobs/assets/puppeteer-cloudflare-CBIa9WD_.js                         525.15 kB │ gzip: 110.74 kB
-dist/spearyx_jobs/assets/router-BzLsjI8--3Kx6YF5Z.js                              628.86 kB │ gzip: 161.76 kB
-dist/spearyx_jobs/assets/server-Dyu1UHa9.js                                       630.03 kB │ gzip: 135.48 kB
+dist/spearyx_jobs/assets/router-BbVgGB-M-_pbpt2F9.js                              628.86 kB │ gzip: 161.76 kB
+dist/spearyx_jobs/assets/server-Daa1Mcoq.js                                       630.03 kB │ gzip: 135.48 kB
 dist/spearyx_jobs/assets/pdf-DwRhPsJG.js                                          715.99 kB │ gzip: 160.23 kB
 dist/spearyx_jobs/assets/pdf-By5MoyUG-Bx2NVknM.js                                 914.94 kB │ gzip: 255.68 kB
 dist/spearyx_jobs/assets/mammoth.browser-C-No4cOv.js                              915.38 kB │ gzip: 164.08 kB
 
-✓ built in 644ms
+✓ built in 519ms
