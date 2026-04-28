@@ -29,7 +29,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build all apps
-        run: pnpm turbo run build
+        run: ./node_modules/.bin/turbo run build
 
       - name: Deploy Corporate
         run: pnpm exec wrangler deploy

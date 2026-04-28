@@ -75,6 +75,19 @@ const COMPANY_STOP_WORDS = new Set([
   "experiences",
 ]);
 
+const SQLITE_MAX_BOUND_PARAMETERS = 90;
+const SQLITE_DELETE_BATCH_SIZE = SQLITE_MAX_BOUND_PARAMETERS;
+const SQLITE_URL_LOOKUP_BATCH_SIZE = SQLITE_MAX_BOUND_PARAMETERS - 1;
+const SQLITE_SEMANTIC_LOOKUP_BATCH_SIZE = Math.max(1, Math.floor((SQLITE_MAX_BOUND_PARAMETERS - 1) / 2));
+
+function chunkValues<T>(values: T[], size: number) {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
 function normalizeForKey(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -256,15 +269,19 @@ export async function findExistingLinkedinJobs(args: {
 
   if (canonicalUrls.length === 0) return new Map<string, LinkedinJobResult>();
 
-  const rows = await db
-    .select()
-    .from(linkedinJobResults)
-    .where(
-      and(
-        eq(linkedinJobResults.userId, args.userId),
-        inArray(linkedinJobResults.canonicalSourceUrl, canonicalUrls),
-      ),
-    );
+  const rows: LinkedinJobResult[] = [];
+  for (const canonicalUrlBatch of chunkValues(canonicalUrls, SQLITE_URL_LOOKUP_BATCH_SIZE)) {
+    const batchRows = await db
+      .select()
+      .from(linkedinJobResults)
+      .where(
+        and(
+          eq(linkedinJobResults.userId, args.userId),
+          inArray(linkedinJobResults.canonicalSourceUrl, canonicalUrlBatch),
+        ),
+      );
+    rows.push(...batchRows);
+  }
 
   return new Map(rows.map((row) => [row.canonicalSourceUrl, row]));
 }
@@ -277,23 +294,28 @@ export async function findSemanticallyMatchingExistingLinkedinJobs(args: {
   if (!env.DB || args.jobs.length === 0) return new Map<string, LinkedinJobResult>();
 
   const db = getDb(env.DB);
-  const candidateTitles = Array.from(new Set(args.jobs.map((job) => job.title).filter(Boolean)));
-  const candidateLocations = Array.from(new Set(args.jobs.map((job) => job.location).filter(Boolean)));
+  const rows: LinkedinJobResult[] = [];
 
-  if (candidateTitles.length === 0 || candidateLocations.length === 0) {
-    return new Map<string, LinkedinJobResult>();
+  for (const jobBatch of chunkValues(args.jobs, SQLITE_SEMANTIC_LOOKUP_BATCH_SIZE)) {
+    const candidateTitles = Array.from(new Set(jobBatch.map((job) => job.title).filter(Boolean)));
+    const candidateLocations = Array.from(new Set(jobBatch.map((job) => job.location).filter(Boolean)));
+
+    if (candidateTitles.length === 0 || candidateLocations.length === 0) {
+      continue;
+    }
+
+    const batchRows = await db
+      .select()
+      .from(linkedinJobResults)
+      .where(
+        and(
+          eq(linkedinJobResults.userId, args.userId),
+          inArray(linkedinJobResults.title, candidateTitles),
+          inArray(linkedinJobResults.location, candidateLocations),
+        ),
+      );
+    rows.push(...batchRows);
   }
-
-  const rows = await db
-    .select()
-    .from(linkedinJobResults)
-    .where(
-      and(
-        eq(linkedinJobResults.userId, args.userId),
-        inArray(linkedinJobResults.title, candidateTitles),
-        inArray(linkedinJobResults.location, candidateLocations),
-      ),
-    );
 
   const map = new Map<string, LinkedinJobResult>();
   for (const row of rows) {
@@ -529,36 +551,36 @@ export async function pruneDuplicateLinkedinJobResults() {
       desc(linkedinJobResults.createdAt),
     );
 
-  const seen = new Set<string>();
   const duplicateIds: number[] = [];
-  const updates: Array<{ id: number; canonicalSourceUrl: string }> = [];
+  const keeperIdByCanonicalKey = new Map<string, number>();
+  const canonicalByKeeperId = new Map<number, string>();
 
   for (const row of rows) {
     const canonicalSourceUrl = canonicalizeLinkedinJobUrl(row.sourceUrl, row.externalJobId);
-    if (row.canonicalSourceUrl !== canonicalSourceUrl) {
-      updates.push({ id: row.id, canonicalSourceUrl });
-    }
     const dedupeKey = `${row.userId}:${canonicalSourceUrl}`;
-    if (seen.has(dedupeKey)) {
+    if (keeperIdByCanonicalKey.has(dedupeKey)) {
       duplicateIds.push(row.id);
       continue;
     }
-    seen.add(dedupeKey);
+    keeperIdByCanonicalKey.set(dedupeKey, row.id);
+    canonicalByKeeperId.set(row.id, canonicalSourceUrl);
   }
 
-  for (const update of updates) {
+  if (duplicateIds.length > 0) {
+    for (const batch of chunkValues(duplicateIds, SQLITE_DELETE_BATCH_SIZE)) {
+      await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, batch));
+    }
+  }
+
+  for (const [id, canonicalSourceUrl] of canonicalByKeeperId.entries()) {
     await db
       .update(linkedinJobResults)
       .set({
-        canonicalSourceUrl: update.canonicalSourceUrl,
+        canonicalSourceUrl,
         updatedAt: new Date().toISOString(),
       })
-      .where(eq(linkedinJobResults.id, update.id));
+      .where(eq(linkedinJobResults.id, id));
   }
-
-  if (duplicateIds.length === 0) return 0;
-
-  await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, duplicateIds));
   return duplicateIds.length;
 }
 
@@ -596,6 +618,9 @@ export async function pruneSemanticDuplicateLinkedinJobResults() {
 
   if (duplicateIds.length === 0) return 0;
 
-  await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, duplicateIds));
+  for (const batch of chunkValues(duplicateIds, SQLITE_DELETE_BATCH_SIZE)) {
+    await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, batch));
+  }
+
   return duplicateIds.length;
 }

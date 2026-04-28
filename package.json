@@ -5,12 +5,12 @@
   "packageManager": "pnpm@10.32.1",
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "preview": "turbo run preview",
-    "deploy": "turbo run deploy",
+    "build": "./node_modules/.bin/turbo run build",
+    "dev": "./node_modules/.bin/turbo run dev --parallel",
+    "lint": "./node_modules/.bin/turbo run lint",
+    "test": "./node_modules/.bin/turbo run test",
+    "preview": "./node_modules/.bin/turbo run preview",
+    "deploy": "./node_modules/.bin/turbo run deploy",
     "deploy:workers": "npm run deploy:workers -w @spearyx/jobs",
     "sync:local": "node seed-jobs-db-direct.js && npm --prefix apps/jobs run build && npm --prefix apps/jobs run serve"
   },

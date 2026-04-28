@@ -10,7 +10,7 @@
     "./tailwind.config": "./tailwind.config.ts"
   },
   "scripts": {
-    "build": "echo 'No build needed for source imports'"
+    "build": "node -e \"console.log('No build needed for source imports')\""
   },
   "dependencies": {
     "tailwindcss": "^4.0.6",
