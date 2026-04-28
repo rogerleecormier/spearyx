@@ -1,7 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { listUsers, createUser, deleteUser } from "@/server/functions/admin";
-import { getLinkedinAdminSettings, updateLinkedinAdminSettings } from "@/server/functions/linkedin-admin";
+import {
+  getLinkedinAdminSettings,
+  runLinkedinSemanticDedupe,
+  updateLinkedinAdminSettings,
+} from "@/server/functions/linkedin-admin";
 import { PageHero, PageSection } from "@spearyx/ui-kit";
 import { Shield, Trash2 } from "lucide-react";
 
@@ -26,8 +30,11 @@ function AdminPage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [settings, setSettings] = useState<LinkedinSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [runningLinkedinDedupe, setRunningLinkedinDedupe] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function fetchUsers() {
+    setSuccessMessage("");
     setLoadingUsers(true);
     try {
       setUserList(await listUsers({}));
@@ -49,6 +56,7 @@ function AdminPage() {
   async function handleAddUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
     setLoading(true);
     try {
       await createUser({ data: { email, password } });
@@ -64,6 +72,7 @@ function AdminPage() {
   async function handleDeleteUser(userId: number) {
     if (!window.confirm("Delete this user and all their data?")) return;
     setError("");
+    setSuccessMessage("");
     try {
       await deleteUser({ data: { userId } });
       await fetchUsers();
@@ -77,15 +86,39 @@ function AdminPage() {
     if (!settings) return;
     setSavingSettings(true);
     setError("");
+    setSuccessMessage("");
     try {
       const next = await updateLinkedinAdminSettings({
         data: settings,
       });
       setSettings(next);
+      setSuccessMessage("LinkedIn settings saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSavingSettings(false);
+    }
+  }
+
+  async function handleRunLinkedinDedupe() {
+    if (!window.confirm("Run LinkedIn dedupe now? This will permanently remove older duplicate job rows.")) {
+      return;
+    }
+
+    setRunningLinkedinDedupe(true);
+    setError("");
+    setSuccessMessage("");
+    try {
+      const result = await runLinkedinSemanticDedupe({});
+      setSuccessMessage(
+        result.deletedCount > 0
+          ? `LinkedIn dedupe complete. Removed ${result.deletedCount} duplicate jobs.`
+          : "LinkedIn dedupe complete. No duplicate jobs were found.",
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to run LinkedIn dedupe");
+    } finally {
+      setRunningLinkedinDedupe(false);
     }
   }
 
@@ -131,8 +164,6 @@ function AdminPage() {
             {loading ? "Adding..." : "Add User"}
           </button>
         </form>
-
-        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
         {loadingUsers && <p className="mt-4 text-sm text-muted-foreground">Loading users...</p>}
       </PageSection>
 
@@ -232,17 +263,30 @@ function AdminPage() {
             </label>
 
             <div className="md:col-span-2 xl:col-span-4">
-              <button
-                type="submit"
-                disabled={savingSettings}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
-                {savingSettings ? "Saving..." : "Save LinkedIn Settings"}
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {savingSettings ? "Saving..." : "Save LinkedIn Settings"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRunLinkedinDedupe}
+                  disabled={runningLinkedinDedupe}
+                  className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
+                >
+                  {runningLinkedinDedupe ? "Running Dedupe..." : "Run LinkedIn Dedupe"}
+                </button>
+              </div>
             </div>
           </form>
         )}
       </PageSection>
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {successMessage && <p className="text-sm text-emerald-700">{successMessage}</p>}
     </div>
   );
 }

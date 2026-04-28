@@ -4,7 +4,13 @@ import type { CloudflareEnv } from "@/lib/cloudflare";
 import { getLinkedinSettings, pruneDuplicateLinkedinJobResults, pruneExpiredLinkedinJobResults } from "@/lib/linkedin-persistence";
 import { buildLinkedInSearchUrl, buildLinkedInSearchUrlForPage, normalizeLinkedInSearchParams, type LinkedInScrapedJob, type LinkedInSearchParams } from "@/lib/linkedin-search";
 import { scoreJobAgainstProfile } from "@/lib/ai/job-score";
-import { canonicalizeLinkedinJobUrl, findExistingLinkedinJobs, upsertLinkedinJobResults } from "@/lib/linkedin-persistence";
+import {
+  buildLinkedinJobSemanticKey,
+  canonicalizeLinkedinJobUrl,
+  findExistingLinkedinJobs,
+  findSemanticallyMatchingExistingLinkedinJobs,
+  upsertLinkedinJobResults,
+} from "@/lib/linkedin-persistence";
 
 type BrowserPage = any;
 
@@ -105,6 +111,20 @@ function dedupeJobsByCanonicalUrl(jobs: LinkedInScrapedJob[]) {
   });
 }
 
+function dedupeJobsBySemanticKey(jobs: LinkedInScrapedJob[]) {
+  const seen = new Set<string>();
+  return jobs.filter((job) => {
+    const key = buildLinkedinJobSemanticKey({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+    });
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 async function extractJobDescription(page: BrowserPage): Promise<string | null> {
   return page.evaluate(() => {
     const copy = document.body.cloneNode(true) as HTMLElement;
@@ -197,8 +217,21 @@ export async function runLinkedinSearchMaintenance(env: CloudflareEnv) {
         userId: search.userId,
         jobs: jobs.map((job) => ({ id: job.id, sourceUrl: job.sourceUrl })),
       });
-      jobs = jobs.filter(
-        (job) => !existingJobsByUrl.has(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id)),
+      const semanticExistingJobs = await findSemanticallyMatchingExistingLinkedinJobs({
+        userId: search.userId,
+        jobs,
+      });
+      jobs = dedupeJobsBySemanticKey(
+        jobs.filter((job) => {
+          const exactMatch = existingJobsByUrl.get(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id));
+          const semanticKey = buildLinkedinJobSemanticKey({
+            title: job.title,
+            company: job.company,
+            location: job.location,
+          });
+          const semanticMatch = semanticExistingJobs.get(semanticKey);
+          return !exactMatch && !semanticMatch;
+        }),
       );
       if (jobs.length === 0) {
         await upsertLinkedinJobResults({

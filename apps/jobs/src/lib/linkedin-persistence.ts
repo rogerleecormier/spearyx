@@ -36,6 +36,12 @@ export type LinkedinHistoryRow = LinkedinJobResult & {
   ownerEmail?: string | null;
 };
 
+type LinkedinJobIdentityInput = {
+  title: string;
+  company: string;
+  location: string;
+};
+
 const DEFAULT_SETTINGS: LinkedinAppSettings = {
   linkedinRetentionDays: 14,
   linkedinAutoPrune: true,
@@ -43,6 +49,49 @@ const DEFAULT_SETTINGS: LinkedinAppSettings = {
   linkedinSearchCronFrequency: "daily",
   updatedAt: new Date(0).toISOString(),
 };
+
+const COMPANY_STOP_WORDS = new Set([
+  "the",
+  "company",
+  "co",
+  "corp",
+  "corporation",
+  "inc",
+  "incorporated",
+  "llc",
+  "ltd",
+  "limited",
+  "group",
+  "holdings",
+  "holding",
+  "solutions",
+  "services",
+  "technologies",
+  "technology",
+  "systems",
+  "international",
+  "global",
+  "experience",
+  "experiences",
+]);
+
+function normalizeForKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function normalizeCompanyFingerprint(company: string) {
+  const tokens = normalizeForKey(company)
+    .split(" ")
+    .filter((token) => token && !COMPANY_STOP_WORDS.has(token));
+  return tokens.length > 0 ? tokens.slice(0, 3).join(" ") : normalizeForKey(company);
+}
+
+export function buildLinkedinJobSemanticKey(job: LinkedinJobIdentityInput) {
+  const title = normalizeForKey(job.title);
+  const location = normalizeForKey(job.location);
+  const company = normalizeCompanyFingerprint(job.company);
+  return `${title}::${company}::${location}`;
+}
 
 export function canonicalizeLinkedinJobUrl(rawUrl: string, externalJobId?: string): string {
   try {
@@ -217,6 +266,48 @@ export async function findExistingLinkedinJobs(args: {
     );
 
   return new Map(rows.map((row) => [row.canonicalSourceUrl, row]));
+}
+
+export async function findSemanticallyMatchingExistingLinkedinJobs(args: {
+  userId: number;
+  jobs: Array<Pick<LinkedInScrapedJob, "title" | "company" | "location">>;
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB || args.jobs.length === 0) return new Map<string, LinkedinJobResult>();
+
+  const db = getDb(env.DB);
+  const candidateTitles = Array.from(new Set(args.jobs.map((job) => job.title).filter(Boolean)));
+  const candidateLocations = Array.from(new Set(args.jobs.map((job) => job.location).filter(Boolean)));
+
+  if (candidateTitles.length === 0 || candidateLocations.length === 0) {
+    return new Map<string, LinkedinJobResult>();
+  }
+
+  const rows = await db
+    .select()
+    .from(linkedinJobResults)
+    .where(
+      and(
+        eq(linkedinJobResults.userId, args.userId),
+        inArray(linkedinJobResults.title, candidateTitles),
+        inArray(linkedinJobResults.location, candidateLocations),
+      ),
+    );
+
+  const map = new Map<string, LinkedinJobResult>();
+  for (const row of rows) {
+    const key = buildLinkedinJobSemanticKey({
+      title: row.title,
+      company: row.company,
+      location: row.location,
+    });
+    const existing = map.get(key);
+    if (!existing || (row.masterScore ?? 0) > (existing.masterScore ?? 0)) {
+      map.set(key, row);
+    }
+  }
+
+  return map;
 }
 
 export function mapStoredLinkedinJobToScrapedJob(row: LinkedinJobResult): LinkedInScrapedJob {
@@ -447,6 +538,44 @@ export async function pruneDuplicateLinkedinJobResults() {
       continue;
     }
     seen.add(dedupeKey);
+  }
+
+  if (duplicateIds.length === 0) return 0;
+
+  await db.delete(linkedinJobResults).where(inArray(linkedinJobResults.id, duplicateIds));
+  return duplicateIds.length;
+}
+
+export async function pruneSemanticDuplicateLinkedinJobResults() {
+  const env = getCloudflareEnv();
+  if (!env.DB) return 0;
+
+  const db = getDb(env.DB);
+  const rows = await db
+    .select()
+    .from(linkedinJobResults)
+    .orderBy(
+      desc(linkedinJobResults.masterScore),
+      desc(linkedinJobResults.lastSeenAt),
+      desc(linkedinJobResults.createdAt),
+    );
+
+  const bestBySemanticKey = new Map<string, number>();
+  const duplicateIds: number[] = [];
+
+  for (const row of rows) {
+    const semanticKey = `${row.userId}:${buildLinkedinJobSemanticKey({
+      title: row.title,
+      company: row.company,
+      location: row.location,
+    })}`;
+
+    if (bestBySemanticKey.has(semanticKey)) {
+      duplicateIds.push(row.id);
+      continue;
+    }
+
+    bestBySemanticKey.set(semanticKey, row.id);
   }
 
   if (duplicateIds.length === 0) return 0;

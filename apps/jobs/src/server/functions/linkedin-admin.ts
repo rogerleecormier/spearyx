@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import {
   getLinkedinSettings,
+  pruneSemanticDuplicateLinkedinJobResults,
   saveLinkedinSettings,
   type LinkedinAppSettings,
 } from "@/lib/linkedin-persistence";
@@ -24,3 +25,9 @@ export const updateLinkedinAdminSettings = createServerFn({ method: "POST" })
     await requireAdmin();
     return saveLinkedinSettings(data);
   });
+
+export const runLinkedinSemanticDedupe = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdmin();
+  const deletedCount = await pruneSemanticDuplicateLinkedinJobResults();
+  return { deletedCount };
+});
