@@ -8,6 +8,22 @@ import { requireLinkedInSearchOwner } from "@/lib/private-features";
 import { getMasterScoreGradient, getScoreBorderColor } from "@/lib/scoreUtils";
 import { getLinkedinJobHistory } from "@/server/functions/linkedin-searches";
 
+type SortOption = "posted-date" | "title" | "score" | "company" | "location";
+
+function compareText(a: string | null | undefined, b: string | null | undefined) {
+  return (a || "").localeCompare(b || "", undefined, { sensitivity: "base" });
+}
+
+function parsePostedDate(value: string | null | undefined) {
+  if (!value) return 0;
+  const isoDate = value.match(/^\d{4}-\d{2}-\d{2}$/);
+  if (isoDate) {
+    return new Date(`${value}T00:00:00Z`).getTime();
+  }
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 export const Route = createFileRoute("/linkedin-jobs")({
   beforeLoad: ({ context, location }) => {
     const ctx = context as { user?: { id: number; role: string } | null };
@@ -25,6 +41,7 @@ function LinkedinJobsPage() {
   const [titleQuery, setTitleQuery] = useState("");
   const [greenOnly, setGreenOnly] = useState(false);
   const [remoteOnly, setRemoteOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("posted-date");
   const deferredTitleQuery = useDeferredValue(titleQuery);
 
   useEffect(() => {
@@ -47,14 +64,30 @@ function LinkedinJobsPage() {
       ? fuse.search(deferredTitleQuery.trim()).map((result) => result.item)
       : allRows;
 
-    return titleFiltered.filter((job) => {
+    const narrowedRows = titleFiltered.filter((job) => {
       const matchesGreen = !greenOnly || (job.masterScore ?? 0) >= 80;
       const workplace = job.workplaceType?.toLowerCase() ?? "";
       const location = job.location.toLowerCase();
       const matchesRemote = !remoteOnly || workplace.includes("remote") || location.includes("remote");
       return matchesGreen && matchesRemote;
     });
-  }, [allRows, deferredTitleQuery, fuse, greenOnly, remoteOnly]);
+
+    return [...narrowedRows].sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return compareText(a.title, b.title);
+        case "score":
+          return (b.masterScore ?? 0) - (a.masterScore ?? 0) || compareText(a.title, b.title);
+        case "company":
+          return compareText(a.company, b.company) || compareText(a.title, b.title);
+        case "location":
+          return compareText(a.location, b.location) || compareText(a.title, b.title);
+        case "posted-date":
+        default:
+          return parsePostedDate(b.postDateText) - parsePostedDate(a.postDateText) || compareText(a.title, b.title);
+      }
+    });
+  }, [allRows, deferredTitleQuery, fuse, greenOnly, remoteOnly, sortBy]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
@@ -111,6 +144,18 @@ function LinkedinJobsPage() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value as SortOption)}
+              className="h-10 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 shadow-sm"
+              aria-label="Sort saved jobs"
+            >
+              <option value="posted-date">Sort: Posted date</option>
+              <option value="title">Sort: Job title</option>
+              <option value="score">Sort: Score</option>
+              <option value="company">Sort: Company</option>
+              <option value="location">Sort: Location</option>
+            </select>
             <button
               type="button"
               aria-pressed={greenOnly}
