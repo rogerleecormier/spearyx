@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import Fuse from "fuse.js";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Button, Input, PageHero, PageSection, Tooltip, TooltipContent, TooltipTrigger } from "@spearyx/ui-kit";
 import { Briefcase, ChevronDown, CircleHelp, ExternalLink, Loader2, Search, Sparkles, Target, Wand2 } from "lucide-react";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
@@ -23,6 +24,13 @@ type SearchResponse = {
     total: number;
     warnings: string[];
   };
+};
+
+type SearchPreset = "title-variants" | "location-spread" | "remote-expansion" | "workplace-split";
+
+type SearchVariant = {
+  label: string;
+  params: LinkedInSearchParams;
 };
 
 type FormState = {
@@ -82,6 +90,64 @@ const jobTypeOptions = [
   { value: "other", label: "Other" },
 ];
 
+const defaultSearchPresets: SearchPreset[] = ["title-variants", "location-spread", "remote-expansion"];
+
+const seniorityTokens = new Set(["senior", "sr", "sr.", "lead", "principal", "staff"]);
+
+const stateNameByCode: Record<string, string> = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+  DC: "District of Columbia",
+};
+
 function toggleValue(values: string[], value: string) {
   return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
 }
@@ -102,6 +168,147 @@ function formatPostedSummary(value: FormState["postedWithin"]) {
 
 function formatSortSummary(value: FormState["sortBy"]) {
   return value === "recent" ? "Most recent" : "Most relevant";
+}
+
+function buildCanonicalLinkedinJobUrl(sourceUrl: string, externalJobId?: string) {
+  try {
+    const url = new URL(sourceUrl);
+    const normalizedPath = url.pathname.replace(/\/+$/, "");
+    if (normalizedPath.includes("/jobs/view/")) {
+      return `https://www.linkedin.com${normalizedPath}/`;
+    }
+    const currentJobId = url.searchParams.get("currentJobId");
+    if (currentJobId) {
+      return `https://www.linkedin.com/jobs/view/${currentJobId}/`;
+    }
+  } catch {
+    if (externalJobId && /^\d+$/.test(externalJobId)) {
+      return `https://www.linkedin.com/jobs/view/${externalJobId}/`;
+    }
+  }
+  if (externalJobId && /^\d+$/.test(externalJobId)) {
+    return `https://www.linkedin.com/jobs/view/${externalJobId}/`;
+  }
+  return sourceUrl;
+}
+
+function dedupeMergedResults(jobs: LinkedInScrapedJob[]) {
+  const deduped = new Map<string, LinkedInScrapedJob>();
+  for (const job of jobs) {
+    const key = buildCanonicalLinkedinJobUrl(job.sourceUrl, job.id);
+    const existing = deduped.get(key);
+    if (!existing || (job.score?.masterScore || 0) > (existing.score?.masterScore || 0)) {
+      deduped.set(key, {
+        ...job,
+        sourceUrl: key,
+      });
+    }
+  }
+  return Array.from(deduped.values()).sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
+}
+
+function isRemoteJob(job: LinkedInScrapedJob) {
+  const workplaceType = job.workplaceType?.toLowerCase() || "";
+  const location = job.location.toLowerCase();
+  return workplaceType.includes("remote") || location.includes("remote");
+}
+
+function buildKeywordVariants(keywords: string) {
+  const normalized = keywords.trim().replace(/\s+/g, " ");
+  const variants = new Set<string>();
+  if (!normalized) return [];
+
+  const lowered = normalized.toLowerCase();
+  if (lowered.includes("technical project manager")) {
+    variants.add(normalized.replace(/technical project manager/i, "technical program manager"));
+  }
+  if (lowered.includes("project manager")) {
+    variants.add(normalized.replace(/project manager/i, "program manager"));
+  }
+  if (lowered.includes("program manager")) {
+    variants.add(normalized.replace(/program manager/i, "project manager"));
+  }
+
+  const stripped = normalized
+    .split(" ")
+    .filter((token) => !seniorityTokens.has(token.toLowerCase()))
+    .join(" ")
+    .trim();
+  if (stripped && stripped.toLowerCase() !== lowered) {
+    variants.add(stripped);
+  }
+
+  return Array.from(variants).filter((variant) => variant.toLowerCase() !== lowered).slice(0, 3);
+}
+
+function buildLocationVariants(location: string) {
+  const normalized = location.trim();
+  if (!normalized) return [];
+
+  const variants = new Set<string>();
+  const parts = normalized.split(",").map((part) => part.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const statePart = parts[parts.length - 1].toUpperCase();
+    const stateName = stateNameByCode[statePart];
+    if (stateName) {
+      variants.add(`${stateName}, United States`);
+    } else {
+      variants.add(parts.slice(1).join(", "));
+    }
+  }
+  if (!/united states/i.test(normalized)) {
+    variants.add("United States");
+  }
+
+  return Array.from(variants).filter((variant) => variant && variant.toLowerCase() !== normalized.toLowerCase()).slice(0, 2);
+}
+
+function buildSearchVariants(base: LinkedInSearchParams, presets: SearchPreset[], broadenDiscovery: boolean): SearchVariant[] {
+  const variants = new Map<string, SearchVariant>();
+  const register = (label: string, params: LinkedInSearchParams) => {
+    const key = JSON.stringify(params);
+    if (!variants.has(key)) {
+      variants.set(key, { label, params });
+    }
+  };
+
+  register("Exact search", base);
+  if (!broadenDiscovery) {
+    return Array.from(variants.values());
+  }
+
+  if (presets.includes("title-variants")) {
+    for (const keywordVariant of buildKeywordVariants(base.keywords)) {
+      register(`Title variant: ${keywordVariant}`, { ...base, keywords: keywordVariant, page: 1 });
+    }
+  }
+
+  if (presets.includes("location-spread")) {
+    for (const locationVariant of buildLocationVariants(base.location || "")) {
+      register(`Location spread: ${locationVariant}`, { ...base, location: locationVariant, page: 1 });
+    }
+  }
+
+  if (presets.includes("remote-expansion") && base.workplaceTypes?.includes("remote")) {
+    register("Remote expansion", {
+      ...base,
+      location: "United States",
+      workplaceTypes: ["remote"],
+      page: 1,
+    });
+  }
+
+  if (presets.includes("workplace-split") && (base.workplaceTypes?.length || 0) > 1) {
+    for (const workplaceType of base.workplaceTypes || []) {
+      register(`Workplace split: ${workplaceType}`, {
+        ...base,
+        workplaceTypes: [workplaceType],
+        page: 1,
+      });
+    }
+  }
+
+  return Array.from(variants.values());
 }
 
 function FieldLabelWithInfo({
@@ -255,12 +462,39 @@ function LinkedInSearchPage() {
   const [savedSearches, setSavedSearches] = useState(loaderData.savedSearches);
   const [activeSavedSearchId, setActiveSavedSearchId] = useState<number | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [broadenDiscovery, setBroadenDiscovery] = useState(false);
+  const [selectedPresets, setSelectedPresets] = useState<SearchPreset[]>(defaultSearchPresets);
+  const [resultQuery, setResultQuery] = useState("");
+  const [resultGreenOnly, setResultGreenOnly] = useState(false);
+  const [resultRemoteOnly, setResultRemoteOnly] = useState(false);
+  const deferredResultQuery = useDeferredValue(resultQuery);
+
+  const filteredResults = useMemo(() => {
+    let next = results;
+    const trimmedQuery = deferredResultQuery.trim();
+    if (trimmedQuery) {
+      const fuse = new Fuse(results, {
+        threshold: 0.3,
+        keys: ["title", "company"],
+      });
+      next = fuse.search(trimmedQuery).map((entry) => entry.item);
+    }
+    if (resultGreenOnly) {
+      next = next.filter((job) => (job.score?.masterScore || 0) >= 80);
+    }
+    if (resultRemoteOnly) {
+      next = next.filter(isRemoteJob);
+    }
+    return next;
+  }, [deferredResultQuery, resultGreenOnly, resultRemoteOnly, results]);
 
   const summary = useMemo(() => {
     if (results.length === 0) return null;
-    const topScore = results[0]?.score?.masterScore ?? 0;
-    return `${results.length} LinkedIn jobs scored against ${loaderData.fullName || "your saved resume"} · top score ${topScore}`;
-  }, [loaderData.fullName, results]);
+    const visibleCount = filteredResults.length;
+    const topScore = filteredResults[0]?.score?.masterScore ?? results[0]?.score?.masterScore ?? 0;
+    const prefix = visibleCount === results.length ? `${visibleCount}` : `${visibleCount} of ${results.length}`;
+    return `${prefix} LinkedIn jobs scored against ${loaderData.fullName || "your saved resume"} · top score ${topScore}`;
+  }, [filteredResults, loaderData.fullName, results]);
 
   useEffect(() => {
     if (results.length > 0) {
@@ -270,6 +504,12 @@ function LinkedInSearchPage() {
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function togglePreset(preset: SearchPreset) {
+    setSelectedPresets((prev) => (
+      prev.includes(preset) ? prev.filter((item) => item !== preset) : [...prev, preset]
+    ));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -295,20 +535,38 @@ function LinkedInSearchPage() {
         limit: form.limit,
       };
 
-      const response = await fetch("/api/linkedin/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, savedSearchId: activeSavedSearchId }),
-      });
+      const variants = buildSearchVariants(payload, selectedPresets, broadenDiscovery);
+      const combinedWarnings: string[] = [];
+      const combinedResults: LinkedInScrapedJob[] = [];
+      let primarySearchUrl = "";
 
-      const data = (await response.json()) as SearchResponse;
-      if (!response.ok || !data.success || !data.data) {
-        throw new Error(data.error || "LinkedIn search failed.");
+      for (const [index, variant] of variants.entries()) {
+        const response = await fetch("/api/linkedin/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...variant.params, savedSearchId: index === 0 ? activeSavedSearchId : null }),
+        });
+
+        const data = (await response.json()) as SearchResponse;
+        if (!response.ok || !data.success || !data.data) {
+          throw new Error(data.error || `LinkedIn search failed for ${variant.label}.`);
+        }
+
+        if (!primarySearchUrl) {
+          primarySearchUrl = data.data.searchUrl;
+        }
+
+        combinedResults.push(...data.data.jobs);
+        combinedWarnings.push(...(data.data.warnings || []).map((warning) => `${variant.label}: ${warning}`));
       }
 
-      setResults(data.data.jobs);
-      setSearchUrl(data.data.searchUrl);
-      setWarnings(data.data.warnings || []);
+      if (variants.length > 1) {
+        combinedWarnings.unshift(`Merged ${variants.length} LinkedIn searches for broader discovery before local filtering.`);
+      }
+
+      setResults(dedupeMergedResults(combinedResults));
+      setSearchUrl(primarySearchUrl);
+      setWarnings(Array.from(new Set(combinedWarnings)));
     } catch (err) {
       setResults([]);
       setSearchUrl("");
@@ -570,7 +828,7 @@ function LinkedInSearchPage() {
                               id="page"
                               type="number"
                               min="1"
-                              max="20"
+                              max="100"
                               value={String(form.page)}
                               onChange={(e) => update("page", Math.max(1, Number(e.target.value || 1)))}
                             />
@@ -590,6 +848,45 @@ function LinkedInSearchPage() {
                               onChange={(e) => update("pagesToScan", Math.max(1, Math.min(10, Number(e.target.value || 1))))}
                             />
                           </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                        <div className="mb-3 space-y-1">
+                          <p className="text-sm font-semibold text-slate-900">Discovery Strategy</p>
+                          <p className="text-xs text-slate-500">Run several broader LinkedIn searches, then narrow the merged pool instantly below.</p>
+                        </div>
+                        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={broadenDiscovery}
+                            onChange={(e) => setBroadenDiscovery(e.target.checked)}
+                          />
+                          Broaden search before local filtering
+                        </label>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {[
+                            { value: "title-variants" as SearchPreset, label: "Title variants" },
+                            { value: "location-spread" as SearchPreset, label: "Location spread" },
+                            { value: "remote-expansion" as SearchPreset, label: "Remote expansion" },
+                            { value: "workplace-split" as SearchPreset, label: "Workplace split" },
+                          ].map((preset) => {
+                            const active = selectedPresets.includes(preset.value);
+                            return (
+                              <button
+                                key={preset.value}
+                                type="button"
+                                onClick={() => togglePreset(preset.value)}
+                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                                  active
+                                    ? "border border-sky-200 bg-sky-50 text-sky-700"
+                                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                                }`}
+                              >
+                                {preset.label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -691,11 +988,52 @@ function LinkedInSearchPage() {
 
           {summary ? (
             <PageSection title="Scored Results" description={summary}>
+              <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 lg:flex-row lg:items-center">
+                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                  <Search className="h-4 w-4 text-slate-400" />
+                  <Input
+                    value={resultQuery}
+                    onChange={(e) => setResultQuery(e.target.value)}
+                    placeholder="Filter merged results by title or company"
+                    className="border-0 px-0 shadow-none focus-visible:ring-0"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setResultGreenOnly((prev) => !prev)}
+                    className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                      resultGreenOnly
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    Green only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResultRemoteOnly((prev) => !prev)}
+                    className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                      resultRemoteOnly
+                        ? "border-sky-200 bg-sky-50 text-sky-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    Remote only
+                  </button>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {results.map((job) => (
+                {filteredResults.map((job) => (
                   <LinkedInResultCard key={job.id} job={job} />
                 ))}
               </div>
+              {filteredResults.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
+                  No merged LinkedIn jobs match the current local filters.
+                </div>
+              ) : null}
             </PageSection>
           ) : null}
         </div>

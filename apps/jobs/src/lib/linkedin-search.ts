@@ -17,6 +17,10 @@ export type LinkedInJobType =
 export type LinkedInPostedWithin = "any" | "24h" | "7d" | "30d";
 export type LinkedInSortBy = "recent" | "relevant";
 
+const MAX_LINKEDIN_START_PAGE = 100;
+const MAX_LINKEDIN_PAGES_TO_SCAN = 10;
+const MAX_LINKEDIN_CARDS_PER_PAGE = 25;
+
 export interface LinkedInSearchParams {
   keywords: string;
   location?: string;
@@ -105,9 +109,9 @@ export function normalizeLinkedInSearchParams(
     salaryMin: params.salaryMin ?? null,
     easyApply: !!params.easyApply,
     sortBy: params.sortBy || "recent",
-    page: Math.max(1, Math.min(20, Number(params.page || 1))),
-    pagesToScan: Math.max(1, Math.min(10, Number(params.pagesToScan || 1))),
-    limit: Math.max(1, Math.min(25, Number(params.limit || 10))),
+    page: Math.max(1, Math.min(MAX_LINKEDIN_START_PAGE, Number(params.page || 1))),
+    pagesToScan: Math.max(1, Math.min(MAX_LINKEDIN_PAGES_TO_SCAN, Number(params.pagesToScan || 1))),
+    limit: Math.max(1, Math.min(MAX_LINKEDIN_CARDS_PER_PAGE, Number(params.limit || 10))),
   };
 }
 
@@ -159,7 +163,7 @@ export function buildLinkedInSearchUrlForPage(
     url.searchParams.set("f_SB2", String(Math.round(params.salaryMin)));
   }
 
-  const effectivePage = Math.max(1, Math.min(20, Number(pageNumber || params.page || 1)));
+  const effectivePage = Math.max(1, Math.min(MAX_LINKEDIN_START_PAGE, Number(pageNumber || params.page || 1)));
   url.searchParams.set("sortBy", params.sortBy === "recent" ? "DD" : "R");
 
   const offset = (effectivePage - 1) * 25;

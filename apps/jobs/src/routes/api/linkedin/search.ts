@@ -229,17 +229,26 @@ async function enrichJobDescriptions(
   }
 }
 
+function parseApproximateJobCountFromTitle(title: string): number | null {
+  const match = title.match(/([\d,]+)\s+.+\s+jobs?/i);
+  if (!match?.[1]) return null;
+  const parsed = Number(match[1].replace(/,/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 async function collectLinkedinJobsAcrossPages(args: {
   browser: Awaited<ReturnType<typeof import("@cloudflare/puppeteer")["default"]["launch"]>>;
   kv: KVNamespace | undefined;
   params: LinkedInSearchParams;
 }) {
   const allJobs: LinkedInScrapedJob[] = [];
+  const warnings: string[] = [];
   const requestedPages = args.params.pagesToScan || 1;
   const perPageLimit = args.params.limit || 10;
 
   for (let pageOffset = 0; pageOffset < requestedPages; pageOffset += 1) {
     const pageNumber = (args.params.page || 1) + pageOffset;
+    const requestedStart = (pageNumber - 1) * 25;
     const searchUrl = buildLinkedInSearchUrlForPage(args.params, pageNumber);
     const searchCacheKey = `linkedin:search:${await sha256(searchUrl)}:${perPageLimit}`;
     let pageJobs = await getCachedJson<LinkedInScrapedJob[]>(args.kv, searchCacheKey);
@@ -249,6 +258,24 @@ async function collectLinkedinJobsAcrossPages(args: {
       try {
         await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
         await new Promise((resolve) => setTimeout(resolve, 2500));
+        const resolvedUrl = page.url();
+        let resolvedStart = 0;
+        try {
+          resolvedStart = Number(new URL(resolvedUrl).searchParams.get("start") || "0");
+        } catch {
+          resolvedStart = 0;
+        }
+
+        if (requestedStart > 0 && resolvedStart !== requestedStart) {
+          const approximateJobCount = parseApproximateJobCountFromTitle(await page.title());
+          warnings.push(
+            approximateJobCount
+              ? `LinkedIn only exposed about ${approximateJobCount} public jobs for this search, so page ${pageNumber} was unavailable.`
+              : `LinkedIn redirected page ${pageNumber} back to earlier results, so scanning stopped before that page.`,
+          );
+          break;
+        }
+
         await expandSearchResults(page, perPageLimit);
         pageJobs = await extractSearchCards(page, perPageLimit);
         pageJobs = pageJobs.map((job) => ({
@@ -267,9 +294,19 @@ async function collectLinkedinJobsAcrossPages(args: {
     }
 
     allJobs.push(...pageJobs);
+
+    if (pageJobs.length === 0) {
+      if (pageNumber > 1) {
+        warnings.push(`LinkedIn returned no cards for page ${pageNumber}, so scanning stopped there.`);
+      }
+      break;
+    }
   }
 
-  return dedupeJobsByCanonicalUrl(allJobs);
+  return {
+    jobs: dedupeJobsByCanonicalUrl(allJobs),
+    warnings,
+  };
 }
 
 async function getResumeProfile(userId: number): Promise<string | null> {
@@ -361,17 +398,20 @@ export const Route = createFileRoute("/api/linkedin/search")({
           let jobs: LinkedInScrapedJob[] | null = null;
           let historicalJobs: LinkedInScrapedJob[] = [];
           let reusedCount = 0;
+          const warnings: string[] = [];
           stage = "launching-browser";
           const puppeteer = await import("@cloudflare/puppeteer");
           const browser = await puppeteer.default.launch(env.BROWSER);
 
           try {
             stage = "loading-linkedin-search-page";
-            jobs = await collectLinkedinJobsAcrossPages({
+            const collected = await collectLinkedinJobsAcrossPages({
               browser,
               kv: env.KV,
               params,
             });
+            jobs = collected.jobs;
+            warnings.push(...collected.warnings);
 
             if (!jobs || jobs.length === 0) {
               return json({
@@ -381,6 +421,7 @@ export const Route = createFileRoute("/api/linkedin/search")({
                   jobs: [],
                   total: 0,
                   warnings: [
+                    ...warnings,
                     "LinkedIn returned no parsable jobs for this query. Try fewer filters or run it on deployed Cloudflare infrastructure.",
                   ],
                 },
@@ -418,7 +459,10 @@ export const Route = createFileRoute("/api/linkedin/search")({
                   searchUrl,
                   jobs: historicalJobs,
                   total: historicalJobs.length,
-                  warnings: [`Reused ${existingJobsByUrl.size} previously saved LinkedIn job${existingJobsByUrl.size === 1 ? "" : "s"} without rescoring.`],
+                  warnings: [
+                    ...warnings,
+                    `Reused ${existingJobsByUrl.size} previously saved LinkedIn job${existingJobsByUrl.size === 1 ? "" : "s"} without rescoring.`,
+                  ],
                 },
               });
             }
@@ -464,8 +508,11 @@ export const Route = createFileRoute("/api/linkedin/search")({
                 jobs: historicalJobs,
                 total: historicalJobs.length,
                 warnings: jobs.length > 0
-                  ? [`Reused ${reusedCount} previously saved LinkedIn job${reusedCount === 1 ? "" : "s"} without rescoring.`]
-                  : ["No LinkedIn jobs were found for that search."],
+                  ? [
+                      ...warnings,
+                      `Reused ${reusedCount} previously saved LinkedIn job${reusedCount === 1 ? "" : "s"} without rescoring.`,
+                    ]
+                  : [...warnings, "No LinkedIn jobs were found for that search."],
               },
             });
           }
@@ -505,6 +552,7 @@ export const Route = createFileRoute("/api/linkedin/search")({
               jobs: combinedJobs,
               total: combinedJobs.length,
               warnings: [
+                ...warnings,
                 ...(scoredJobs.some((job) => !job.description)
                   ? ["Some jobs were scored from snippets because LinkedIn did not expose a full description."]
                   : []),
