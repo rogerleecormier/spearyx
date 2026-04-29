@@ -92,6 +92,29 @@ const jobTypeOptions = [
 
 const defaultSearchPresets: SearchPreset[] = ["title-variants", "location-spread", "remote-expansion"];
 
+const discoveryPresetOptions: Array<{ value: SearchPreset; label: string; description: string }> = [
+  {
+    value: "title-variants",
+    label: "Similar job titles",
+    description: "Searches for closely related title wording like project manager versus program manager so relevant jobs are less likely to be missed.",
+  },
+  {
+    value: "location-spread",
+    label: "Wider location search",
+    description: "Broadens a narrow city search into wider location variants so LinkedIn can surface more jobs from nearby or national result pools.",
+  },
+  {
+    value: "remote-expansion",
+    label: "Nationwide remote search",
+    description: "Adds a broader United States remote search when you want remote work, which can uncover jobs hidden by a tight local query.",
+  },
+  {
+    value: "workplace-split",
+    label: "Search each work style separately",
+    description: "Runs separate searches for remote, hybrid, and on-site instead of combining them, which can surface more results when LinkedIn compresses mixed filters.",
+  },
+];
+
 const seniorityTokens = new Set(["senior", "sr", "sr.", "lead", "principal", "staff"]);
 
 const stateNameByCode: Record<string, string> = {
@@ -309,6 +332,49 @@ function buildSearchVariants(base: LinkedInSearchParams, presets: SearchPreset[]
   }
 
   return Array.from(variants.values());
+}
+
+function summarizeSearchWarnings(rawWarnings: string[], variantCount: number) {
+  if (rawWarnings.length === 0) return [];
+
+  const reusedWarnings = rawWarnings.filter((warning) => /reused .*previously saved linkedin job/i.test(warning));
+  const limitedWarnings = rawWarnings.filter((warning) => /only exposed about|redirected page|returned no cards/i.test(warning));
+  const snippetWarnings = rawWarnings.filter((warning) => /scored from snippets/i.test(warning));
+  const otherWarnings = rawWarnings.filter((warning) => (
+    !reusedWarnings.includes(warning) &&
+    !limitedWarnings.includes(warning) &&
+    !snippetWarnings.includes(warning)
+  ));
+
+  const totalReused = reusedWarnings.reduce((sum, warning) => {
+    const match = warning.match(/Reused\s+(\d+)/i);
+    return sum + Number(match?.[1] || 0);
+  }, 0);
+
+  const variantLabels = new Set(
+    limitedWarnings
+      .map((warning) => warning.split(":")[0]?.trim())
+      .filter(Boolean),
+  );
+
+  const summary: string[] = [];
+  if (variantCount > 1) {
+    summary.push(`Broader discovery ran ${variantCount} LinkedIn searches and merged the results into one scored list.`);
+  }
+  if (totalReused > 0) {
+    summary.push(`Reused ${totalReused} previously saved LinkedIn jobs where exact matches already existed.`);
+  }
+  if (variantLabels.size > 0) {
+    summary.push(`Some expanded searches hit LinkedIn public-result limits, so a few deeper pages were skipped automatically.`);
+  }
+  if (snippetWarnings.length > 0) {
+    summary.push("Some jobs were scored from snippets because LinkedIn did not expose a full description.");
+  }
+  if (otherWarnings.length > 0 && summary.length === 0) {
+    summary.push(...otherWarnings.slice(0, 2));
+  }
+
+  return summary;
 }
 
 function FieldLabelWithInfo({
@@ -560,13 +626,9 @@ function LinkedInSearchPage() {
         combinedWarnings.push(...(data.data.warnings || []).map((warning) => `${variant.label}: ${warning}`));
       }
 
-      if (variants.length > 1) {
-        combinedWarnings.unshift(`Merged ${variants.length} LinkedIn searches for broader discovery before local filtering.`);
-      }
-
       setResults(dedupeMergedResults(combinedResults));
       setSearchUrl(primarySearchUrl);
-      setWarnings(Array.from(new Set(combinedWarnings)));
+      setWarnings(summarizeSearchWarnings(Array.from(new Set(combinedWarnings)), variants.length));
     } catch (err) {
       setResults([]);
       setSearchUrl("");
@@ -853,8 +915,14 @@ function LinkedInSearchPage() {
 
                       <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
                         <div className="mb-3 space-y-1">
-                          <p className="text-sm font-semibold text-slate-900">Discovery Strategy</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-slate-900">Discovery Strategy</p>
+                            <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
+                              Advanced
+                            </span>
+                          </div>
                           <p className="text-xs text-slate-500">Run several broader LinkedIn searches, then narrow the merged pool instantly below.</p>
+                          <p className="text-xs font-medium text-amber-700">These options usually take longer because they run multiple LinkedIn searches before combining the results.</p>
                         </div>
                         <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700">
                           <input
@@ -865,26 +933,28 @@ function LinkedInSearchPage() {
                           Broaden search before local filtering
                         </label>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {[
-                            { value: "title-variants" as SearchPreset, label: "Title variants" },
-                            { value: "location-spread" as SearchPreset, label: "Location spread" },
-                            { value: "remote-expansion" as SearchPreset, label: "Remote expansion" },
-                            { value: "workplace-split" as SearchPreset, label: "Workplace split" },
-                          ].map((preset) => {
+                          {discoveryPresetOptions.map((preset) => {
                             const active = selectedPresets.includes(preset.value);
                             return (
-                              <button
-                                key={preset.value}
-                                type="button"
-                                onClick={() => togglePreset(preset.value)}
-                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                                  active
-                                    ? "border border-sky-200 bg-sky-50 text-sky-700"
-                                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
-                                }`}
-                              >
-                                {preset.label}
-                              </button>
+                              <Tooltip key={preset.value}>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => togglePreset(preset.value)}
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                                      active
+                                        ? "border border-sky-200 bg-sky-50 text-sky-700"
+                                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                                    }`}
+                                  >
+                                    {preset.label}
+                                    <CircleHelp className="h-3.5 w-3.5 opacity-70" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                                  {preset.description}
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           })}
                         </div>
