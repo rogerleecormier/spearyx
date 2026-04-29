@@ -14,12 +14,25 @@ import {
 
 type BrowserPage = any;
 
-function shouldRunFrequency(lastRunAt: string | null, frequency: "hourly" | "every_6_hours" | "daily") {
+const FREQUENCY_HOURS: Record<string, number> = {
+  hourly: 1,
+  every_2_hours: 2,
+  every_4_hours: 4,
+  every_8_hours: 8,
+  every_12_hours: 12,
+  daily: 24,
+};
+
+function shouldRunFrequency(
+  lastRunAt: string | null,
+  frequency: string,
+  varianceMinutes: number,
+) {
   if (!lastRunAt) return true;
-  const hoursSince = (Date.now() - new Date(lastRunAt).getTime()) / (1000 * 60 * 60);
-  if (frequency === "hourly") return hoursSince >= 1;
-  if (frequency === "every_6_hours") return hoursSince >= 6;
-  return hoursSince >= 24;
+  const intervalHours = FREQUENCY_HOURS[frequency] ?? 24;
+  const varianceMs = Math.floor(Math.random() * varianceMinutes * 60 * 1000);
+  const thresholdMs = intervalHours * 60 * 60 * 1000 - varianceMs;
+  return Date.now() - new Date(lastRunAt).getTime() >= thresholdMs;
 }
 
 async function extractSearchCards(page: BrowserPage, limit: number): Promise<LinkedInScrapedJob[]> {
@@ -198,7 +211,7 @@ export async function runLinkedinSearchMaintenance(env: CloudflareEnv) {
   const db = getDb(env.DB);
   const searches = await db.select().from(linkedinSavedSearches).where((await import("drizzle-orm")).eq(linkedinSavedSearches.isActive, 1));
 
-  const dueSearches = searches.filter((search) => shouldRunFrequency(search.lastRunAt ?? null, settings.linkedinSearchCronFrequency));
+  const dueSearches = searches.filter((search) => shouldRunFrequency(search.lastRunAt ?? null, settings.linkedinSearchCronFrequency, settings.linkedinCronVarianceMinutes));
   if (dueSearches.length === 0) {
     return { duplicatePrunedCount, prunedCount, executedSearches: 0 };
   }

@@ -24,6 +24,19 @@ function parsePostedDate(value: string | null | undefined) {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+function matchesRemoteHistoryJob(job: { workplaceType?: string | null; location: string; snippet?: string | null; title: string }) {
+  const workplace = job.workplaceType?.toLowerCase() ?? "";
+  const location = job.location.toLowerCase();
+  const snippet = job.snippet?.toLowerCase() ?? "";
+  const title = job.title.toLowerCase();
+  return (
+    workplace.includes("remote") ||
+    location.includes("remote") ||
+    snippet.includes("remote") ||
+    title.includes("remote")
+  );
+}
+
 export const Route = createFileRoute("/linkedin-jobs")({
   beforeLoad: ({ context, location }) => {
     const ctx = context as { user?: { id: number; role: string } | null };
@@ -66,9 +79,7 @@ function LinkedinJobsPage() {
 
     const narrowedRows = titleFiltered.filter((job) => {
       const matchesGreen = !greenOnly || (job.masterScore ?? 0) >= 80;
-      const workplace = job.workplaceType?.toLowerCase() ?? "";
-      const location = job.location.toLowerCase();
-      const matchesRemote = !remoteOnly || workplace.includes("remote") || location.includes("remote");
+      const matchesRemote = !remoteOnly || matchesRemoteHistoryJob(job);
       return matchesGreen && matchesRemote;
     });
 

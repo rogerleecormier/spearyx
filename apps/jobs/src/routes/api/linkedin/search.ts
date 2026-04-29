@@ -81,6 +81,18 @@ function dedupeJobsByCanonicalUrl(jobs: LinkedInScrapedJob[]) {
 
 async function extractSearchCards(page: BrowserPage, limit: number): Promise<LinkedInScrapedJob[]> {
   const jobs = await page.evaluate((maxResults: number) => {
+    function inferWorkplaceType(row: Element, location: string, snippet: string | null) {
+      const rowText = row.textContent?.replace(/\s+/g, " ").trim().toLowerCase() || "";
+      const locationText = location.toLowerCase();
+      const snippetText = (snippet || "").toLowerCase();
+      const combined = `${rowText} ${locationText} ${snippetText}`;
+
+      if (/\bhybrid\b/.test(combined)) return "hybrid";
+      if (/\bon[\s-]?site\b/.test(combined)) return "on-site";
+      if (/\bremote\b/.test(combined) || /\bwork from home\b/.test(combined)) return "remote";
+      return null;
+    }
+
     const rows = Array.from(
       document.querySelectorAll("li, .base-card, .jobs-search__results-list li, .jobs-search-results__list-item"),
     );
@@ -138,6 +150,7 @@ async function extractSearchCards(page: BrowserPage, limit: number): Promise<Lin
         row.querySelector(".base-search-card__snippet")?.textContent ||
         ""
       ).replace(/\s+/g, " ").trim() || null;
+      const workplaceType = inferWorkplaceType(row, location, snippet);
 
       results.push({
         id,
@@ -147,7 +160,7 @@ async function extractSearchCards(page: BrowserPage, limit: number): Promise<Lin
         sourceUrl: anchor.href,
         sourceName: "LinkedIn",
         postDateText,
-        workplaceType: null,
+        workplaceType,
         salary,
         snippet,
         description: null,

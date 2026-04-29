@@ -7,7 +7,7 @@ import {
   updateLinkedinAdminSettings,
 } from "@/server/functions/linkedin-admin";
 import { PageHero, PageSection } from "@spearyx/ui-kit";
-import { Shield, Trash2 } from "lucide-react";
+import { Clock, Shield, Trash2 } from "lucide-react";
 
 type AdminUser = { id: number; email: string; role: string; createdAt: string };
 type LinkedinSettings = Awaited<ReturnType<typeof getLinkedinAdminSettings>>;
@@ -212,74 +212,158 @@ function AdminPage() {
       </PageSection>
 
       <PageSection
-        title="LinkedIn Search Settings"
-        description="Control retention, pruning, visibility, and how often saved LinkedIn searches are eligible to run."
+        title="LinkedIn Cron Schedule"
+        description="Control how frequently saved searches run and add randomized variance to avoid predictable request patterns."
       >
         {!settings ? (
           <p className="text-sm text-muted-foreground">Loading settings...</p>
         ) : (
-          <form onSubmit={handleSaveSettings} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">Retention Days</span>
-              <input
-                type="number"
-                min={1}
-                max={365}
-                value={settings.linkedinRetentionDays}
-                onChange={(e) => setSettings({ ...settings, linkedinRetentionDays: Number(e.target.value || 14) })}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm"
-              />
-            </label>
-
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">Cron Frequency</span>
-              <select
-                value={settings.linkedinSearchCronFrequency}
-                onChange={(e) => setSettings({ ...settings, linkedinSearchCronFrequency: e.target.value as LinkedinSettings["linkedinSearchCronFrequency"] })}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm"
-              >
-                <option value="hourly">Hourly</option>
-                <option value="every_6_hours">Every 6 Hours</option>
-                <option value="daily">Daily</option>
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm">
-              <input
-                type="checkbox"
-                checked={settings.linkedinAutoPrune}
-                onChange={(e) => setSettings({ ...settings, linkedinAutoPrune: e.target.checked })}
-              />
-              Enable Auto Prune
-            </label>
-
-            <label className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm">
-              <input
-                type="checkbox"
-                checked={settings.linkedinAllowAllUsersView}
-                onChange={(e) => setSettings({ ...settings, linkedinAllowAllUsersView: e.target.checked })}
-              />
-              Allow All Users To View Shared History
-            </label>
-
-            <div className="md:col-span-2 xl:col-span-4">
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  disabled={savingSettings}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          <form onSubmit={handleSaveSettings} className="space-y-6">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <label className="space-y-1.5 text-sm">
+                <span className="font-medium">Run Frequency</span>
+                <p className="text-xs text-muted-foreground">How often each saved search is eligible to run.</p>
+                <select
+                  value={settings.linkedinSearchCronFrequency}
+                  onChange={(e) => setSettings({ ...settings, linkedinSearchCronFrequency: e.target.value as LinkedinSettings["linkedinSearchCronFrequency"] })}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  {savingSettings ? "Saving..." : "Save LinkedIn Settings"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRunLinkedinDedupe}
-                  disabled={runningLinkedinDedupe}
-                  className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
+                  <option value="hourly">Every Hour</option>
+                  <option value="every_2_hours">Every 2 Hours</option>
+                  <option value="every_4_hours">Every 4 Hours</option>
+                  <option value="every_8_hours">Every 8 Hours</option>
+                  <option value="every_12_hours">Every 12 Hours</option>
+                  <option value="daily">Daily (24 Hours)</option>
+                </select>
+              </label>
+
+              <label className="space-y-1.5 text-sm">
+                <span className="font-medium">Start Hour (UTC)</span>
+                <p className="text-xs text-muted-foreground">Anchor hour for daily/12h schedules. 0–23.</p>
+                <select
+                  value={settings.linkedinCronStartHour}
+                  onChange={(e) => setSettings({ ...settings, linkedinCronStartHour: Number(e.target.value) })}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  {runningLinkedinDedupe ? "Running Dedupe..." : "Run LinkedIn Dedupe"}
-                </button>
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>
+                      {h.toString().padStart(2, "0")}:00 UTC{h >= 4 && h <= 20 ? ` (${h - 4}:00 ET)` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-1.5 text-sm">
+                <span className="font-medium">Variance Window (minutes)</span>
+                <p className="text-xs text-muted-foreground">Max random offset subtracted from the interval to avoid fixed timing patterns.</p>
+                <select
+                  value={settings.linkedinCronVarianceMinutes}
+                  onChange={(e) => setSettings({ ...settings, linkedinCronVarianceMinutes: Number(e.target.value) })}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value={0}>None (exact interval)</option>
+                  <option value={5}>±5 minutes</option>
+                  <option value={10}>±10 minutes</option>
+                  <option value={20}>±20 minutes</option>
+                  <option value={30}>±30 minutes</option>
+                  <option value={45}>±45 minutes</option>
+                  <option value={59}>±59 minutes</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="flex items-start gap-2">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="space-y-1">
+                  <p className="font-medium">How variance works</p>
+                  <p className="text-xs">
+                    On each cron tick, a random number of minutes (0–{settings.linkedinCronVarianceMinutes}) is subtracted from the interval threshold before checking whether a search is due. This means searches may run slightly earlier than the exact interval, making timing less predictable to LinkedIn's bot detection.
+                  </p>
+                </div>
               </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={savingSettings}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingSettings ? "Saving..." : "Save Cron Settings"}
+              </button>
+            </div>
+          </form>
+        )}
+      </PageSection>
+
+      <PageSection
+        title="LinkedIn General Settings"
+        description="Control job retention, deduplication, and visibility across users."
+      >
+        {!settings ? (
+          <p className="text-sm text-muted-foreground">Loading settings...</p>
+        ) : (
+          <form onSubmit={handleSaveSettings} className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <label className="space-y-1.5 text-sm">
+                <span className="font-medium">Retention Days</span>
+                <p className="text-xs text-muted-foreground">Job results older than this are pruned.</p>
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={settings.linkedinRetentionDays}
+                  onChange={(e) => setSettings({ ...settings, linkedinRetentionDays: Number(e.target.value || 14) })}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </label>
+
+              <div className="space-y-3 sm:col-span-2 xl:col-span-2">
+                <label className="flex items-center gap-3 rounded-lg border border-input bg-background px-4 py-3 text-sm shadow-sm cursor-pointer hover:bg-muted/30">
+                  <input
+                    type="checkbox"
+                    checked={settings.linkedinAutoPrune}
+                    onChange={(e) => setSettings({ ...settings, linkedinAutoPrune: e.target.checked })}
+                    className="h-4 w-4 rounded"
+                  />
+                  <div>
+                    <p className="font-medium">Enable Auto Prune</p>
+                    <p className="text-xs text-muted-foreground">Automatically remove expired job results on each cron run.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 rounded-lg border border-input bg-background px-4 py-3 text-sm shadow-sm cursor-pointer hover:bg-muted/30">
+                  <input
+                    type="checkbox"
+                    checked={settings.linkedinAllowAllUsersView}
+                    onChange={(e) => setSettings({ ...settings, linkedinAllowAllUsersView: e.target.checked })}
+                    className="h-4 w-4 rounded"
+                  />
+                  <div>
+                    <p className="font-medium">Allow All Users To View Shared History</p>
+                    <p className="text-xs text-muted-foreground">When enabled, all users can browse each other's saved search results.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="submit"
+                disabled={savingSettings}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingSettings ? "Saving..." : "Save General Settings"}
+              </button>
+              <button
+                type="button"
+                onClick={handleRunLinkedinDedupe}
+                disabled={runningLinkedinDedupe}
+                className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
+              >
+                {runningLinkedinDedupe ? "Running Dedupe..." : "Run LinkedIn Dedupe Now"}
+              </button>
             </div>
           </form>
         )}

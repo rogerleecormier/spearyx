@@ -23,7 +23,8 @@
       "Bash(grep -o 'return{user:{id:1\\\\|id:1,email\\\\|hardcoded' /run/media/rogerleecormier/Storage/dev/spearyx/apps/corporate/dist/server/assets/auth-5J4-ruqK.js)",
       "Bash(python3 -c ' *)",
       "Bash(pnpm exec *)",
-      "Read(//run/media/rogerleecormier/Storage/dev/**)"
+      "Read(//run/media/rogerleecormier/Storage/dev/**)",
+      "Bash(npx tsc *)"
     ]
   }
 }

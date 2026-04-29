@@ -234,6 +234,8 @@ export const appSettings = sqliteTable('app_settings', {
   linkedinAutoPrune: integer('linkedin_auto_prune').notNull().default(1),
   linkedinAllowAllUsersView: integer('linkedin_allow_all_users_view').notNull().default(0),
   linkedinSearchCronFrequency: text('linkedin_search_cron_frequency').notNull().default('daily'),
+  linkedinCronStartHour: integer('linkedin_cron_start_hour').notNull().default(9),
+  linkedinCronVarianceMinutes: integer('linkedin_cron_variance_minutes').notNull().default(20),
   updatedAt: text('updated_at').notNull(),
 })
 

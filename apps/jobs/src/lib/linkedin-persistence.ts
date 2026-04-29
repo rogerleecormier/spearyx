@@ -11,13 +11,15 @@ import { getCloudflareEnv } from "@/lib/cloudflare";
 import type { SessionUser } from "@/lib/cloudflare";
 import type { LinkedInScrapedJob, LinkedInSearchParams } from "@/lib/linkedin-search";
 
-export type LinkedinCronFrequency = "hourly" | "every_6_hours" | "daily";
+export type LinkedinCronFrequency = "hourly" | "every_2_hours" | "every_4_hours" | "every_8_hours" | "every_12_hours" | "daily";
 
 export type LinkedinAppSettings = {
   linkedinRetentionDays: number;
   linkedinAutoPrune: boolean;
   linkedinAllowAllUsersView: boolean;
   linkedinSearchCronFrequency: LinkedinCronFrequency;
+  linkedinCronStartHour: number;
+  linkedinCronVarianceMinutes: number;
   updatedAt: string;
 };
 
@@ -47,6 +49,8 @@ const DEFAULT_SETTINGS: LinkedinAppSettings = {
   linkedinAutoPrune: true,
   linkedinAllowAllUsersView: false,
   linkedinSearchCronFrequency: "daily",
+  linkedinCronStartHour: 9,
+  linkedinCronVarianceMinutes: 20,
   updatedAt: new Date(0).toISOString(),
 };
 
@@ -135,6 +139,8 @@ function normalizeSettings(row?: AppSettings | null): LinkedinAppSettings {
     linkedinAutoPrune: row.linkedinAutoPrune === 1,
     linkedinAllowAllUsersView: row.linkedinAllowAllUsersView === 1,
     linkedinSearchCronFrequency: (row.linkedinSearchCronFrequency as LinkedinCronFrequency) ?? DEFAULT_SETTINGS.linkedinSearchCronFrequency,
+    linkedinCronStartHour: row.linkedinCronStartHour ?? DEFAULT_SETTINGS.linkedinCronStartHour,
+    linkedinCronVarianceMinutes: row.linkedinCronVarianceMinutes ?? DEFAULT_SETTINGS.linkedinCronVarianceMinutes,
     updatedAt: row.updatedAt,
   };
 }
@@ -157,6 +163,8 @@ export async function saveLinkedinSettings(input: Partial<LinkedinAppSettings>):
     linkedinAutoPrune: input.linkedinAutoPrune ?? existing.linkedinAutoPrune,
     linkedinAllowAllUsersView: input.linkedinAllowAllUsersView ?? existing.linkedinAllowAllUsersView,
     linkedinSearchCronFrequency: input.linkedinSearchCronFrequency ?? existing.linkedinSearchCronFrequency,
+    linkedinCronStartHour: Math.max(0, Math.min(23, input.linkedinCronStartHour ?? existing.linkedinCronStartHour)),
+    linkedinCronVarianceMinutes: Math.max(0, Math.min(59, input.linkedinCronVarianceMinutes ?? existing.linkedinCronVarianceMinutes)),
     updatedAt: new Date().toISOString(),
   };
 
@@ -168,6 +176,8 @@ export async function saveLinkedinSettings(input: Partial<LinkedinAppSettings>):
       linkedinAutoPrune: next.linkedinAutoPrune ? 1 : 0,
       linkedinAllowAllUsersView: next.linkedinAllowAllUsersView ? 1 : 0,
       linkedinSearchCronFrequency: next.linkedinSearchCronFrequency,
+      linkedinCronStartHour: next.linkedinCronStartHour,
+      linkedinCronVarianceMinutes: next.linkedinCronVarianceMinutes,
       updatedAt: next.updatedAt,
     })
     .onConflictDoUpdate({
@@ -177,6 +187,8 @@ export async function saveLinkedinSettings(input: Partial<LinkedinAppSettings>):
         linkedinAutoPrune: next.linkedinAutoPrune ? 1 : 0,
         linkedinAllowAllUsersView: next.linkedinAllowAllUsersView ? 1 : 0,
         linkedinSearchCronFrequency: next.linkedinSearchCronFrequency,
+        linkedinCronStartHour: next.linkedinCronStartHour,
+        linkedinCronVarianceMinutes: next.linkedinCronVarianceMinutes,
         updatedAt: next.updatedAt,
       },
     });
@@ -205,6 +217,18 @@ export async function upsertLinkedinJobResults(args: {
       .limit(1);
 
     if (existing) {
+      const shouldBackfillWorkplaceType = !existing.workplaceType && job.workplaceType;
+      const shouldRefreshLastSeenAt = existing.lastSeenAt !== now;
+      if (shouldBackfillWorkplaceType || shouldRefreshLastSeenAt) {
+        await db
+          .update(linkedinJobResults)
+          .set({
+            workplaceType: shouldBackfillWorkplaceType ? job.workplaceType : existing.workplaceType,
+            lastSeenAt: now,
+            updatedAt: now,
+          })
+          .where(eq(linkedinJobResults.id, existing.id));
+      }
       continue;
     }
 
