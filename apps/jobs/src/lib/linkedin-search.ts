@@ -159,16 +159,11 @@ export function buildLinkedInSearchUrlForPage(
     url.searchParams.set("f_SB2", String(Math.round(params.salaryMin)));
   }
 
-  url.searchParams.set("position", "1");
   const effectivePage = Math.max(1, Math.min(20, Number(pageNumber || params.page || 1)));
-  url.searchParams.set("pageNum", String(effectivePage));
   url.searchParams.set("sortBy", params.sortBy === "recent" ? "DD" : "R");
-  url.searchParams.set("refresh", "true");
 
   const offset = (effectivePage - 1) * 25;
-  if (offset > 0) {
-    url.searchParams.set("start", String(offset));
-  }
+  url.searchParams.set("start", String(offset));
 
   return url.toString();
 }

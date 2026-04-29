@@ -74,9 +74,8 @@ function LinkedinJobsPage() {
         description={
           "Persisted LinkedIn jobs are pruned according to admin retention settings."
         }
-      >
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <div>
+        actions={
+          <div className="min-w-[220px] rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {titleQuery.trim() || greenOnly || remoteOnly
                 ? initialData.canViewAllUsers
@@ -86,21 +85,21 @@ function LinkedinJobsPage() {
                   ? "Total Stored Jobs"
                   : "Your Stored Jobs"}
             </p>
-            <p className="mt-1 text-sm text-slate-600">
-              {titleQuery.trim() || greenOnly || remoteOnly
-                ? initialData.canViewAllUsers
-                  ? `Showing ${filteredRows.length} matching jobs across visible LinkedIn history.`
-                  : `Showing ${filteredRows.length} matching jobs in your LinkedIn history.`
-                : initialData.canViewAllUsers
-                  ? "Currently available across visible LinkedIn history."
-                  : "Currently saved in your LinkedIn history."}
-            </p>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="text-sm text-slate-600">
+                {titleQuery.trim() || greenOnly || remoteOnly
+                  ? `${filteredRows.length} matching`
+                  : initialData.canViewAllUsers
+                    ? "All visible"
+                    : "Currently saved"}
+              </p>
+              <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white">
+                {titleQuery.trim() || greenOnly || remoteOnly ? filteredRows.length : initialData.total}
+              </div>
+            </div>
           </div>
-          <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white">
-            {titleQuery.trim() || greenOnly || remoteOnly ? filteredRows.length : initialData.total}
-          </div>
-        </div>
-
+        }
+      >
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 text-sm shadow-sm focus-within:ring-1 focus-within:ring-ring lg:flex-1">
             <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />

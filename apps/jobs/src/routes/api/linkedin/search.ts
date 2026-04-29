@@ -6,10 +6,8 @@ import { getAIFromContext } from "../../../lib/ai";
 import { scoreJobAgainstProfile } from "../../../lib/ai/job-score";
 import { getCloudflareEnv } from "../../../lib/cloudflare";
 import {
-  buildLinkedinJobSemanticKey,
   canonicalizeLinkedinJobUrl,
   findExistingLinkedinJobs,
-  findSemanticallyMatchingExistingLinkedinJobs,
   mapStoredLinkedinJobToScrapedJob,
   upsertLinkedinJobResults,
 } from "../../../lib/linkedin-persistence";
@@ -79,22 +77,6 @@ function dedupeJobsByCanonicalUrl(jobs: LinkedInScrapedJob[]) {
     seen.add(key);
     return true;
   });
-}
-
-function dedupeJobsBySemanticKey(jobs: LinkedInScrapedJob[]) {
-  const map = new Map<string, LinkedInScrapedJob>();
-  for (const job of jobs) {
-    const key = buildLinkedinJobSemanticKey({
-      title: job.title,
-      company: job.company,
-      location: job.location,
-    });
-    const existing = map.get(key);
-    if (!existing || (job.score?.masterScore || 0) > (existing.score?.masterScore || 0)) {
-      map.set(key, job);
-    }
-  }
-  return Array.from(map.values());
 }
 
 async function extractSearchCards(page: BrowserPage, limit: number): Promise<LinkedInScrapedJob[]> {
@@ -410,26 +392,15 @@ export const Route = createFileRoute("/api/linkedin/search")({
               userId: user.id,
               jobs: jobs.map((job) => ({ id: job.id, sourceUrl: job.sourceUrl })),
             });
-            const semanticExistingJobs = await findSemanticallyMatchingExistingLinkedinJobs({
-              userId: user.id,
-              jobs,
-            });
-
             const matchedRows = new Map<string, ReturnType<typeof mapStoredLinkedinJobToScrapedJob>>();
             const unmatchedJobs: LinkedInScrapedJob[] = [];
 
             for (const job of jobs) {
-              const exactMatch = existingJobsByUrl.get(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id));
-              const semanticKey = buildLinkedinJobSemanticKey({
-                title: job.title,
-                company: job.company,
-                location: job.location,
-              });
-              const semanticMatch = semanticExistingJobs.get(semanticKey);
-              const matchedRow = exactMatch || semanticMatch;
+              const canonicalUrl = canonicalizeLinkedinJobUrl(job.sourceUrl, job.id);
+              const matchedRow = existingJobsByUrl.get(canonicalUrl);
 
               if (matchedRow) {
-                matchedRows.set(semanticKey, mapStoredLinkedinJobToScrapedJob(matchedRow));
+                matchedRows.set(canonicalUrl, mapStoredLinkedinJobToScrapedJob(matchedRow));
               } else {
                 unmatchedJobs.push(job);
               }
@@ -437,7 +408,7 @@ export const Route = createFileRoute("/api/linkedin/search")({
 
             historicalJobs = Array.from(matchedRows.values());
             reusedCount = historicalJobs.length;
-            jobs = dedupeJobsBySemanticKey(unmatchedJobs);
+            jobs = unmatchedJobs;
 
             if (jobs.length === 0) {
               historicalJobs.sort((a, b) => (b.score?.masterScore || 0) - (a.score?.masterScore || 0));
@@ -465,25 +436,15 @@ export const Route = createFileRoute("/api/linkedin/search")({
               userId: user.id,
               jobs: jobs.map((job) => ({ id: job.id, sourceUrl: job.sourceUrl })),
             });
-            const semanticExistingJobs = await findSemanticallyMatchingExistingLinkedinJobs({
-              userId: user.id,
-              jobs,
-            });
             const matchedRows = new Map<string, ReturnType<typeof mapStoredLinkedinJobToScrapedJob>>();
             const unmatchedJobs: LinkedInScrapedJob[] = [];
 
             for (const job of jobs) {
-              const exactMatch = existingJobsByUrl.get(canonicalizeLinkedinJobUrl(job.sourceUrl, job.id));
-              const semanticKey = buildLinkedinJobSemanticKey({
-                title: job.title,
-                company: job.company,
-                location: job.location,
-              });
-              const semanticMatch = semanticExistingJobs.get(semanticKey);
-              const matchedRow = exactMatch || semanticMatch;
+              const canonicalUrl = canonicalizeLinkedinJobUrl(job.sourceUrl, job.id);
+              const matchedRow = existingJobsByUrl.get(canonicalUrl);
 
               if (matchedRow) {
-                matchedRows.set(semanticKey, mapStoredLinkedinJobToScrapedJob(matchedRow));
+                matchedRows.set(canonicalUrl, mapStoredLinkedinJobToScrapedJob(matchedRow));
               } else {
                 unmatchedJobs.push(job);
               }
@@ -491,7 +452,7 @@ export const Route = createFileRoute("/api/linkedin/search")({
 
             historicalJobs = Array.from(matchedRows.values());
             reusedCount = historicalJobs.length;
-            newJobs = dedupeJobsBySemanticKey(unmatchedJobs);
+            newJobs = unmatchedJobs;
           }
 
           if (newJobs.length === 0) {
