@@ -160,23 +160,17 @@ function TypographyLibrary() {
   ];
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="spx-page">
+      <div className="pb-2">
         <PageHero
           eyebrow="Component Library"
           icon={<Type className="h-3.5 w-3.5" />}
           title="Typography Styles"
           description="Explore the shared typography system, color roles, and spacing choices used to keep Spearyx readable, modern, and consistent across apps."
-          stats={[
-            { label: "Type Scale", value: "Hero to Caption" },
-            { label: "Color Roles", value: "14" },
-            { label: "Brand Tone", value: "Red glass" },
-          ]}
         />
       </div>
 
-      {/* Typography Hierarchy Section */}
-      <section className="px-4 py-10">
+      <section className="py-10">
         <div className="max-w-6xl mx-auto">
           <div className="rounded-[28px] border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur-sm md:p-10">
             <Overline className="mb-8 text-red-500">

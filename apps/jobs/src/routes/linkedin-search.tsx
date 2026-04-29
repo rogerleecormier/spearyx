@@ -702,7 +702,7 @@ function LinkedInSearchPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+    <div className="spx-page spx-stack">
       <PageHero
         eyebrow="LinkedIn Search"
         icon={<Target className="h-3.5 w-3.5" />}
@@ -806,188 +806,198 @@ function LinkedInSearchPage() {
               </div>
 
               {showAdvanced ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex flex-wrap gap-4">
-                    <div className="min-w-[280px] flex-1 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="mb-3 space-y-1">
-                        <p className="text-sm font-semibold text-slate-900">Targeting</p>
-                        <p className="text-xs text-slate-500">Narrow the search before scraping begins.</p>
+                <div className="space-y-px overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+                  {/* Targeting */}
+                  <div className="border-b border-slate-100 p-5">
+                    <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Targeting</p>
+                    <p className="mb-3 text-sm text-slate-500">Filter to a specific company before scraping begins.</p>
+                    <Input
+                      id="company"
+                      value={form.company}
+                      onChange={(e) => update("company", e.target.value)}
+                      placeholder="Company name (optional)"
+                    />
+                  </div>
+
+                  {/* Freshness & Ranking */}
+                  <div className="border-b border-slate-100 p-5">
+                    <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Freshness & Ranking</p>
+                    <p className="mb-3 text-sm text-slate-500">Control how recent results must be and how LinkedIn orders them.</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700" htmlFor="postedWithin">Posted Within</label>
+                        <select
+                          id="postedWithin"
+                          value={form.postedWithin}
+                          onChange={(e) => update("postedWithin", e.target.value as FormState["postedWithin"])}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                        >
+                          <option value="any">Any time</option>
+                          <option value="24h">Last 24 hours</option>
+                          <option value="7d">Last 7 days</option>
+                          <option value="30d">Last 30 days</option>
+                        </select>
                       </div>
-                      <Input
-                        id="company"
-                        value={form.company}
-                        onChange={(e) => update("company", e.target.value)}
-                        placeholder="Optional company filter"
-                      />
-                    </div>
-
-                    <div className="min-w-[320px] flex-[1.8] rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="mb-3 space-y-1">
-                        <p className="text-sm font-semibold text-slate-900">Search Controls</p>
-                        <p className="text-xs text-slate-500">Tune freshness, salary floor, and page coverage.</p>
-                      </div>
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="postedWithin">Posted Within</label>
-                          <select
-                            id="postedWithin"
-                            value={form.postedWithin}
-                            onChange={(e) => update("postedWithin", e.target.value as FormState["postedWithin"])}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                          >
-                            <option value="any">Any time</option>
-                            <option value="24h">24 hours</option>
-                            <option value="7d">7 days</option>
-                            <option value="30d">30 days</option>
-                          </select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="salaryMin">Minimum Salary</label>
-                          <Input
-                            id="salaryMin"
-                            type="number"
-                            min="0"
-                            step="5000"
-                            value={form.salaryMin}
-                            onChange={(e) => update("salaryMin", e.target.value)}
-                            placeholder="120000"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="sortBy">Sort</label>
-                          <select
-                            id="sortBy"
-                            value={form.sortBy}
-                            onChange={(e) => update("sortBy", e.target.value as FormState["sortBy"])}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                          >
-                            <option value="recent">Most recent</option>
-                            <option value="relevant">Most relevant</option>
-                          </select>
-                        </div>
-
-                        <label className="flex min-h-[42px] items-center gap-2 self-end rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={form.easyApply}
-                            onChange={(e) => update("easyApply", e.target.checked)}
-                          />
-                          Easy Apply only
-                        </label>
-                      </div>
-
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <FieldLabelWithInfo
-                            htmlFor="page"
-                            label="Start Page"
-                            tooltip="The first LinkedIn results page to scan. If you set Start Page to 5 and Pages To Scan to 3, the search will scan pages 5, 6, and 7."
-                          />
-                          <Input
-                            id="page"
-                            type="number"
-                            min="1"
-                            max="100"
-                            value={String(form.page)}
-                            onChange={(e) => update("page", Math.max(1, Number(e.target.value || 1)))}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <FieldLabelWithInfo
-                            htmlFor="pagesToScan"
-                            label="Pages To Scan"
-                            tooltip="How many consecutive LinkedIn result pages to harvest starting from the Start Page. More pages can find more jobs, but they also take longer to scrape."
-                          />
-                          <Input
-                            id="pagesToScan"
-                            type="number"
-                            min="1"
-                            max="10"
-                            value={String(form.pagesToScan)}
-                            onChange={(e) => update("pagesToScan", Math.max(1, Math.min(10, Number(e.target.value || 1))))}
-                          />
-                        </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700" htmlFor="sortBy">Sort Order</label>
+                        <select
+                          id="sortBy"
+                          value={form.sortBy}
+                          onChange={(e) => update("sortBy", e.target.value as FormState["sortBy"])}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                        >
+                          <option value="recent">Most recent</option>
+                          <option value="relevant">Most relevant</option>
+                        </select>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="min-w-[320px] flex-[2] rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="mb-3 space-y-1">
-                        <p className="text-sm font-semibold text-slate-900">Preference Filters</p>
-                        <p className="text-xs text-slate-500">Pick the role shapes you want the scraper to prioritize.</p>
+                  {/* Salary & Application */}
+                  <div className="border-b border-slate-100 p-5">
+                    <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Salary & Application</p>
+                    <p className="mb-3 text-sm text-slate-500">Set a salary floor and narrow to quick-apply listings.</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700" htmlFor="salaryMin">Minimum Salary</label>
+                        <Input
+                          id="salaryMin"
+                          type="number"
+                          min="0"
+                          step="5000"
+                          value={form.salaryMin}
+                          onChange={(e) => update("salaryMin", e.target.value)}
+                          placeholder="e.g. 120000"
+                        />
                       </div>
-                      <div className="flex flex-wrap gap-3">
-                        <div className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="mb-2 text-sm font-semibold text-slate-800">Workplace Type</p>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {workplaceOptions.map((option) => (
-                              <label key={option.value} className="flex items-center gap-2 text-sm text-slate-600">
-                                <input
-                                  type="checkbox"
-                                  checked={form.workplaceTypes.includes(option.value)}
-                                  onChange={() => update("workplaceTypes", toggleValue(form.workplaceTypes, option.value))}
-                                />
-                                {option.label}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="mb-2 text-sm font-semibold text-slate-800">Experience</p>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {experienceOptions.map((option) => (
-                              <label key={option.value} className="flex items-center gap-2 text-sm text-slate-600">
-                                <input
-                                  type="checkbox"
-                                  checked={form.experienceLevels.includes(option.value)}
-                                  onChange={() => update("experienceLevels", toggleValue(form.experienceLevels, option.value))}
-                                />
-                                {option.label}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="mb-2 text-sm font-semibold text-slate-800">Job Type</p>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {jobTypeOptions.map((option) => (
-                              <label key={option.value} className="flex items-center gap-2 text-sm text-slate-600">
-                                <input
-                                  type="checkbox"
-                                  checked={form.jobTypes.includes(option.value)}
-                                  onChange={() => update("jobTypes", toggleValue(form.jobTypes, option.value))}
-                                />
-                                {option.label}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="min-w-[320px] flex-[1.4] rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                      <div className="mb-3 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-900">Discovery Strategy</p>
-                          <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
-                            Advanced
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500">Run several broader LinkedIn searches, then narrow the merged pool instantly below.</p>
-                        <p className="text-xs font-medium text-amber-700">These options usually take longer because they run multiple LinkedIn searches before combining the results.</p>
-                      </div>
-                      <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700">
+                      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
                         <input
                           type="checkbox"
+                          checked={form.easyApply}
+                          onChange={(e) => update("easyApply", e.target.checked)}
+                          className="h-4 w-4 rounded"
+                        />
+                        Easy Apply only
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Page Coverage */}
+                  <div className="border-b border-slate-100 p-5">
+                    <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Page Coverage</p>
+                    <p className="mb-3 text-sm text-slate-500">Choose which result pages to harvest. More pages find more jobs but take longer.</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <FieldLabelWithInfo
+                          htmlFor="page"
+                          label="Start Page"
+                          tooltip="The first LinkedIn results page to scan. If you set Start Page to 5 and Pages To Scan to 3, the search will scan pages 5, 6, and 7."
+                        />
+                        <Input
+                          id="page"
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={String(form.page)}
+                          onChange={(e) => update("page", Math.max(1, Number(e.target.value || 1)))}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <FieldLabelWithInfo
+                          htmlFor="pagesToScan"
+                          label="Pages to Scan"
+                          tooltip="How many consecutive LinkedIn result pages to harvest starting from the Start Page. More pages can find more jobs, but they also take longer to scrape."
+                        />
+                        <Input
+                          id="pagesToScan"
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={String(form.pagesToScan)}
+                          onChange={(e) => update("pagesToScan", Math.max(1, Math.min(10, Number(e.target.value || 1))))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Role Preferences */}
+                  <div className="border-b border-slate-100 p-5">
+                    <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">Role Preferences</p>
+                    <p className="mb-3 text-sm text-slate-500">Narrow by work arrangement, seniority, and employment type.</p>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="mb-2 text-sm font-medium text-slate-700">Workplace Type</p>
+                        <div className="space-y-2">
+                          {workplaceOptions.map((option) => (
+                            <label key={option.value} className="flex cursor-pointer items-center gap-3 text-sm text-slate-600">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded"
+                                checked={form.workplaceTypes.includes(option.value)}
+                                onChange={() => update("workplaceTypes", toggleValue(form.workplaceTypes, option.value))}
+                              />
+                              {option.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-100 pt-4">
+                        <p className="mb-2 text-sm font-medium text-slate-700">Experience Level</p>
+                        <div className="space-y-2">
+                          {experienceOptions.map((option) => (
+                            <label key={option.value} className="flex cursor-pointer items-center gap-3 text-sm text-slate-600">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded"
+                                checked={form.experienceLevels.includes(option.value)}
+                                onChange={() => update("experienceLevels", toggleValue(form.experienceLevels, option.value))}
+                              />
+                              {option.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-100 pt-4">
+                        <p className="mb-2 text-sm font-medium text-slate-700">Job Type</p>
+                        <div className="space-y-2">
+                          {jobTypeOptions.map((option) => (
+                            <label key={option.value} className="flex cursor-pointer items-center gap-3 text-sm text-slate-600">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded"
+                                checked={form.jobTypes.includes(option.value)}
+                                onChange={() => update("jobTypes", toggleValue(form.jobTypes, option.value))}
+                              />
+                              {option.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Discovery Strategy */}
+                  <div className="p-5">
+                    <div className="mb-0.5 flex items-center gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Discovery Strategy</p>
+                      <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
+                        Advanced
+                      </span>
+                    </div>
+                    <p className="mb-1 text-sm text-slate-500">Run several broader LinkedIn searches, then merge and narrow the pool locally.</p>
+                    <p className="mb-3 text-xs font-medium text-amber-600">Takes longer — runs multiple LinkedIn searches before combining results.</p>
+                    <div className="space-y-3">
+                      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded"
                           checked={broadenDiscovery}
                           onChange={(e) => setBroadenDiscovery(e.target.checked)}
                         />
                         Broaden search before local filtering
                       </label>
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="space-y-2">
                         {discoveryPresetOptions.map((preset) => {
                           const active = selectedPresets.includes(preset.value);
                           return (
@@ -996,14 +1006,14 @@ function LinkedInSearchPage() {
                                 <button
                                   type="button"
                                   onClick={() => togglePreset(preset.value)}
-                                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                                  className={`flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition ${
                                     active
-                                      ? "border border-sky-200 bg-sky-50 text-sky-700"
-                                      : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                                      ? "border-sky-200 bg-sky-50 text-sky-700"
+                                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                                   }`}
                                 >
-                                  {preset.label}
-                                  <CircleHelp className="h-3.5 w-3.5 opacity-70" />
+                                  <span>{preset.label}</span>
+                                  <CircleHelp className="h-4 w-4 shrink-0 opacity-50" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs text-xs leading-relaxed">
@@ -1015,6 +1025,7 @@ function LinkedInSearchPage() {
                       </div>
                     </div>
                   </div>
+
                 </div>
               ) : null}
 

@@ -169,18 +169,12 @@ function SyncDashboardContent() {
   const recentErrors = logsData?.meta?.recentErrors || 0
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
+    <div className="spx-page space-y-8">
       <PageHero
         eyebrow="Operations"
         icon={<RefreshCw className="h-3.5 w-3.5" />}
         title="Source Operations"
         description="Internal sync health, source coverage, and recent worker activity for the jobs ingestion pipeline."
-        stats={[
-          { label: 'Total Jobs', value: String(stats?.totalJobs || 0) },
-          { label: 'Companies', value: String(stats?.totalDiscoveredCompanies || 0) },
-          { label: 'Pending', value: String(stats?.pendingCompanies || 0) },
-          { label: 'Errors', value: String(recentErrors) },
-        ]}
         actions={
           <>
             <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer">

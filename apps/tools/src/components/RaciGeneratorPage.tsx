@@ -184,8 +184,8 @@ export default function RaciGeneratorPage() {
 
   if (!isInitialized) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #ede9fe 100%)" }}>
-        <div className="text-center">
+      <main className="spx-status-shell">
+        <div className="spx-status-card text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           <Body size="sm" className="mt-4 text-slate-600">
             Loading chart...
@@ -199,8 +199,7 @@ export default function RaciGeneratorPage() {
     <main className="min-h-screen">
       {/* Import Notification */}
       {importNotification && (
-        <div className="bg-indigo-50 border-b border-indigo-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
+        <div className="spx-band spx-band-indigo spx-page mx-auto mt-6 flex items-center gap-3 rounded-[1.4rem] px-4 py-4">
             <Info className="w-5 h-5 text-indigo-600 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-indigo-900">
@@ -220,21 +219,15 @@ export default function RaciGeneratorPage() {
             >
               Dismiss
             </button>
-          </div>
         </div>
       )}
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="spx-page spx-stack">
         <PageHero
           eyebrow="Project Tools"
           icon={<span className="text-sm">📊</span>}
           title="RACI Matrix Generator"
           description="Define roles and responsibilities with AI-assisted clarity using the same product pattern shared across Spearyx apps."
-          stats={[
-            { label: "Roles", value: String(chart.roles.length) },
-            { label: "Tasks", value: String(chart.tasks.length) },
-            { label: "Theme", value: highContrast ? "High Contrast" : "Default" },
-          ]}
         />
 
         {/* Main Content */}

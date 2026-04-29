@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/utils";
 
 interface PageHeaderProps {
   /** Small overline text (e.g. "Project Tools") */
@@ -27,7 +28,7 @@ export function PageHeader({
   className = "",
 }: PageHeaderProps) {
   return (
-    <div className={`spx-page-header ${className}`}>
+    <div className={cn("spx-page-header spx-glass-card-strong overflow-hidden", className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {breadcrumb && (
           <div className="mb-3">{breadcrumb}</div>

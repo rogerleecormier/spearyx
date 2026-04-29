@@ -90,21 +90,13 @@ const principles = [
 ];
 
 function ToolsHomePage() {
-  const availableCount = tools.filter((t) => t.available).length;
-  const plannedCount = tools.length - availableCount;
-
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+    <div className="spx-page spx-stack">
       <PageHero
         eyebrow="Project Tools"
         icon={<Sparkles className="h-3.5 w-3.5" />}
         title="AI tools for structured delivery"
         description="Focused project-management tools with clear inputs, practical outputs, and interfaces built for repeat work."
-        stats={[
-          { label: "Available Now", value: String(availableCount) },
-          { label: "Planned", value: String(plannedCount) },
-          { label: "Focus", value: "PM" },
-        ]}
         actions={
           <Link
             to="/raci-generator"
@@ -116,14 +108,8 @@ function ToolsHomePage() {
         }
       />
 
-      {/* Cross-link: Jobs app */}
       <div
-        className="relative overflow-hidden rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        style={{
-          background: "linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0.02) 100%)",
-          border: "1px solid rgba(99,102,241,0.15)",
-          backdropFilter: "blur(12px)",
-        }}
+        className="spx-band spx-band-indigo flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex items-center gap-4">
           <div
@@ -162,14 +148,14 @@ function ToolsHomePage() {
                 <Link
                   key={tool.title}
                   to={tool.href}
-                  className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-primary-200/50 hover:shadow-md"
+                  className="spx-glass-card group flex flex-col rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:border-primary-200/70 hover:shadow-lg"
                 >
                   <ToolCardContent tool={tool} />
                 </Link>
               ) : (
                 <div
                   key={tool.title}
-                  className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/50 p-5 opacity-70"
+                  className="spx-glass-card-muted flex flex-col rounded-2xl p-5 opacity-75"
                 >
                   <ToolCardContent tool={tool} />
                 </div>
@@ -189,7 +175,7 @@ function ToolsHomePage() {
               {principles.map((principle, i) => (
                 <div
                   key={principle.title}
-                  className="rounded-xl border border-slate-100 bg-slate-50 p-4"
+                  className="spx-glass-card-muted rounded-xl p-4"
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
@@ -206,11 +192,7 @@ function ToolsHomePage() {
           {/* Start here CTA */}
           <PageSection title="Start here">
             <div
-              className="rounded-xl p-4"
-              style={{
-                background: "rgba(220,38,38,0.04)",
-                border: "1px solid rgba(220,38,38,0.12)",
-              }}
+              className="spx-band spx-band-primary rounded-xl p-4"
             >
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-primary-600" />

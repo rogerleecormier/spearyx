@@ -6,7 +6,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./styles": "./src/styles.css",
+    "./styles": "./styles.css",
     "./tailwind.config": "./tailwind.config.ts"
   },
   "scripts": {

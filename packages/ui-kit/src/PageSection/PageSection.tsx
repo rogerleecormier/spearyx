@@ -1,19 +1,29 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/utils";
 
 interface PageSectionProps {
   title?: string;
   description?: string;
   actions?: ReactNode;
   children: ReactNode;
+  tone?: "default" | "muted" | "primary" | "indigo";
   className?: string;
   contentClassName?: string;
 }
+
+const toneStyles = {
+  default: "border-slate-200/80",
+  muted: "border-slate-200/70 bg-slate-50/60",
+  primary: "border-primary-100/80",
+  indigo: "border-indigo-100/80",
+} as const;
 
 export function PageSection({
   title,
   description,
   actions,
   children,
+  tone = "default",
   className = "",
   contentClassName = "",
 }: PageSectionProps) {
@@ -21,14 +31,7 @@ export function PageSection({
 
   return (
     <section
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "rgba(255,255,255,0.84)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(226,232,240,0.7)",
-        boxShadow: "0 2px 12px rgba(15,23,42,0.05), 0 1px 2px rgba(15,23,42,0.04)",
-      }}
+      className={cn("spx-glass-card rounded-[1.6rem] border", toneStyles[tone], className)}
     >
       {hasHeader && (
         <div className="flex flex-col gap-3 border-b border-slate-100/80 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -45,7 +48,7 @@ export function PageSection({
           )}
         </div>
       )}
-      <div className={`px-6 py-5 ${contentClassName}`}>{children}</div>
+      <div className={cn("px-6 py-5", contentClassName)}>{children}</div>
     </section>
   );
 }

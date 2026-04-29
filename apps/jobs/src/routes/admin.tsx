@@ -123,16 +123,12 @@ function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+    <div className="spx-page space-y-8">
       <PageHero
         eyebrow="Admin"
         icon={<Shield className="h-3.5 w-3.5" />}
         title="User Management"
         description="Manage jobs-app access, create accounts, and remove users when needed."
-        stats={[
-          { label: "Users", value: String(userList.length) },
-          { label: "Admins", value: String(userList.filter((user) => user.role === "admin").length) },
-        ]}
       />
 
       <PageSection

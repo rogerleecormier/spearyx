@@ -102,8 +102,8 @@ function RaciImportRoute() {
   // If still validating, show loading state
   if (isValidating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center">
+      <div className="spx-status-shell">
+        <div className="spx-status-card text-center">
           <div className="inline-block mb-4">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
           </div>
@@ -119,9 +119,8 @@ function RaciImportRoute() {
   // If there's an error, show error state with recovery options
   if (importError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+      <div className="spx-status-shell">
+        <div className="spx-status-card max-w-md text-center">
             <div className="text-5xl mb-4">⚠️</div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Import Failed
@@ -176,7 +175,6 @@ function RaciImportRoute() {
                 )}
               </pre>
             </details>
-          </div>
         </div>
       </div>
     );
@@ -185,8 +183,8 @@ function RaciImportRoute() {
   // If chart was successfully imported, show loading state while navigating
   if (importedChart) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center">
+      <div className="spx-status-shell">
+        <div className="spx-status-card text-center">
           <div className="inline-block mb-4">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-green-500 rounded-full animate-spin" />
           </div>
@@ -201,8 +199,8 @@ function RaciImportRoute() {
 
   // Fallback (should not reach here)
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
+    <div className="spx-status-shell">
+      <div className="spx-status-card text-center">
         <p className="text-slate-600">Unexpected state during import</p>
       </div>
     </div>

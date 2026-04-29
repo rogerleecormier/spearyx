@@ -24,7 +24,18 @@
       "Bash(python3 -c ' *)",
       "Bash(pnpm exec *)",
       "Read(//run/media/rogerleecormier/Storage/dev/**)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(xargs ls *)",
+      "Bash(npx turbo *)",
+      "Bash(pnpm turbo *)",
+      "Bash(pnpm --filter=@spearyx/corporate build)",
+      "Bash(pnpm --filter=@spearyx/jobs build)",
+      "Bash(pnpm --filter=@spearyx/tools build)",
+      "Bash(node -e \"const c = require\\('./tailwind.config.ts'\\); console.log\\(JSON.stringify\\(c?.default?.safelist || c?.safelist || 'no safelist', null, 2\\)\\)\")",
+      "Bash(git -C /run/media/rogerleecormier/Storage/dev/spearyx diff --stat HEAD -- packages/shared-config/styles.css)",
+      "Bash(pnpm --filter @spearyx/jobs deploy)",
+      "Bash(xargs cat *)",
+      "Bash(pnpm --filter @spearyx/tools --filter @spearyx/corporate --filter @spearyx/jobs deploy)"
     ]
   }
 }

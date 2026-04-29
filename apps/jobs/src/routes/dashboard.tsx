@@ -87,25 +87,19 @@ function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 text-center text-muted-foreground">
+      <div className="spx-page text-center text-muted-foreground">
         No analytics data yet. Analyze some job postings to get started.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
+    <div className="spx-page space-y-8">
       <PageHero
         eyebrow="Search Insights"
         icon={<BarChart3 className="h-3.5 w-3.5" />}
         title="Search Insights"
         description="Monitor match quality, application momentum, and where your strongest positioning is emerging."
-        stats={[
-          { label: "Analyses", value: String(data.totalAnalyses) },
-          { label: "Applied", value: String(data.totalApplied) },
-          { label: "Avg Match", value: `${data.averageMatchScore.toFixed(1)}%` },
-          { label: "Resume Coverage", value: `${derived.resumeCoverage}%` },
-        ]}
         actions={
           <>
             <button
@@ -481,7 +475,7 @@ function KeywordSection({
 
 function DashboardLoading() {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 animate-pulse">
+    <div className="spx-page space-y-6 animate-pulse">
       <div className="h-44 rounded-2xl bg-muted" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (

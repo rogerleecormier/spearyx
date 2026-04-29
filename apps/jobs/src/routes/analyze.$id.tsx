@@ -19,7 +19,7 @@ function AnalysisDetailPage() {
   const analysis = Route.useLoaderData();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+    <div className="spx-page spx-stack">
       <Link
         to="/history"
         search={{ page: 1 }}
@@ -36,7 +36,7 @@ function AnalysisDetailPage() {
 
 function AnalysisDetailLoading() {
   return (
-    <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 animate-pulse">
+    <div className="spx-page space-y-4 animate-pulse">
       <div className="h-5 w-32 rounded bg-muted" />
       <div className="h-40 w-full rounded-xl bg-muted" />
       <div className="h-64 w-full rounded-xl bg-muted" />

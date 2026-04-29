@@ -198,17 +198,12 @@ function HomePage() {
   const clearCompanyFilter = useCallback(() => setSelectedCompany(null), []);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-      {/* Page Hero */}
+    <div className="spx-page spx-stack">
       <PageHero
         eyebrow="Remote Opportunities"
         icon={<Briefcase className="h-3.5 w-3.5" />}
         title="Find Your Next Role"
         description="AI-curated remote jobs from top tech companies — searched, scored, and ready for you to analyze."
-        stats={[
-          { label: "Total Jobs", value: String(totalJobs || loaderData.totalCount || "—") },
-          { label: "AI Powered", value: "Yes" },
-        ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Link

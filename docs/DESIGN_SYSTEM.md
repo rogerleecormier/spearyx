@@ -1,10 +1,10 @@
 # Spearyx Unified Design System
 
-Complete design guidance for all Spearyx applications: `@spearyx/app-web`, `@spearyx/corporate`, and `@spearyx/jobs`.
+Complete design guidance for all Spearyx applications: `@spearyx/corporate`, `@spearyx/tools`, and `@spearyx/jobs`.
 
-**Last Updated**: November 30, 2025  
-**Version**: 1.0.0  
-**Basis**: Tailwind CSS v4.0.6 + shadcn/ui components
+**Last Updated**: April 29, 2026  
+**Version**: 1.2.0  
+**Basis**: Tailwind CSS v4 CSS-first architecture + shadcn/ui components
 
 ---
 
@@ -16,10 +16,9 @@ Complete design guidance for all Spearyx applications: `@spearyx/app-web`, `@spe
 4. [Typography System](#typography-system)
 5. [Components](#components)
 6. [Usage Guidelines](#usage-guidelines)
-7. [Dark Mode](#dark-mode)
-8. [Spacing & Layout](#spacing--layout)
-9. [Animations](#animations)
-10. [Best Practices](#best-practices)
+7. [Spacing & Layout](#spacing--layout)
+8. [Animations](#animations)
+9. [Best Practices](#best-practices)
 
 ---
 
@@ -27,11 +26,12 @@ Complete design guidance for all Spearyx applications: `@spearyx/app-web`, `@spe
 
 The Spearyx design system provides a **unified, consistent experience** across all applications through:
 
-- **Single source of truth**: All design tokens defined in `@spearyx/shared-config`
+- **Single source of truth**: All design tokens defined in `@spearyx/shared-config/styles.css`
 - **Three-tier architecture**: Shared config → UI Kit → Individual apps
-- **Tailwind CSS**: All styling uses Tailwind utilities and custom plugins
+- **Tailwind CSS v4**: Shared styling uses `@theme`, `@plugin`, and `@source`
 - **shadcn/ui basis**: Components leverage Radix UI primitives and Tailwind
-- **Dark mode support**: Automatic dark mode with CSS custom properties
+- **Light mode only**: Single-theme design — no dark mode
+- **Shared page chrome**: Reusable heroes, sections, action bars, headers, shells, and status screens
 
 ### Design Philosophy
 
@@ -49,10 +49,11 @@ The Spearyx design system provides a **unified, consistent experience** across a
 
 ```
 packages/shared-config/
-├── tailwind.config.ts      # Master design tokens & theme
-├── styles.css              # Global styles foundation
+├── styles.css              # Canonical Tailwind v4 design tokens + global styles
+├── tailwind.config.ts      # Compatibility stub for legacy tooling only
 └── src/
-    └── index.ts            # Shared utilities export
+    ├── index.ts            # Shared utilities export
+    └── styles.css          # Compatibility re-export of ../styles.css
 
 packages/ui-kit/
 ├── src/
@@ -63,22 +64,32 @@ packages/ui-kit/
 │   │   └── utils.ts        # Shared utilities (cn, etc)
 │   └── index.ts            # Public exports
 
-apps/app-web/
 apps/corporate/
+apps/tools/
 apps/jobs/
-├── tailwind.config.ts      # App-specific config (extends shared)
+├── tailwind.config.ts      # Minimal compatibility stub
 ├── vite.config.ts          # App build config
 └── src/
-    ├── styles.css          # App styles (imports shared)
+    ├── styles.css          # App entrypoint importing shared styles
     └── ...
 ```
 
 ### How It Works
 
-1. **Shared Config** defines all design tokens (colors, typography, spacing)
-2. **UI Kit** provides reusable components using those tokens
-3. **Each App** extends the shared config with app-specific content paths
+1. **Shared Config CSS** defines design tokens in `@theme`
+2. **Shared Config CSS** loads shared plugins with `@plugin` and shared package scanning with `@source`
+3. **UI Kit** provides reusable components using those tokens
 4. **Each App** imports shared styles and adds any app-specific overrides
+
+### Tailwind v4 Rule
+
+Spearyx uses Tailwind v4 in **CSS-first mode**.
+
+- Put shared tokens in `packages/shared-config/styles.css`
+- Prefer `@theme` over `theme.extend`
+- Prefer `@plugin` in CSS over plugin registration in config
+- Prefer `@source` for workspace package scanning over app-level `content` arrays
+- Keep `tailwind.config.ts` files as compatibility shims unless a tool explicitly requires them
 
 ---
 
@@ -446,6 +457,132 @@ import {
 />
 ```
 
+### Page Primitives
+
+Added after the original November 30, 2025 snapshot. These are now the preferred building blocks for page-level cohesion across all apps.
+
+#### `AppHeader`
+
+Shared sticky product navigation used by `corporate`, `tools`, and `jobs`.
+
+```tsx
+import { AppHeader } from "@spearyx/ui-kit";
+
+<AppHeader
+  app="jobs"
+  currentPath="/analyze"
+  Link={Link}
+  user={user}
+/>
+```
+
+#### `PageHero`
+
+Primary page-introduction surface. Supports eyebrow, icon, actions, stats, and tone variants.
+
+```tsx
+import { PageHero } from "@spearyx/ui-kit";
+
+<PageHero
+  eyebrow="Job Tools"
+  title="Analyze a Job"
+  description="Paste a job URL or description to get AI-powered scoring."
+  tone="primary"
+  actions={<Button>Analyze</Button>}
+  stats={[
+    { label: "Saved", value: "128" },
+    { label: "Match", value: "82%" },
+  ]}
+/>
+```
+
+Available tones:
+
+- `primary`
+- `indigo`
+- `emerald`
+- `slate`
+
+#### `PageSection`
+
+Standard content container with shared glass surface, optional header, and tone variants.
+
+```tsx
+import { PageSection } from "@spearyx/ui-kit";
+
+<PageSection
+  title="Resume Profile"
+  description="Keep one source resume for all document generation."
+  tone="default"
+>
+  <ResumeManager />
+</PageSection>
+```
+
+Available tones:
+
+- `default`
+- `muted`
+- `primary`
+- `indigo`
+
+#### `PageActionBar`
+
+Shared footer/action strip for pagination, batch actions, and status summaries.
+
+```tsx
+import { PageActionBar } from "@spearyx/ui-kit";
+
+<PageActionBar tone="default">
+  <span>Showing 25 results</span>
+  <Button>Load More</Button>
+</PageActionBar>
+```
+
+#### `PageHeader`
+
+Compact alternative to `PageHero` for internal pages that need breadcrumb/action framing without metric tiles.
+
+```tsx
+import { PageHeader } from "@spearyx/ui-kit";
+
+<PageHeader
+  overline="Admin"
+  title="User Management"
+  description="Manage access to the jobs workspace."
+/>
+```
+
+### Shared Layout Utilities
+
+The shared stylesheet now includes reusable shell utilities for page-level consistency. These are not replacements for components; they support route-specific layouts and states.
+
+#### Page Shells
+
+- `spx-page` - Standard full-width page shell (`max-width: 80rem`)
+- `spx-page-narrow` - Narrow content shell (`max-width: 64rem`)
+- `spx-stack` - Standard vertical spacing rhythm between sections
+
+#### Shared Surfaces
+
+- `spx-glass-card`
+- `spx-glass-card-strong`
+- `spx-glass-card-muted`
+- `spx-band`
+- `spx-band-primary`
+- `spx-band-indigo`
+- `spx-stat-tile`
+- `spx-kicker`
+
+#### Auth / Status Screens
+
+- `spx-auth-shell`
+- `spx-auth-card`
+- `spx-status-shell`
+- `spx-status-card`
+
+These are intended for login pages, import/processing states, empty states, and recoverable error screens.
+
 ---
 
 ## Usage Guidelines
@@ -536,44 +673,6 @@ Always design mobile-first and use Tailwind breakpoints:
 
 ---
 
-## Dark Mode
-
-All components automatically support dark mode via `prefers-color-scheme` media query.
-
-### Enabling Dark Mode
-
-Add `dark` class to root HTML element:
-
-```tsx
-// App.tsx or Root layout
-export function App() {
-  return <html className={isDarkMode ? "dark" : ""}>{/* Content */}</html>;
-}
-```
-
-### Dark Mode Colors
-
-All colors automatically adapt. CSS custom properties handle the switch:
-
-```tsx
-// These automatically work in dark mode
-<div className="bg-white text-slate-900">
-  {/* Light mode: white bg, dark text */}
-  {/* Dark mode: slate-950 bg, slate-50 text */}
-</div>
-```
-
-### Forced Dark Mode Utilities
-
-```tsx
-// Force specific dark mode classes
-<div className="dark:bg-slate-900 dark:text-white">
-  Always dark even in light mode
-</div>
-```
-
----
-
 ## Spacing & Layout
 
 ### Spacing Scale
@@ -660,25 +759,23 @@ animate-glow          - Glow effect loop
 2. **Stick to the color palette** - Only use defined colors from the system
 3. **Use semantic color names** - `success-500`, `warning-500`, not custom colors
 4. **Maintain consistent spacing** - Use the defined spacing scale
-5. **Test in dark mode** - Ensure all components work in both modes
-6. **Be responsive** - Use mobile-first design approach
-7. **Import from ui-kit** - Reuse packaged components
-8. **Use Typography components** - Don't mix `<h1>`, `<p>`, `<span>` styles
-9. **Document overrides** - Comment on any custom styling exceptions
-10. **Check accessibility** - Ensure sufficient contrast and semantic HTML
+5. **Be responsive** - Use mobile-first design approach
+6. **Import from ui-kit** - Reuse packaged components
+7. **Use Typography components** - Don't mix `<h1>`, `<p>`, `<span>` styles
+8. **Document overrides** - Comment on any custom styling exceptions
+9. **Check accessibility** - Ensure sufficient contrast and semantic HTML
 
 ### ❌ DON'T
 
 1. **Hardcode colors** - Never use hex codes directly
 2. **Create new color palettes** - Use existing semantic colors only
-3. **Ignore dark mode** - Test both light and dark variants
-4. **Use non-standard spacing** - Stick to 4px-based scale
-5. **Mix component styles** - Don't apply conflicting classes
-6. **Create custom animations** - Use predefined animations
-7. **Override component APIs** - Extend via className, not styles
-8. **Break typography hierarchy** - Use semantic components
-9. **Disable focus states** - Keep keyboard accessibility
-10. **Assume mobile patterns** - Design responsive from start
+3. **Use non-standard spacing** - Stick to 4px-based scale
+4. **Mix component styles** - Don't apply conflicting classes
+5. **Create custom animations** - Use predefined animations
+6. **Override component APIs** - Extend via className, not styles
+7. **Break typography hierarchy** - Use semantic components
+8. **Disable focus states** - Keep keyboard accessibility
+9. **Assume mobile patterns** - Design responsive from start
 
 ### Common Patterns
 
@@ -777,15 +874,32 @@ export function MyComponent() {
 
 ### Configuration
 
-Each app's `tailwind.config.ts` extends the shared config:
+Each app should import the shared stylesheet directly:
+
+```css
+@import "@spearyx/shared-config/styles";
+```
+
+The shared stylesheet is responsible for Tailwind v4 design-system setup:
+
+```css
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+@source "../ui-kit/src";
+
+@theme {
+  --color-primary-600: #dc2626;
+  --color-indigo-600: #4f46e5;
+  --color-success-600: #0d9488;
+}
+```
+
+App `tailwind.config.ts` files are now compatibility stubs only:
 
 ```typescript
-import sharedConfig from "@spearyx/shared-config/tailwind.config";
+import type { Config } from "tailwindcss";
 
-const config: Config = {
-  ...sharedConfig,
-  content: ["./src/**/*.{ts,tsx}"],
-};
+const config: Config = {};
 
 export default config;
 ```

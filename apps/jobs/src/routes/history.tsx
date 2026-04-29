@@ -273,7 +273,7 @@ function HistoryPage() {
   });
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+    <div className="spx-page spx-stack">
       <PageHero
         eyebrow="Analysis History"
         icon={<History className="h-3.5 w-3.5" />}
@@ -603,7 +603,7 @@ function formatDate(value: string) {
 
 function HistoryLoading() {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 animate-pulse">
+    <div className="spx-page space-y-6 animate-pulse">
       <div className="h-36 rounded-2xl bg-muted" />
       <div className="grid gap-4 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (

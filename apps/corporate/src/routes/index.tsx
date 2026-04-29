@@ -44,16 +44,8 @@ function App() {
 
       {/* ── Hero ── */}
       <section className="relative pt-24 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-8"
-            style={{
-              background: "rgba(255,255,255,0.85)",
-              border: "1px solid rgba(220,38,38,0.2)",
-              color: "#dc2626",
-              backdropFilter: "blur(12px)",
-            }}
-          >
+        <div className="spx-glass-card-strong spx-grid-spotlight mx-auto max-w-5xl rounded-[2rem] px-8 py-12 text-center sm:px-12 sm:py-14">
+          <div className="spx-kicker mb-8">
             <Sparkles size={11} />
             Spearyx Platform
           </div>
@@ -91,32 +83,13 @@ function App() {
             </a>
             <a
               href="https://jobs.spearyx.com"
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-slate-900 transition-all duration-200"
-              style={{
-                background: "rgba(255,255,255,0.82)",
-                backdropFilter: "blur(16px)",
-                border: "1px solid rgba(220,38,38,0.12)",
-                boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
-              }}
+              className="spx-glass-card inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-slate-900 transition-all duration-200 hover:-translate-y-0.5"
             >
               <Briefcase size={16} className="text-primary-600" />
               Find Jobs
             </a>
           </div>
 
-          {/* Stats row */}
-          <div className="flex flex-wrap justify-center gap-10 mt-16 text-center">
-            {[
-              { value: "500+", label: "PMs on waitlist" },
-              { value: "10k+", label: "Jobs indexed" },
-              { value: "AI-First", label: "Every feature" },
-            ].map(({ value, label }) => (
-              <div key={label}>
-                <div className="text-2xl font-bold text-slate-900">{value}</div>
-                <div className="text-xs text-slate-400 mt-0.5 font-semibold uppercase tracking-widest">{label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -154,13 +127,7 @@ function App() {
             ].map(({ icon, iconBg, title, description }) => (
               <div
                 key={title}
-                className="rounded-2xl p-6 transition-all duration-200 hover:-translate-y-0.5"
-                style={{
-                  background: "rgba(255,255,255,0.78)",
-                  backdropFilter: "blur(16px)",
-                  border: "1px solid rgba(226,232,240,0.75)",
-                  boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
-                }}
+                className="spx-glass-card rounded-2xl p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center border mb-4 ${iconBg}`}>
                   {icon}
@@ -184,14 +151,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Spearyx Tools */}
             <div
-              className="relative rounded-2xl p-8 overflow-hidden group transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                background: "rgba(255,255,255,0.82)",
-                backdropFilter: "blur(16px)",
-                border: "1px solid rgba(220,38,38,0.10)",
-                borderTop: "3px solid #dc2626",
-                boxShadow: "0 8px 32px rgba(15,23,42,0.07)",
-              }}
+              className="spx-glass-card-strong relative overflow-hidden rounded-2xl border border-primary-200/70 border-t-[3px] border-t-primary-600 p-8 transition-all duration-200 hover:-translate-y-0.5"
             >
               <div
                 className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
@@ -232,14 +192,7 @@ function App() {
 
             {/* Spearyx Jobs */}
             <div
-              className="relative rounded-2xl p-8 overflow-hidden group transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                background: "rgba(255,255,255,0.82)",
-                backdropFilter: "blur(16px)",
-                border: "1px solid rgba(99,102,241,0.10)",
-                borderTop: "3px solid #6366f1",
-                boxShadow: "0 8px 32px rgba(15,23,42,0.07)",
-              }}
+              className="spx-glass-card-strong relative overflow-hidden rounded-2xl border border-indigo-200/70 border-t-[3px] border-t-indigo-600 p-8 transition-all duration-200 hover:-translate-y-0.5"
             >
               <div
                 className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
@@ -285,12 +238,7 @@ function App() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div
-            className="rounded-3xl p-10 md:p-14 relative overflow-hidden text-center"
-            style={{
-              background: "linear-gradient(135deg, rgba(220,38,38,0.06) 0%, rgba(99,102,241,0.06) 50%, rgba(139,92,246,0.05) 100%)",
-              border: "1px solid rgba(220,38,38,0.12)",
-              backdropFilter: "blur(20px)",
-            }}
+            className="spx-band relative overflow-hidden rounded-3xl p-10 text-center md:p-14"
           >
             <div
               className="absolute top-0 right-0 w-64 h-64 pointer-events-none"
@@ -338,12 +286,7 @@ function App() {
 
       {/* ── Footer ── */}
       <footer
-        className="mt-auto border-t py-8 px-4"
-        style={{
-          background: "rgba(255,255,255,0.65)",
-          backdropFilter: "blur(16px)",
-          borderColor: "rgba(220,38,38,0.10)",
-        }}
+        className="mt-auto border-t border-slate-200/70 bg-white/65 px-4 py-8 backdrop-blur-xl"
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">

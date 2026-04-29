@@ -37,7 +37,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <TooltipProvider>
           <Header user={user} />
-          {children}
+          <main className="spx-app-frame">{children}</main>
         </TooltipProvider>
         <Scripts />
       </body>

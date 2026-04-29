@@ -23,7 +23,7 @@ function AnalyzePage() {
   const { url, jd } = Route.useSearch();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+    <div className="spx-page-narrow spx-stack">
       <PageHero
         eyebrow="Job Tools"
         icon={<Zap className="h-3.5 w-3.5" />}
@@ -40,14 +40,8 @@ function AnalyzePage() {
         }
       />
 
-      {/* Cross-link: Browse jobs */}
       <div
-        className="relative overflow-hidden rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        style={{
-          background: "linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0.02) 100%)",
-          border: "1px solid rgba(99,102,241,0.15)",
-          backdropFilter: "blur(12px)",
-        }}
+        className="spx-band spx-band-indigo flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex items-center gap-4">
           <div

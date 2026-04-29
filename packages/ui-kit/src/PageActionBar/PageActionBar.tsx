@@ -1,20 +1,30 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/utils";
 
 interface PageActionBarProps {
   children: ReactNode;
+  tone?: "default" | "primary" | "indigo";
   className?: string;
 }
 
-export function PageActionBar({ children, className = "" }: PageActionBarProps) {
+const toneStyles = {
+  default: "border-slate-200/80",
+  primary: "border-primary-100/80",
+  indigo: "border-indigo-100/80",
+} as const;
+
+export function PageActionBar({
+  children,
+  tone = "default",
+  className = "",
+}: PageActionBarProps) {
   return (
     <section
-      className={`flex flex-col gap-3 rounded-2xl px-5 py-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between ${className}`}
-      style={{
-        background: "rgba(255,255,255,0.80)",
-        backdropFilter: "blur(16px)",
-        border: "1px solid rgba(226,232,240,0.7)",
-        boxShadow: "0 2px 8px rgba(15,23,42,0.04)",
-      }}
+      className={cn(
+        "spx-glass-card flex flex-col gap-3 rounded-[1.4rem] border px-5 py-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between",
+        toneStyles[tone],
+        className
+      )}
     >
       {children}
     </section>

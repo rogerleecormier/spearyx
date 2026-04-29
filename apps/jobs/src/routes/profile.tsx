@@ -18,7 +18,7 @@ function ProfilePage() {
   const data = Route.useLoaderData();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+    <div className="spx-page-narrow spx-stack">
       <PageHero
         eyebrow="Candidate Profile"
         icon={<FileUser className="h-3.5 w-3.5" />}
@@ -37,9 +37,9 @@ function ProfilePage() {
 
 function ProfileLoading() {
   return (
-    <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 animate-pulse">
-      <div className="h-10 w-48 rounded-lg bg-muted" />
-      <div className="h-96 w-full rounded-xl bg-muted" />
+    <div className="spx-page-narrow space-y-4 animate-pulse">
+      <div className="spx-glass-card h-10 w-48 rounded-xl bg-white/70" />
+      <div className="spx-glass-card h-96 w-full rounded-[1.6rem] bg-white/70" />
     </div>
   );
 }

@@ -1,16 +1,9 @@
 import type { Config } from "tailwindcss";
-import sharedConfig from "@spearyx/shared-config/tailwind.config";
 
 /**
- * Corporate App Tailwind Configuration
- * Extends the shared design system with app-specific content paths.
+ * Tailwind v4 compatibility stub.
+ * Shared tokens and plugins come from `@spearyx/shared-config/styles`.
  */
-const config: Config = {
-  ...sharedConfig,
-  content: [
-    "./src/**/*.{ts,tsx}",
-    "../../packages/ui-kit/**/*.{ts,tsx}",
-  ],
-};
+const config: Config = {};
 
 export default config;

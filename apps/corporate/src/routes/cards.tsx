@@ -53,23 +53,17 @@ export const Route = createFileRoute("/cards")({
 
 function CardsLibrary() {
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="spx-page">
+      <div className="pb-2">
         <PageHero
           eyebrow="Component Library"
           icon={<Package className="h-3.5 w-3.5" />}
           title="Card Library"
           description="A comprehensive collection of reusable card components with the same glass-forward Spearyx presentation used across the product suite."
-          stats={[
-            { label: "Families", value: "18+" },
-            { label: "Usage", value: "Shared UI" },
-            { label: "Focus", value: "Product surfaces" },
-          ]}
         />
       </div>
 
-      {/* Main Content */}
-      <div className="mx-auto max-w-6xl px-4 py-10 [&>section]:rounded-[28px] [&>section]:border [&>section]:border-slate-200 [&>section]:bg-white/80 [&>section]:p-8 [&>section]:shadow-sm [&>section]:backdrop-blur-sm md:[&>section]:p-10">
+      <div className="py-8 [&>section]:rounded-[28px] [&>section]:border [&>section]:border-slate-200 [&>section]:bg-white/80 [&>section]:p-8 [&>section]:shadow-sm [&>section]:backdrop-blur-sm md:[&>section]:p-10">
         {/* Basic Card Section */}
         <PageSection className="mb-24">
           <div className="mb-12">

@@ -1,19 +1,19 @@
 import { useMemo } from "react";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
-  Layers,
-  ChevronDown,
-  Wrench,
-  Briefcase,
-  FileText,
   BarChart3,
-  Search,
+  Briefcase,
+  ChevronDown,
+  FileText,
   History,
-  User,
+  Home,
+  Layers,
   LogIn,
   LogOut,
+  Search,
   Shield,
-  Home,
+  User,
+  Wrench,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Header } from "../Header";
+import styles from "../Header/Header.module.css";
 import { getSharedAuthOrigin } from "../../../shared-utils/src/auth";
 
 interface AppHeaderUser {
@@ -41,6 +42,54 @@ interface AppHeaderProps {
   user?: AppHeaderUser | null;
   onLogout?: () => Promise<void> | void;
 }
+
+type MenuTone = "neutral" | "primary" | "indigo" | "info" | "success";
+
+type MenuLinkItem = {
+  type: "link";
+  key: string;
+  label: string;
+  sublabel?: string;
+  href: string;
+  path?: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  tone?: MenuTone;
+  appScope?: AppHeaderProps["app"];
+};
+
+type MenuSectionHeading = {
+  type: "heading";
+  key: string;
+  label: string;
+};
+
+type MenuSeparator = {
+  type: "separator";
+  key: string;
+};
+
+type MenuDisabledItem = {
+  type: "disabled";
+  key: string;
+  label: string;
+  icon?: ComponentType<{ size?: number; className?: string }>;
+};
+
+type MenuActionItem = {
+  type: "action";
+  key: string;
+  label: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  tone?: "danger";
+  onSelect: () => void | Promise<void>;
+};
+
+type MenuEntry =
+  | MenuLinkItem
+  | MenuSectionHeading
+  | MenuSeparator
+  | MenuDisabledItem
+  | MenuActionItem;
 
 function getAppOrigin(app: AppHeaderProps["app"], currentPath: string): string {
   if (typeof window !== "undefined") {
@@ -62,60 +111,219 @@ function normalizePath(path: string) {
 function isActivePath(currentPath: string, targetPath: string) {
   const current = normalizePath(currentPath);
   const target = normalizePath(targetPath);
+  if (target === "/") return current === "/";
   return current === target || current.startsWith(`${target}/`);
 }
 
-/* ── shared dropdown content styles ── */
-const contentClass =
-  "z-[9999] min-w-[13rem] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/12 ring-1 ring-black/[0.06]";
+const toneClasses: Record<MenuTone, { badge: string; icon: string }> = {
+  neutral: {
+    badge: "bg-slate-100",
+    icon: "text-slate-600",
+  },
+  primary: {
+    badge: "bg-primary-50",
+    icon: "text-primary-600",
+  },
+  indigo: {
+    badge: "bg-indigo-50",
+    icon: "text-indigo-600",
+  },
+  info: {
+    badge: "bg-info-50",
+    icon: "text-info-600",
+  },
+  success: {
+    badge: "bg-success-50",
+    icon: "text-success-600",
+  },
+};
 
-const itemBase =
-  "cursor-pointer rounded-xl border border-transparent p-0 outline-none transition-all duration-100 data-[highlighted]:border-slate-200 data-[highlighted]:bg-slate-50 focus:border-slate-200 focus:bg-slate-50";
-
-const itemActive = "border-red-100 bg-red-50/60";
-
-/* nav trigger buttons */
-const triggerBase =
-  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-150 border border-transparent select-none focus:outline-none";
-const triggerIdle =
-  "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 hover:border-slate-200/60";
-const triggerActive =
-  "text-primary-700 bg-primary-50/80 border-primary-100/80";
-
-/* icon badge inside dropdown */
-function IconBadge({ bg, children }: { bg: string; children: ReactNode }) {
+function MenuIconBadge({
+  tone = "neutral",
+  children,
+}: {
+  tone?: MenuTone;
+  children: ReactNode;
+}) {
   return (
     <span
-      className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg ${bg}`}
+      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${toneClasses[tone].badge}`}
     >
       {children}
     </span>
   );
 }
 
-function NavItem({
+function MenuLinkRow({
   label,
-  sub,
-  icon,
-  bg,
+  sublabel,
+  icon: Icon,
+  tone = "neutral",
 }: {
   label: string;
-  sub: string;
-  icon: ReactNode;
-  bg: string;
+  sublabel?: string;
+  icon: MenuLinkItem["icon"];
+  tone?: MenuTone;
 }) {
   return (
-    <span className="flex items-center gap-2.5 rounded-[10px] px-3 py-2">
-      <IconBadge bg={bg}>{icon}</IconBadge>
-      <span>
-        <span className="block text-sm font-semibold text-slate-900 leading-tight">
+    <span className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+      <MenuIconBadge tone={tone}>
+        <Icon size={14} className={toneClasses[tone].icon} />
+      </MenuIconBadge>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold leading-tight text-slate-900">
           {label}
         </span>
-        <span className="block text-xs text-slate-500 leading-tight mt-0.5">
-          {sub}
-        </span>
+        {sublabel ? (
+          <span className="mt-0.5 block truncate text-xs leading-tight text-slate-500">
+            {sublabel}
+          </span>
+        ) : null}
       </span>
     </span>
+  );
+}
+
+function MenuDisabledRow({
+  label,
+  icon: Icon = FileText,
+}: {
+  label: string;
+  icon?: MenuDisabledItem["icon"];
+}) {
+  return (
+    <span className="flex items-center gap-3 rounded-xl">
+      <MenuIconBadge tone="neutral">
+        <Icon size={14} className="text-slate-400" />
+      </MenuIconBadge>
+      <span className="text-sm text-slate-400">{label}</span>
+    </span>
+  );
+}
+
+function MenuSimpleRow({
+  label,
+  icon: Icon,
+  tone = "neutral",
+}: {
+  label: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  tone?: MenuTone;
+}) {
+  return (
+    <span className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+      <MenuIconBadge tone={tone}>
+        <Icon size={14} className={toneClasses[tone].icon} />
+      </MenuIconBadge>
+      <span className="text-sm font-medium text-slate-900">{label}</span>
+    </span>
+  );
+}
+
+function SharedMenuLink({
+  item,
+  app,
+  currentPath,
+  Link,
+}: {
+  item: MenuLinkItem;
+  app: AppHeaderProps["app"];
+  currentPath: string;
+  Link?: AppHeaderProps["Link"];
+}) {
+  const active =
+    item.appScope === app &&
+    typeof item.path === "string" &&
+    isActivePath(currentPath, item.path);
+
+  const itemClass = [
+    "spx-menu-item",
+    active ? "spx-menu-item-active" : "spx-menu-item-inactive",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const content = (
+    <MenuLinkRow
+      label={item.label}
+      sublabel={item.sublabel}
+      icon={item.icon}
+      tone={item.tone}
+    />
+  );
+
+  const canUseLink = Boolean(Link && item.appScope === app && item.path);
+
+  return (
+    <DropdownMenuItem asChild className={itemClass}>
+      {canUseLink ? (
+        <Link to={item.path} className="block">
+          {content}
+        </Link>
+      ) : (
+        <a href={item.href} className="block">
+          {content}
+        </a>
+      )}
+    </DropdownMenuItem>
+  );
+}
+
+function SharedActionMenu({
+  label,
+  icon: Icon,
+  tone = "neutral",
+  onSelect,
+}: {
+  label: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  tone?: MenuTone;
+  onSelect: MenuActionItem["onSelect"];
+}) {
+  return (
+    <DropdownMenuItem className="spx-menu-item" onClick={() => void onSelect()}>
+      <MenuSimpleRow label={label} icon={Icon} tone={tone} />
+    </DropdownMenuItem>
+  );
+}
+
+function SharedDropdownMenu({
+  label,
+  icon: Icon,
+  active = false,
+  panelClass,
+  align = "start",
+  entries,
+}: {
+  label: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  active?: boolean;
+  panelClass: string;
+  align?: "start" | "end" | "center";
+  entries: ReactNode[];
+}) {
+  const triggerClass = [
+    "spx-nav-trigger",
+    active ? "spx-nav-trigger-active" : "spx-nav-trigger-idle",
+  ].join(" ");
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button className={triggerClass}>
+          <Icon size={14} />
+          {label}
+          <ChevronDown size={12} className="opacity-50" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align={align}
+        sideOffset={8}
+        className={["spx-menu-panel", panelClass].join(" ")}
+      >
+        {entries}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -131,16 +339,16 @@ export function AppHeader({
   const isOnTools = app === "tools";
   const isOnJobs = app === "jobs";
   const sharedOrigin =
-    typeof window === "undefined" ? getSharedAuthOrigin() : getSharedAuthOrigin(window.location.href);
+    typeof window === "undefined"
+      ? getSharedAuthOrigin()
+      : getSharedAuthOrigin(window.location.href);
   const appOrigin = getAppOrigin(app, currentPath);
-
   const resolvedUser = user ?? null;
   const canAccessLinkedInSearch = app === "jobs" && resolvedUser?.role === "admin";
 
   const loginHref = useMemo(() => {
     if (app === "corporate") return "/login";
-    // For jobs/tools, link to spearyx.com/login with the current page as redirect target
-    // so the user lands back where they were after signing in.
+
     const returnTo =
       typeof window !== "undefined"
         ? window.location.href
@@ -150,7 +358,10 @@ export function AppHeader({
   }, [app, appOrigin, currentPath]);
 
   async function handleSharedLogout() {
-    if (onLogout) { await onLogout(); return; }
+    if (onLogout) {
+      await onLogout();
+      return;
+    }
     if (typeof window === "undefined") return;
     await fetch(`${sharedOrigin}/api/auth/logout`, {
       method: "POST",
@@ -160,14 +371,237 @@ export function AppHeader({
     window.location.reload();
   }
 
-  function toolsItem(path: string) {
-    const active = isOnTools && isActivePath(currentPath, path);
-    return `${itemBase} ${active ? itemActive : ""}`;
-  }
+  const toolsEntries: MenuEntry[] = [
+    {
+      type: "link",
+      key: "tools-home",
+      label: "Tools Home",
+      sublabel: "Browse all project tools",
+      href: "https://tools.spearyx.com",
+      path: "/",
+      icon: Home,
+      tone: "neutral",
+      appScope: "tools",
+    },
+    { type: "separator", key: "tools-separator-1" },
+    { type: "heading", key: "tools-heading-1", label: "Available" },
+    {
+      type: "link",
+      key: "raci-generator",
+      label: "RACI Generator",
+      sublabel: "AI-powered role mapping",
+      href: "https://tools.spearyx.com/raci-generator",
+      path: "/raci-generator",
+      icon: BarChart3,
+      tone: "primary",
+      appScope: "tools",
+    },
+    { type: "separator", key: "tools-separator-2" },
+    { type: "heading", key: "tools-heading-2", label: "Coming Soon" },
+    {
+      type: "disabled",
+      key: "project-charter",
+      label: "Project Charter Generator",
+    },
+    {
+      type: "disabled",
+      key: "communications-plan",
+      label: "Communications Plan",
+    },
+    {
+      type: "disabled",
+      key: "risk-register",
+      label: "Risk Register",
+    },
+    {
+      type: "disabled",
+      key: "stakeholder-register",
+      label: "Stakeholder Register",
+    },
+  ];
 
-  function jobsItem(path: string) {
-    const active = isOnJobs && isActivePath(currentPath, path);
-    return `${itemBase} ${active ? itemActive : ""}`;
+  const jobsEntries: MenuEntry[] = [
+    {
+      type: "link",
+      key: "jobs-home",
+      label: "Jobs Home",
+      sublabel: "Overview & getting started",
+      href: "https://jobs.spearyx.com",
+      path: "/",
+      icon: Home,
+      tone: "neutral",
+      appScope: "jobs",
+    },
+    { type: "separator", key: "jobs-separator-1" },
+    { type: "heading", key: "jobs-heading-1", label: "Job Tools" },
+    {
+      type: "link",
+      key: "job-listings",
+      label: "Job Listings",
+      sublabel: "AI-curated tech jobs",
+      href: "https://jobs.spearyx.com/jobs",
+      path: "/jobs",
+      icon: Briefcase,
+      tone: "primary",
+      appScope: "jobs",
+    },
+    {
+      type: "link",
+      key: "analyze-job",
+      label: "Analyze Job",
+      sublabel: "Match scoring & resume strategy",
+      href: "https://jobs.spearyx.com/analyze",
+      path: "/analyze",
+      icon: Search,
+      tone: "indigo",
+      appScope: "jobs",
+    },
+    {
+      type: "link",
+      key: "history",
+      label: "History",
+      sublabel: "Past analyses & documents",
+      href: "https://jobs.spearyx.com/history",
+      path: "/history",
+      icon: History,
+      tone: "info",
+      appScope: "jobs",
+    },
+    {
+      type: "link",
+      key: "dashboard",
+      label: "Search Insights",
+      sublabel: "Match trends & activity",
+      href: "https://jobs.spearyx.com/dashboard",
+      path: "/dashboard",
+      icon: BarChart3,
+      tone: "success",
+      appScope: "jobs",
+    },
+  ];
+
+  const userEntries: MenuEntry[] = [
+    {
+      type: "link",
+      key: "profile",
+      label: "My Profile",
+      href: `${sharedOrigin}/profile`,
+      path: "/profile",
+      icon: User,
+      tone: "primary",
+      appScope: "jobs",
+    },
+    ...(canAccessLinkedInSearch
+      ? [
+          {
+            type: "link",
+            key: "linkedin-search",
+            label: "LinkedIn Search",
+            href: "https://jobs.spearyx.com/linkedin-search",
+            path: "/linkedin-search",
+            icon: Search,
+            tone: "indigo",
+            appScope: "jobs",
+          },
+          {
+            type: "link",
+            key: "linkedin-jobs",
+            label: "LinkedIn Results",
+            href: "https://jobs.spearyx.com/linkedin-jobs",
+            path: "/linkedin-jobs",
+            icon: History,
+            tone: "info",
+            appScope: "jobs",
+          },
+        ]
+      : []),
+    ...(resolvedUser?.role === "admin"
+      ? [
+          { type: "separator", key: "user-separator-admin" },
+          {
+            type: "link",
+            key: "admin",
+            label: "Admin",
+            href: app === "jobs" ? "/admin" : `${sharedOrigin}/admin`,
+            path: "/admin",
+            icon: Shield,
+            tone: "primary",
+            appScope: "jobs",
+          },
+        ]
+      : []),
+    { type: "separator", key: "user-separator-logout" },
+    {
+      type: "action",
+      key: "sign-out",
+      label: "Sign Out",
+      icon: LogOut,
+      onSelect: handleSharedLogout,
+    },
+  ];
+
+  const devEntries: MenuEntry[] = [
+    {
+      type: "link",
+      key: "cards",
+      label: "Card Library",
+      href: "https://spearyx.com/cards",
+      icon: Layers,
+      tone: "primary",
+    },
+    {
+      type: "link",
+      key: "typography",
+      label: "Typography",
+      href: "https://spearyx.com/typography",
+      icon: Layers,
+      tone: "primary",
+    },
+  ];
+
+  function renderMenuEntries(entries: MenuEntry[]) {
+    return entries.map((entry) => {
+      if (entry.type === "separator") {
+        return <DropdownMenuSeparator key={entry.key} className="spx-menu-separator" />;
+      }
+
+      if (entry.type === "heading") {
+        return (
+          <DropdownMenuLabel key={entry.key} className="spx-menu-heading">
+            {entry.label}
+          </DropdownMenuLabel>
+        );
+      }
+
+      if (entry.type === "disabled") {
+        return (
+          <DropdownMenuItem key={entry.key} disabled className="spx-menu-item-disabled">
+            <MenuDisabledRow label={entry.label} icon={entry.icon} />
+          </DropdownMenuItem>
+        );
+      }
+
+      if (entry.type === "action") {
+        return (
+          <SharedActionMenu
+            key={entry.key}
+            label={entry.label}
+            icon={entry.icon}
+            onSelect={entry.onSelect}
+          />
+        );
+      }
+
+      return (
+        <SharedMenuLink
+          key={entry.key}
+          item={entry}
+          app={app}
+          currentPath={currentPath}
+          Link={Link}
+        />
+      );
+    });
   }
 
   const logo = (
@@ -184,330 +618,51 @@ export function AppHeader({
 
   return (
     <Header logo={logo} label={label}>
-      {/* ── Tools dropdown ── */}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button className={`${triggerBase} ${isOnTools ? triggerActive : triggerIdle}`}>
-            <Wrench size={14} />
-            Tools
-            <ChevronDown size={12} className="opacity-50" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={8} className={`${contentClass} w-72`}>
-          <DropdownMenuItem asChild className={toolsItem("/")}>
-            {Link && app === "tools" ? (
-              <Link to="/" className="block">
-                <NavItem
-                  label="Tools Home"
-                  sub="Browse all project tools"
-                  icon={<Home size={13} className="text-slate-600" />}
-                  bg="bg-slate-100"
-                />
-              </Link>
-            ) : (
-              <a href="https://tools.spearyx.com" className="block">
-                <NavItem
-                  label="Tools Home"
-                  sub="Browse all project tools"
-                  icon={<Home size={13} className="text-slate-600" />}
-                  bg="bg-slate-100"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
+      <SharedDropdownMenu
+        label="Tools"
+        icon={Wrench}
+        active={isOnTools}
+        panelClass={styles.menuPanelTools}
+        entries={renderMenuEntries(toolsEntries)}
+      />
 
-          <DropdownMenuSeparator className="my-1 bg-slate-100" />
-          <DropdownMenuLabel className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Available
-          </DropdownMenuLabel>
+      <SharedDropdownMenu
+        label="Jobs"
+        icon={Briefcase}
+        active={isOnJobs}
+        panelClass={styles.menuPanelJobs}
+        entries={renderMenuEntries(jobsEntries)}
+      />
 
-          <DropdownMenuItem asChild className={toolsItem("/raci-generator")}>
-            {Link && app === "tools" ? (
-              <Link to="/raci-generator" className="block">
-                <NavItem
-                  label="RACI Generator"
-                  sub="AI-powered role mapping"
-                  icon={<BarChart3 size={13} className="text-primary-600" />}
-                  bg="bg-primary-50"
-                />
-              </Link>
-            ) : (
-              <a href="https://tools.spearyx.com/raci-generator" className="block">
-                <NavItem
-                  label="RACI Generator"
-                  sub="AI-powered role mapping"
-                  icon={<BarChart3 size={13} className="text-primary-600" />}
-                  bg="bg-primary-50"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
+      {isDev ? (
+        <SharedDropdownMenu
+          label="Dev"
+          icon={Layers}
+          panelClass={styles.menuPanelDev}
+          align="end"
+          entries={renderMenuEntries(devEntries)}
+        />
+      ) : null}
 
-          <DropdownMenuSeparator className="my-1 bg-slate-100" />
-          <DropdownMenuLabel className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Coming Soon
-          </DropdownMenuLabel>
-          {["Project Charter Generator", "Communications Plan", "Risk Register", "Stakeholder Register"].map((name) => (
-            <DropdownMenuItem key={name} disabled className="rounded-xl px-3 py-2 opacity-40 cursor-not-allowed">
-              <span className="flex items-center gap-2.5 rounded-[10px]">
-                <IconBadge bg="bg-slate-50">
-                  <FileText size={13} className="text-slate-400" />
-                </IconBadge>
-                <span className="text-sm text-slate-400">{name}</span>
-              </span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* ── Jobs dropdown ── */}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button className={`${triggerBase} ${isOnJobs ? triggerActive : triggerIdle}`}>
-            <Briefcase size={14} />
-            Jobs
-            <ChevronDown size={12} className="opacity-50" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={8} className={`${contentClass} w-76`}>
-          <DropdownMenuItem asChild className={jobsItem("/")}>
-            {Link && app === "jobs" ? (
-              <Link to="/" className="block">
-                <NavItem
-                  label="Jobs Home"
-                  sub="Overview & getting started"
-                  icon={<Home size={13} className="text-slate-600" />}
-                  bg="bg-slate-100"
-                />
-              </Link>
-            ) : (
-              <a href="https://jobs.spearyx.com" className="block">
-                <NavItem
-                  label="Jobs Home"
-                  sub="Overview & getting started"
-                  icon={<Home size={13} className="text-slate-600" />}
-                  bg="bg-slate-100"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator className="my-1 bg-slate-100" />
-          <DropdownMenuLabel className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Job Tools
-          </DropdownMenuLabel>
-
-          <DropdownMenuItem asChild className={jobsItem("/jobs")}>
-            {Link && app === "jobs" ? (
-              <Link to="/jobs" className="block">
-                <NavItem
-                  label="Job Listings"
-                  sub="AI-curated tech jobs"
-                  icon={<Briefcase size={13} className="text-primary-600" />}
-                  bg="bg-primary-50"
-                />
-              </Link>
-            ) : (
-              <a href="https://jobs.spearyx.com/jobs" className="block">
-                <NavItem
-                  label="Job Listings"
-                  sub="AI-curated tech jobs"
-                  icon={<Briefcase size={13} className="text-primary-600" />}
-                  bg="bg-primary-50"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem asChild className={jobsItem("/analyze")}>
-            {Link && app === "jobs" ? (
-              <Link to="/analyze" className="block">
-                <NavItem
-                  label="Analyze Job"
-                  sub="Match scoring & resume strategy"
-                  icon={<Search size={13} className="text-violet-600" />}
-                  bg="bg-violet-50"
-                />
-              </Link>
-            ) : (
-              <a href="https://jobs.spearyx.com/analyze" className="block">
-                <NavItem
-                  label="Analyze Job"
-                  sub="Match scoring & resume strategy"
-                  icon={<Search size={13} className="text-violet-600" />}
-                  bg="bg-violet-50"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem asChild className={jobsItem("/history")}>
-            {Link && app === "jobs" ? (
-              <Link to="/history" className="block">
-                <NavItem
-                  label="History"
-                  sub="Past analyses & documents"
-                  icon={<History size={13} className="text-sky-600" />}
-                  bg="bg-sky-50"
-                />
-              </Link>
-            ) : (
-              <a href="https://jobs.spearyx.com/history" className="block">
-                <NavItem
-                  label="History"
-                  sub="Past analyses & documents"
-                  icon={<History size={13} className="text-sky-600" />}
-                  bg="bg-sky-50"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem asChild className={jobsItem("/dashboard")}>
-            {Link && app === "jobs" ? (
-              <Link to="/dashboard" className="block">
-                <NavItem
-                  label="Search Insights"
-                  sub="Match trends & activity"
-                  icon={<BarChart3 size={13} className="text-emerald-600" />}
-                  bg="bg-emerald-50"
-                />
-              </Link>
-            ) : (
-              <a href="https://jobs.spearyx.com/dashboard" className="block">
-                <NavItem
-                  label="Search Insights"
-                  sub="Match trends & activity"
-                  icon={<BarChart3 size={13} className="text-emerald-600" />}
-                  bg="bg-emerald-50"
-                />
-              </a>
-            )}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* ── Dev dropdown ── */}
-      {isDev && (
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <button className={`${triggerBase} ${triggerIdle}`}>
-              <Layers size={14} />
-              Dev
-              <ChevronDown size={12} className="opacity-50" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8} className={`${contentClass} w-52`}>
-            <DropdownMenuItem asChild className={itemBase}>
-              <a href="https://spearyx.com/cards" className="flex items-center gap-2 px-3 py-2">
-                <Layers size={13} className="text-primary-500" />
-                <span className="text-sm text-slate-900">Card Library</span>
-              </a>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className={itemBase}>
-              <a href="https://spearyx.com/typography" className="flex items-center gap-2 px-3 py-2">
-                <Layers size={13} className="text-primary-500" />
-                <span className="text-sm text-slate-900">Typography</span>
-              </a>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      {/* ── User menu ── */}
       {resolvedUser ? (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <button className={`${triggerBase} ${triggerIdle} max-w-[220px]`}>
+            <button className={`spx-nav-trigger spx-nav-trigger-idle ${styles.triggerUserMenu}`}>
               <User size={14} className="shrink-0" />
               <span className="truncate text-sm">{resolvedUser.email}</span>
               <ChevronDown size={12} className="shrink-0 opacity-50" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8} className={`${contentClass} w-64`}>
-            <DropdownMenuItem asChild className={jobsItem("/profile")}>
-              {Link && app === "jobs" ? (
-                <Link to="/profile" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
-                  <User size={14} className="text-primary-500" />
-                  <span className="text-sm font-medium text-slate-900">My Profile</span>
-                </Link>
-              ) : (
-                <a
-                  href={`${sharedOrigin}/profile`}
-                  className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-                >
-                  <User size={14} className="text-primary-500" />
-                  <span className="text-sm font-medium text-slate-900">My Profile</span>
-                </a>
-              )}
-            </DropdownMenuItem>
-            {canAccessLinkedInSearch && (
-              <>
-                <DropdownMenuItem asChild className={jobsItem("/linkedin-search")}>
-                  {Link && app === "jobs" ? (
-                    <Link to="/linkedin-search" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
-                      <Search size={14} className="text-primary-500" />
-                      <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
-                    </Link>
-                  ) : (
-                    <a
-                      href="https://jobs.spearyx.com/linkedin-search"
-                      className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-                    >
-                      <Search size={14} className="text-primary-500" />
-                      <span className="text-sm font-medium text-slate-900">LinkedIn Search</span>
-                    </a>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className={jobsItem("/linkedin-jobs")}>
-                  {Link && app === "jobs" ? (
-                    <Link to="/linkedin-jobs" className="flex items-center gap-2 rounded-[10px] px-3 py-2">
-                      <History size={14} className="text-primary-500" />
-                      <span className="text-sm font-medium text-slate-900">LinkedIn Results</span>
-                    </Link>
-                  ) : (
-                    <a
-                      href="https://jobs.spearyx.com/linkedin-jobs"
-                      className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-                    >
-                      <History size={14} className="text-primary-500" />
-                      <span className="text-sm font-medium text-slate-900">LinkedIn Results</span>
-                    </a>
-                  )}
-                </DropdownMenuItem>
-              </>
-            )}
-            <DropdownMenuSeparator className="my-1 bg-slate-100" />
-            {resolvedUser.role === "admin" && (
-              <>
-                <DropdownMenuItem asChild className={itemBase}>
-                  <a
-                    href={app === "jobs" ? "/admin" : `${sharedOrigin}/admin`}
-                    className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-                  >
-                    <Shield size={14} className="text-primary-500" />
-                    <span className="text-sm font-medium text-slate-900">Admin</span>
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1 bg-slate-100" />
-              </>
-            )}
-            <DropdownMenuItem
-              className={`${itemBase} text-destructive focus:text-destructive`}
-              onClick={handleSharedLogout}
-            >
-              <span className="flex items-center gap-2 rounded-[10px] px-3 py-2">
-                <LogOut size={14} />
-                <span className="text-sm font-medium">Sign Out</span>
-              </span>
-            </DropdownMenuItem>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={8}
+            className={`spx-menu-panel ${styles.menuPanelUser}`}
+          >
+            {renderMenuEntries(userEntries)}
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <a
-          href={loginHref}
-          className={`${triggerBase} ${triggerIdle}`}
-        >
+        <a href={loginHref} className="spx-nav-trigger spx-nav-trigger-idle">
           <LogIn size={14} />
           Sign In
         </a>

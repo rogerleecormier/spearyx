@@ -101,7 +101,7 @@ function LinkedinJobsPage() {
   }, [allRows, deferredTitleQuery, fuse, greenOnly, remoteOnly, sortBy]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+    <div className="spx-page spx-stack">
       <PageHero
         eyebrow="LinkedIn History"
         icon={<History className="h-3.5 w-3.5" />}
