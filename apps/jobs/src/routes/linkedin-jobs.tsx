@@ -1,14 +1,20 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import type { ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Input, PageHero, PageSection, Pagination } from "@spearyx/ui-kit";
-import { Briefcase, ExternalLink, History, Search, Sparkles } from "lucide-react";
+import { Button, Input, PageActionBar, PageHero, PageSection, Pagination } from "@spearyx/ui-kit";
+import { Archive, Briefcase, ExternalLink, History, Loader2, Search, Sparkles, Trash2 } from "lucide-react";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
 import { requireLinkedInSearchOwner } from "@/lib/private-features";
 import { getMasterScoreGradient, getScoreBorderColor } from "@/lib/scoreUtils";
-import { getLinkedinJobHistory } from "@/server/functions/linkedin-searches";
+import {
+  archiveLinkedinJobs,
+  deleteLinkedinJobs,
+  getLinkedinJobHistory,
+  setLinkedinJobStatus,
+} from "@/server/functions/linkedin-searches";
 
 type SortOption = "posted-date" | "title" | "score" | "company" | "location";
+type LinkedinJobStatus = "Saved" | "Applied" | "Interviewing" | "Rejected" | "Archived";
 
 type SearchParams = {
   page: number;
@@ -20,6 +26,13 @@ type SearchParams = {
 
 const PAGE_SIZE = 20;
 const VALID_SORT_OPTIONS: SortOption[] = ["posted-date", "title", "score", "company", "location"];
+const LINKEDIN_JOB_STATUSES: LinkedinJobStatus[] = [
+  "Saved",
+  "Applied",
+  "Interviewing",
+  "Rejected",
+  "Archived",
+];
 
 export const Route = createFileRoute("/linkedin-jobs")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -46,9 +59,23 @@ function LinkedinJobsPage() {
   const { page, query, remote, green, sortBy } = Route.useSearch();
   const { rows, total, canViewAllUsers } = Route.useLoaderData();
   const navigate = Route.useNavigate();
+  const router = useRouter();
   const [inputValue, setInputValue] = useState(query);
+  const [jobs, setJobs] = useState(rows);
+  const [localTotal, setLocalTotal] = useState(total);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
+  const [pendingStatusId, setPendingStatusId] = useState<number | null>(null);
+  const [pendingBulkAction, setPendingBulkAction] = useState<"archive" | "delete" | null>(null);
   const didMount = useRef(false);
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(localTotal / PAGE_SIZE);
+  const selectedCount = selectedIds.size;
+  const allVisibleSelected = jobs.length > 0 && jobs.every((job) => selectedIds.has(job.id));
+
+  useEffect(() => {
+    setJobs(rows);
+    setLocalTotal(total);
+    setSelectedIds(new Set());
+  }, [rows, total]);
 
   // Debounce search input → URL; skip first render to avoid spurious navigation
   useEffect(() => {
@@ -66,6 +93,91 @@ function LinkedinJobsPage() {
 
   function handlePageChange(newPage: number) {
     navigate({ search: (prev) => ({ ...prev, page: newPage }) });
+  }
+
+  function toggleSelected(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        for (const job of jobs) next.delete(job.id);
+      } else {
+        for (const job of jobs) next.add(job.id);
+      }
+      return next;
+    });
+  }
+
+  async function handleStatusChange(id: number, status: LinkedinJobStatus) {
+    const previousRows = jobs;
+    setPendingStatusId(id);
+    setJobs((prev) => prev.map((job) => (job.id === id ? { ...job, status } : job)));
+    try {
+      await setLinkedinJobStatus({ data: { id, status } });
+      await router.invalidate();
+    } catch (error) {
+      setJobs(previousRows);
+      alert(error instanceof Error ? error.message : "Unable to update LinkedIn job status.");
+    } finally {
+      setPendingStatusId(null);
+    }
+  }
+
+  async function handleBulkArchive() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    const previousRows = jobs;
+    setPendingBulkAction("archive");
+    setJobs((prev) =>
+      prev.map((job) => (selectedIds.has(job.id) ? { ...job, status: "Archived" as const } : job)),
+    );
+    try {
+      await archiveLinkedinJobs({ data: { ids } });
+      setSelectedIds(new Set());
+      await router.invalidate();
+    } catch (error) {
+      setJobs(previousRows);
+      alert(error instanceof Error ? error.message : "Unable to archive selected LinkedIn jobs.");
+    } finally {
+      setPendingBulkAction(null);
+    }
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (!window.confirm(`Delete ${ids.length} selected LinkedIn job${ids.length === 1 ? "" : "s"}?`)) {
+      return;
+    }
+
+    setPendingBulkAction("delete");
+    try {
+      const result = await deleteLinkedinJobs({ data: { ids } });
+      const deleted = result.deleted ?? ids.length;
+      const nextTotal = Math.max(0, localTotal - deleted);
+      setJobs((prev) => prev.filter((job) => !selectedIds.has(job.id)));
+      setLocalTotal(nextTotal);
+      setSelectedIds(new Set());
+
+      const nextTotalPages = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+      if (page > nextTotalPages) {
+        await navigate({ search: (prev) => ({ ...prev, page: nextTotalPages }) });
+      } else {
+        await router.invalidate();
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Unable to delete selected LinkedIn jobs.");
+    } finally {
+      setPendingBulkAction(null);
+    }
   }
 
   const hasActiveFilters = query || green || remote;
@@ -99,10 +211,10 @@ function LinkedinJobsPage() {
             </p>
             <div className="mt-2 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-600">
-                {hasActiveFilters ? `${total} matching` : "Currently saved"}
+                {hasActiveFilters ? `${localTotal} matching` : "Currently saved"}
               </p>
               <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white">
-                {total}
+                {localTotal}
               </div>
             </div>
           </div>
@@ -170,14 +282,71 @@ function LinkedinJobsPage() {
           </div>
         </div>
 
+        {selectedCount > 0 && (
+          <PageActionBar tone="primary" className="mb-5">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                onChange={toggleAllVisible}
+                className="h-4 w-4 rounded border-slate-300 text-primary-600"
+                aria-label="Select all visible LinkedIn jobs"
+              />
+              <span className="font-semibold text-slate-700">
+                {selectedCount} selected
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleBulkArchive}
+                disabled={pendingBulkAction !== null}
+              >
+                {pendingBulkAction === "archive" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Archive className="h-4 w-4" />
+                )}
+                Archive
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={pendingBulkAction !== null}
+              >
+                {pendingBulkAction === "delete" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                Delete
+              </Button>
+            </div>
+          </PageActionBar>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {rows.map((job) => (
+          {jobs.map((job) => (
             <article
               key={job.id}
-              className={`rounded-2xl border bg-white/80 p-5 shadow-sm ${getScoreBorderColor(job.masterScore ?? 0)}`}
+              className={`rounded-2xl border bg-white/80 p-5 shadow-sm ${selectedIds.has(job.id) ? "ring-2 ring-primary-300" : ""} ${getScoreBorderColor(job.masterScore ?? 0)}`}
             >
               <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
+                  <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(job.id)}
+                      onChange={() => toggleSelected(job.id)}
+                      className="h-4 w-4 rounded border-slate-300 text-primary-600"
+                      aria-label={`Select ${job.title} at ${job.company}`}
+                    />
+                    Select
+                  </label>
                   <h3 className="text-base font-bold text-slate-900">{job.title}</h3>
                   <p className="mt-1 text-sm font-medium text-slate-700">{job.company}</p>
                   <p className="mt-1 text-xs text-slate-500">{job.location}</p>
@@ -203,6 +372,26 @@ function LinkedinJobsPage() {
                   <Briefcase className="h-3.5 w-3.5" />
                   {job.postDateText || "Saved result"}
                 </span>
+                <label className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                  Status
+                  <select
+                    value={(job.status ?? "Saved") as LinkedinJobStatus}
+                    onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                      handleStatusChange(job.id, event.target.value as LinkedinJobStatus)
+                    }
+                    disabled={pendingStatusId === job.id}
+                    className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                    aria-label={`Status for ${job.title}`}
+                  >
+                    {LINKEDIN_JOB_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex items-center gap-2">
                   <Link
                     to="/analyze"
@@ -226,7 +415,7 @@ function LinkedinJobsPage() {
           ))}
         </div>
 
-        {rows.length === 0 && (
+        {jobs.length === 0 && (
           <p className="mt-6 text-center text-sm text-slate-500">
             {hasActiveFilters
               ? "No saved LinkedIn jobs match the current filters."

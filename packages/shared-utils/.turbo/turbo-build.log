@@ -1,5 +1,6 @@
 
-> @spearyx/shared-utils@0.0.0 build /run/media/rogerleecormier/Storage/dev/spearyx/packages/shared-utils
+
+> @spearyx/shared-utils@0.0.0 build /home/roger_lee_cormier/Documents/dev/spearyx/packages/shared-utils
 > node -e "console.log('No build needed for source imports')"
 
 No build needed for source imports

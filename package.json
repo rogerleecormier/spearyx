@@ -10,19 +10,17 @@
     "lint": "./node_modules/.bin/turbo run lint",
     "test": "./node_modules/.bin/turbo run test",
     "preview": "./node_modules/.bin/turbo run preview",
-    "deploy": "./node_modules/.bin/turbo run deploy",
-    "deploy:workers": "npm run deploy:workers -w @spearyx/jobs",
+    "deploy": "./node_modules/.bin/turbo run deploy --concurrency=1",
+    "deploy:workers": "pnpm --filter @spearyx/jobs run deploy:workers",
     "sync:local": "node seed-jobs-db-direct.js && npm --prefix apps/jobs run build && npm --prefix apps/jobs run serve"
   },
   "devDependencies": {
     "pnpm": "latest",
-    "turbo": "latest"
+    "turbo": "latest",
+    "wrangler": "^4.87.0"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "wrangler": "^4.86.0"
-  }
+  ]
 }

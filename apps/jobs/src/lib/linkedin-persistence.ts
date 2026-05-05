@@ -12,6 +12,15 @@ import type { SessionUser } from "@/lib/cloudflare";
 import type { LinkedInScrapedJob, LinkedInSearchParams } from "@/lib/linkedin-search";
 
 export type LinkedinCronFrequency = "hourly" | "every_2_hours" | "every_4_hours" | "every_8_hours" | "every_12_hours" | "daily";
+export type LinkedinJobStatus = "Saved" | "Applied" | "Interviewing" | "Rejected" | "Archived";
+
+const LINKEDIN_JOB_STATUSES: LinkedinJobStatus[] = [
+  "Saved",
+  "Applied",
+  "Interviewing",
+  "Rejected",
+  "Archived",
+];
 
 export type LinkedinAppSettings = {
   linkedinRetentionDays: number;
@@ -43,6 +52,12 @@ type LinkedinJobIdentityInput = {
   company: string;
   location: string;
 };
+
+function assertLinkedinJobStatus(status: string): asserts status is LinkedinJobStatus {
+  if (!LINKEDIN_JOB_STATUSES.includes(status as LinkedinJobStatus)) {
+    throw new Error("Invalid LinkedIn job status");
+  }
+}
 
 const DEFAULT_SETTINGS: LinkedinAppSettings = {
   linkedinRetentionDays: 14,
@@ -475,6 +490,102 @@ export async function setLinkedinSavedSearchActive(id: number, userId: number, i
     .where(and(eq(linkedinSavedSearches.id, id), eq(linkedinSavedSearches.userId, userId)));
 }
 
+export async function updateLinkedinJobStatus(args: {
+  user: SessionUser;
+  id: number;
+  status: LinkedinJobStatus;
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  assertLinkedinJobStatus(args.status);
+  const db = getDb(env.DB);
+  const whereClause = and(
+    eq(linkedinJobResults.id, args.id),
+    args.user.role === "admin" ? undefined : eq(linkedinJobResults.userId, args.user.id),
+  );
+
+  const [existing] = await db
+    .select({ id: linkedinJobResults.id })
+    .from(linkedinJobResults)
+    .where(whereClause)
+    .limit(1);
+
+  if (!existing) throw new Error("LinkedIn job not found");
+
+  await db
+    .update(linkedinJobResults)
+    .set({ status: args.status, updatedAt: new Date().toISOString() })
+    .where(whereClause);
+
+  return { id: args.id, status: args.status };
+}
+
+export async function bulkUpdateLinkedinJobStatus(args: {
+  user: SessionUser;
+  ids: number[];
+  status: LinkedinJobStatus;
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  assertLinkedinJobStatus(args.status);
+  const ids = Array.from(new Set(args.ids.filter((id) => Number.isInteger(id) && id > 0)));
+  if (ids.length === 0) return { updated: 0 };
+
+  const db = getDb(env.DB);
+  let updated = 0;
+  const now = new Date().toISOString();
+
+  for (const idBatch of chunkValues(ids, SQLITE_DELETE_BATCH_SIZE)) {
+    const whereClause = and(
+      inArray(linkedinJobResults.id, idBatch),
+      args.user.role === "admin" ? undefined : eq(linkedinJobResults.userId, args.user.id),
+    );
+    const rows = await db
+      .select({ id: linkedinJobResults.id })
+      .from(linkedinJobResults)
+      .where(whereClause);
+    if (rows.length === 0) continue;
+
+    await db
+      .update(linkedinJobResults)
+      .set({ status: args.status, updatedAt: now })
+      .where(whereClause);
+    updated += rows.length;
+  }
+
+  return { updated };
+}
+
+export async function bulkDeleteLinkedinJobs(args: {
+  user: SessionUser;
+  ids: number[];
+}) {
+  const env = getCloudflareEnv();
+  if (!env.DB) throw new Error("Database unavailable");
+  const ids = Array.from(new Set(args.ids.filter((id) => Number.isInteger(id) && id > 0)));
+  if (ids.length === 0) return { deleted: 0 };
+
+  const db = getDb(env.DB);
+  let deleted = 0;
+
+  for (const idBatch of chunkValues(ids, SQLITE_DELETE_BATCH_SIZE)) {
+    const whereClause = and(
+      inArray(linkedinJobResults.id, idBatch),
+      args.user.role === "admin" ? undefined : eq(linkedinJobResults.userId, args.user.id),
+    );
+    const rows = await db
+      .select({ id: linkedinJobResults.id })
+      .from(linkedinJobResults)
+      .where(whereClause);
+    if (rows.length === 0) continue;
+
+    await db.delete(linkedinJobResults).where(whereClause);
+    deleted += rows.length;
+  }
+
+  return { deleted };
+}
+
 export async function listLinkedinHistory(args: {
   user: SessionUser;
   page?: number;
@@ -551,6 +662,7 @@ export async function listLinkedinHistory(args: {
       outlookReason: linkedinJobResults.outlookReason,
       isUnicorn: linkedinJobResults.isUnicorn,
       unicornReason: linkedinJobResults.unicornReason,
+      status: linkedinJobResults.status,
       firstSeenAt: linkedinJobResults.firstSeenAt,
       lastSeenAt: linkedinJobResults.lastSeenAt,
       createdAt: linkedinJobResults.createdAt,

@@ -3,11 +3,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { resolveSessionUser } from "@/lib/resolve-user";
 import type { LinkedInSearchParams } from "@/lib/linkedin-search";
 import {
+  bulkDeleteLinkedinJobs,
+  bulkUpdateLinkedinJobStatus,
   deleteLinkedinSavedSearch,
   listLinkedinHistory,
   listSavedLinkedinSearches,
   saveLinkedinSearchDefinition,
   setLinkedinSavedSearchActive,
+  updateLinkedinJobStatus,
+  type LinkedinJobStatus,
 } from "@/lib/linkedin-persistence";
 
 export const getSavedLinkedinSearches = createServerFn({ method: "GET" }).handler(async () => {
@@ -73,4 +77,28 @@ export const getLinkedinJobHistory = createServerFn({ method: "GET" })
       green: data.green,
       sortBy: data.sortBy,
     });
+  });
+
+export const setLinkedinJobStatus = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; status: LinkedinJobStatus }) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    return updateLinkedinJobStatus({ user, id: data.id, status: data.status });
+  });
+
+export const archiveLinkedinJobs = createServerFn({ method: "POST" })
+  .inputValidator((data: { ids: number[] }) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    return bulkUpdateLinkedinJobStatus({ user, ids: data.ids, status: "Archived" });
+  });
+
+export const deleteLinkedinJobs = createServerFn({ method: "POST" })
+  .inputValidator((data: { ids: number[] }) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    return bulkDeleteLinkedinJobs({ user, ids: data.ids });
   });

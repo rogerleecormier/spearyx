@@ -277,6 +277,7 @@ export const linkedinJobResults = sqliteTable('linkedin_job_results', {
   outlookReason: text('outlook_reason'),
   isUnicorn: integer('is_unicorn').notNull().default(0),
   unicornReason: text('unicorn_reason'),
+  status: text('status', { enum: ['Saved', 'Applied', 'Interviewing', 'Rejected', 'Archived'] }).notNull().default('Saved'),
   firstSeenAt: text('first_seen_at').notNull(),
   lastSeenAt: text('last_seen_at').notNull(),
   createdAt: text('created_at').notNull(),
