@@ -2,10 +2,10 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import Fuse from "fuse.js";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Button, Input, PageHero, PageSection, Tooltip, TooltipContent, TooltipTrigger } from "@spearyx/ui-kit";
-import { Briefcase, ChevronDown, CircleHelp, ExternalLink, Loader2, Search, Sparkles, Target, Wand2 } from "lucide-react";
+import { Briefcase, ChevronDown, CircleHelp, Loader2, Search, Target, Wand2 } from "lucide-react";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
+import { LinkedinResultCard } from "@/components/features/linkedin-result-card";
 import { getResume } from "@/server/functions/manage-resume";
-import { getMasterScoreGradient } from "@/lib/scoreUtils";
 import { requireLinkedInSearchOwner } from "@/lib/private-features";
 import {
   getSavedLinkedinSearches,
@@ -404,97 +404,6 @@ function FieldLabelWithInfo({
         </TooltipContent>
       </Tooltip>
     </div>
-  );
-}
-
-function ScorePill({ score }: { score: NonNullable<LinkedInScrapedJob["score"]> }) {
-  const gradient = getMasterScoreGradient(score.masterScore);
-  return (
-    <div className="flex items-center gap-2">
-      {score.isUnicorn ? <span title={score.unicornReason || "Unicorn opportunity"}>🦄</span> : null}
-      <div
-        className={`inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-sm font-bold text-white shadow-sm`}
-        title={`Match score ${score.masterScore}`}
-      >
-        {score.masterScore}
-      </div>
-    </div>
-  );
-}
-
-function LinkedInResultCard({ job }: { job: LinkedInScrapedJob }) {
-  const score = job.score;
-
-  return (
-    <article
-      className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-    >
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-700">
-                LinkedIn
-              </span>
-              {job.resultSource === "history" ? (
-                <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
-                  Saved Score
-                </span>
-              ) : null}
-              {job.postDateText ? (
-                <span className="text-[11px] font-medium text-slate-500">{job.postDateText}</span>
-              ) : null}
-            </div>
-            <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900">{job.title}</h3>
-            <p className="mt-1 text-sm font-medium text-slate-700">{job.company}</p>
-            <p className="mt-1 text-xs text-slate-500">{job.location}</p>
-          </div>
-          {score ? <ScorePill score={score} /> : null}
-        </div>
-
-        {job.salary ? <p className="mb-2 text-xs font-medium text-emerald-700">{job.salary}</p> : null}
-        {job.snippet ? <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-slate-600">{job.snippet}</p> : null}
-
-        {score ? (
-          <div className="mb-4 rounded-xl border border-violet-100 bg-violet-50/70 p-3">
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div>
-                <p className="font-semibold text-slate-500">ATS</p>
-                <p className="text-sm font-bold text-slate-900">{score.atsScore}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-500">Career</p>
-                <p className="text-sm font-bold text-slate-900">{score.careerScore}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-500">Outlook</p>
-                <p className="text-sm font-bold text-slate-900">{score.outlookScore}</p>
-              </div>
-            </div>
-            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-slate-600">{score.atsReason}</p>
-          </div>
-        ) : null}
-
-        <div className="mt-auto flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 pt-4">
-          <Link
-            to="/analyze"
-            search={{ url: job.sourceUrl }}
-            className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            Analyze
-          </Link>
-          <a
-            href={job.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-lg bg-primary-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-primary-700"
-          >
-            Open <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        </div>
-      </div>
-    </article>
   );
 }
 

@@ -1,5 +1,15 @@
 'use server';
 import { createServerFn } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db/db";
+import { masterResume } from "@/db/schema";
+import { analyzeJobInsights } from "@/lib/ai";
+import {
+  allocateTokenBudgets,
+  callWorkersAI,
+  truncateToTokenBudget,
+} from "@/lib/ai-gateway";
+import { getCloudflareEnv } from "@/lib/cloudflare";
 import { resolveSessionUser } from "@/lib/resolve-user";
 import type { LinkedInSearchParams } from "@/lib/linkedin-search";
 import {
@@ -13,6 +23,27 @@ import {
   updateLinkedinJobStatus,
   type LinkedinJobStatus,
 } from "@/lib/linkedin-persistence";
+
+type LinkedinCardJobInput = {
+  title: string;
+  company: string;
+  location?: string | null;
+  salary?: string | null;
+  snippet?: string | null;
+  description?: string | null;
+  sourceUrl?: string | null;
+};
+
+function buildLinkedinJobContext(job: LinkedinCardJobInput) {
+  return [
+    `Title: ${job.title}`,
+    `Company: ${job.company}`,
+    job.location ? `Location: ${job.location}` : null,
+    job.salary ? `Listed salary: ${job.salary}` : null,
+    job.sourceUrl ? `Source URL: ${job.sourceUrl}` : null,
+    job.description ? `Description:\n${job.description}` : job.snippet ? `Snippet:\n${job.snippet}` : null,
+  ].filter(Boolean).join("\n\n");
+}
 
 export const getSavedLinkedinSearches = createServerFn({ method: "GET" }).handler(async () => {
   const user = await resolveSessionUser();
@@ -101,4 +132,74 @@ export const deleteLinkedinJobs = createServerFn({ method: "POST" })
     const user = await resolveSessionUser();
     if (!user) throw new Error("Not authenticated");
     return bulkDeleteLinkedinJobs({ user, ids: data.ids });
+  });
+
+export const getLinkedinInlineInsights = createServerFn({ method: "POST" })
+  .inputValidator((data: LinkedinCardJobInput) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    const env = getCloudflareEnv();
+    if (!env.AI) throw new Error("Workers AI binding not available.");
+
+    const jobContext = buildLinkedinJobContext(data);
+    if (jobContext.length < 50) throw new Error("Not enough job text to generate insights.");
+
+    const insights = await analyzeJobInsights(env, jobContext, data.title);
+    return {
+      ...insights,
+      listedSalary: data.salary ?? null,
+    };
+  });
+
+export const generateLinkedinOutreach = createServerFn({ method: "POST" })
+  .inputValidator((data: LinkedinCardJobInput) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    const env = getCloudflareEnv();
+    if (!env.DB || !env.AI) throw new Error("Database and Workers AI bindings are required.");
+
+    const db = getDb(env.DB);
+    const [resume] = await db
+      .select()
+      .from(masterResume)
+      .where(eq(masterResume.userId, user.id))
+      .limit(1);
+    if (!resume) throw new Error("No master resume found.");
+
+    const candidateProfile = JSON.stringify({
+      fullName: resume.fullName,
+      summary: resume.summary,
+      competencies: resume.competencies ? JSON.parse(resume.competencies) : [],
+      tools: resume.tools ? JSON.parse(resume.tools) : [],
+      experience: resume.experience ? JSON.parse(resume.experience) : [],
+      certifications: resume.certifications ? JSON.parse(resume.certifications) : [],
+      rawText: resume.rawText,
+    }, null, 2);
+
+    const jobContext = buildLinkedinJobContext(data);
+    const [resumeBudget, jobBudget] = allocateTokenBudgets([candidateProfile, jobContext], 10_000, 1_000);
+    const prompt = `Draft a concise LinkedIn direct message for the candidate to send about this role.
+
+Rules:
+- Maximum 650 characters.
+- Write in first person.
+- Mention the role and company naturally.
+- Ground the message only in the candidate profile and job context.
+- No placeholders, no subject line, no markdown.
+- Sound warm, specific, and professional.
+
+CANDIDATE PROFILE:
+${truncateToTokenBudget(candidateProfile, resumeBudget, { marker: "\n...[resume truncated]...\n" })}
+
+JOB CONTEXT:
+${truncateToTokenBudget(jobContext, jobBudget, { marker: "\n...[job truncated]...\n" })}`;
+
+    const message = await callWorkersAI(env, [
+      { role: "system", content: "You write concise, high-converting professional outreach. Output only the message text." },
+      { role: "user", content: prompt },
+    ], { maxTokens: 400 });
+
+    return { message: message.trim().replace(/^["']|["']$/g, "") };
   });
