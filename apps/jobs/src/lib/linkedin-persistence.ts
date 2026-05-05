@@ -12,15 +12,40 @@ import type { SessionUser } from "@/lib/cloudflare";
 import type { LinkedInScrapedJob, LinkedInSearchParams } from "@/lib/linkedin-search";
 
 export type LinkedinCronFrequency = "hourly" | "every_2_hours" | "every_4_hours" | "every_8_hours" | "every_12_hours" | "daily";
-export type LinkedinJobStatus = "Saved" | "Applied" | "Interviewing" | "Rejected" | "Archived";
+export type LinkedinJobStatus = "Analyzed" | "Prepped" | "Applied" | "Interviewed" | "Hired" | "Archived";
 
 const LINKEDIN_JOB_STATUSES: LinkedinJobStatus[] = [
-  "Saved",
+  "Analyzed",
+  "Prepped",
   "Applied",
-  "Interviewing",
-  "Rejected",
+  "Interviewed",
+  "Hired",
   "Archived",
 ];
+
+function normalizeLinkedinJobStatus(status: string | null | undefined): LinkedinJobStatus {
+  switch (status) {
+    case "Analyzed":
+    case "Prepped":
+    case "Applied":
+    case "Interviewed":
+    case "Hired":
+    case "Archived":
+      return status;
+    case "Docs Started":
+    case "Ready to Apply":
+      return "Prepped";
+    case "Interviewing":
+      return "Interviewed";
+    case "Rejected":
+      return "Archived";
+    case "Review":
+    case "Pursue":
+    case "Saved":
+    default:
+      return "Analyzed";
+  }
+}
 
 export type LinkedinAppSettings = {
   linkedinRetentionDays: number;
@@ -273,6 +298,7 @@ export async function upsertLinkedinJobResults(args: {
       outlookReason: job.score?.outlookReason ?? null,
       isUnicorn: job.score?.isUnicorn ? 1 : 0,
       unicornReason: job.score?.unicornReason ?? null,
+      status: "Analyzed" as const,
       firstSeenAt: now,
       lastSeenAt: now,
       createdAt: now,
@@ -594,9 +620,10 @@ export async function listLinkedinHistory(args: {
   remote?: boolean;
   green?: boolean;
   sortBy?: string;
+  status?: string;
 }) {
   const env = getCloudflareEnv();
-  if (!env.DB) return { rows: [], total: 0, canViewAllUsers: false };
+  if (!env.DB) return { rows: [], total: 0, canViewAllUsers: false, statusCounts: {} };
   const db = getDb(env.DB);
   const settings = await getLinkedinSettings();
   const page = args.page ?? 1;
@@ -605,7 +632,9 @@ export async function listLinkedinHistory(args: {
   const canViewAllUsers = settings.linkedinAllowAllUsersView;
 
   const q = args.query?.trim();
-  const whereClause = and(
+  // baseWhereClause excludes the status filter so statusCounts always reflect
+  // the full pipeline distribution for the current search/filter context.
+  const baseWhereClause = and(
     canViewAllUsers ? undefined : eq(linkedinJobResults.userId, args.user.id),
     q ? or(like(linkedinJobResults.title, `%${q}%`), like(linkedinJobResults.company, `%${q}%`)) : undefined,
     args.remote
@@ -618,6 +647,9 @@ export async function listLinkedinHistory(args: {
       : undefined,
     args.green ? gte(linkedinJobResults.masterScore, 80) : undefined,
   );
+  const whereClause = args.status
+    ? and(baseWhereClause, eq(linkedinJobResults.status, args.status))
+    : baseWhereClause;
 
   const orderBy = (() => {
     switch (args.sortBy) {
@@ -680,10 +712,34 @@ export async function listLinkedinHistory(args: {
     .from(linkedinJobResults)
     .where(whereClause);
 
+  const statusRows = await db
+    .select({
+      status: linkedinJobResults.status,
+      count: sql<number>`count(*)`,
+    })
+    .from(linkedinJobResults)
+    .where(baseWhereClause)
+    .groupBy(linkedinJobResults.status);
+
+  const normalizedRows = rows.map((row) => ({
+    ...row,
+    status: normalizeLinkedinJobStatus(row.status),
+  }));
+
+  const normalizedStatusCounts = statusRows.reduce<Partial<Record<LinkedinJobStatus, number>>>(
+    (counts, row) => {
+      const status = normalizeLinkedinJobStatus(row.status);
+      counts[status] = (counts[status] ?? 0) + Number(row.count ?? 0);
+      return counts;
+    },
+    {},
+  );
+
   return {
-    rows,
+    rows: normalizedRows,
     total: Number(countRow?.count ?? 0),
     canViewAllUsers,
+    statusCounts: normalizedStatusCounts,
   };
 }
 

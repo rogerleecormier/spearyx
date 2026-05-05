@@ -194,6 +194,7 @@ export const jobAnalyses = sqliteTable('job_analyses', {
   careerAnalysis: text('career_analysis'), // JSON: { trajectory, recommendation, reasoning }
   insights: text('insights'),             // JSON: { workLifeBalance, remoteFlexibility, seniorityLevel, cultureSignals, redFlags }
   applied: integer('applied').default(0), // 1 = applied, 0 = not applied
+  applicationStatus: text('application_status', { enum: ['Applied', 'Interviewed', 'Hired'] }),
   appliedAt: text('applied_at'),
   createdAt: text('created_at'),
 })
@@ -277,7 +278,7 @@ export const linkedinJobResults = sqliteTable('linkedin_job_results', {
   outlookReason: text('outlook_reason'),
   isUnicorn: integer('is_unicorn').notNull().default(0),
   unicornReason: text('unicorn_reason'),
-  status: text('status', { enum: ['Saved', 'Applied', 'Interviewing', 'Rejected', 'Archived'] }).notNull().default('Saved'),
+  status: text('status', { enum: ['Analyzed', 'Prepped', 'Applied', 'Interviewed', 'Hired', 'Archived'] }).notNull().default('Analyzed'),
   firstSeenAt: text('first_seen_at').notNull(),
   lastSeenAt: text('last_seen_at').notNull(),
   createdAt: text('created_at').notNull(),

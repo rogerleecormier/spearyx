@@ -94,6 +94,7 @@ export const getLinkedinJobHistory = createServerFn({ method: "GET" })
       remote?: boolean;
       green?: boolean;
       sortBy?: string;
+      status?: string;
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -107,6 +108,7 @@ export const getLinkedinJobHistory = createServerFn({ method: "GET" })
       remote: data.remote,
       green: data.green,
       sortBy: data.sortBy,
+      status: data.status,
     });
   });
 
@@ -202,4 +204,68 @@ ${truncateToTokenBudget(jobContext, jobBudget, { marker: "\n...[job truncated]..
     ], { maxTokens: 400 });
 
     return { message: message.trim().replace(/^["']|["']$/g, "") };
+  });
+
+export const suggestLinkedinSemanticTitles = createServerFn({ method: "POST" })
+  .inputValidator((data: { currentTitle?: string; limit?: number }) => data)
+  .handler(async ({ data }) => {
+    const user = await resolveSessionUser();
+    if (!user) throw new Error("Not authenticated");
+    const env = getCloudflareEnv();
+    if (!env.DB || !env.AI) throw new Error("Database and Workers AI bindings are required.");
+
+    const db = getDb(env.DB);
+    const [resume] = await db
+      .select()
+      .from(masterResume)
+      .where(eq(masterResume.userId, user.id))
+      .limit(1);
+    if (!resume) throw new Error("No master resume found.");
+
+    const resumeProfile = JSON.stringify({
+      summary: resume.summary,
+      competencies: resume.competencies ? JSON.parse(resume.competencies) : [],
+      tools: resume.tools ? JSON.parse(resume.tools) : [],
+      experience: resume.experience ? JSON.parse(resume.experience) : [],
+      certifications: resume.certifications ? JSON.parse(resume.certifications) : [],
+      rawText: resume.rawText,
+    }, null, 2);
+
+    const resumeSnippet = truncateToTokenBudget(resumeProfile, 8_000, {
+      marker: "\n...[resume truncated for semantic title expansion]...\n",
+      preserveHeadRatio: 0.7,
+    });
+
+    const prompt = `Suggest ${data.limit ?? 3} parallel industry or pivot job titles for LinkedIn search.
+
+Rules:
+- Use the candidate's resume evidence.
+- Prefer adjacent titles that would plausibly fit the candidate, not fantasy roles.
+- Avoid duplicating the current query/title.
+- Return ONLY JSON: {"titles":["title one","title two","title three"]}
+
+Current search title/query: ${data.currentTitle?.trim() || "Not provided"}
+
+Candidate resume:
+${resumeSnippet}`;
+
+    const raw = await callWorkersAI(env, [
+      { role: "system", content: "You are a job-search strategist. Output valid JSON only." },
+      { role: "user", content: prompt },
+    ], { maxTokens: 500 });
+
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return semantic title JSON.");
+    const parsed = JSON.parse(jsonMatch[0]) as { titles?: unknown };
+    const requestedLimit = Math.max(1, Math.min(5, data.limit ?? 3));
+    const current = (data.currentTitle ?? "").trim().toLowerCase();
+    const titles = Array.isArray(parsed.titles)
+      ? parsed.titles
+          .filter((title): title is string => typeof title === "string")
+          .map((title) => title.trim())
+          .filter((title) => title.length > 1 && title.toLowerCase() !== current)
+          .slice(0, requestedLimit)
+      : [];
+
+    return { titles };
   });

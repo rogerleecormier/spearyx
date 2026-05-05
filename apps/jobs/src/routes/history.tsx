@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import type { ChangeEvent, ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -25,12 +25,17 @@ import {
   getDocumentDownload,
   getHistory,
 } from "@/server/functions/get-history";
-import type { HistoryRow } from "@/server/functions/get-history";
+import type { HistoryPipelineCounts, HistoryRow } from "@/server/functions/get-history";
 import { requireLoginRedirect } from "@/lib/auth-redirect";
-import { PageActionBar, PageHero, PageSection } from "@spearyx/ui-kit";
-import { AppliedToggle } from "@/components/features/applied-toggle";
+import { Input, PageActionBar, PageHero, PageSection } from "@spearyx/ui-kit";
+import { setApplicationOutcome, type ApplicationOutcome } from "@/server/functions/toggle-applied";
 
 const PAGE_SIZE = 20;
+
+type HistorySearchParams = {
+  page: number;
+  query: string;
+};
 
 export const Route = createFileRoute("/history")({
   beforeLoad: ({ context, location }) => {
@@ -38,15 +43,62 @@ export const Route = createFileRoute("/history")({
     if (!ctx.user) requireLoginRedirect(location, "analysis history");
   },
   validateSearch: (search: Record<string, unknown>) => ({
-    page: Number(search.page) || 1,
+    page: Math.max(1, Number(search.page) || 1),
+    query: String(search.query ?? ""),
   }),
-  loaderDeps: ({ search }) => ({ page: search.page }),
-  loader: async ({ deps }) => getHistory({ data: { page: deps.page, pageSize: PAGE_SIZE } }),
+  loaderDeps: ({ search }: { search: HistorySearchParams }) => search,
+  loader: async ({ deps }: { deps: HistorySearchParams }) =>
+    getHistory({ data: { page: deps.page, pageSize: PAGE_SIZE, query: deps.query } }),
   component: HistoryPage,
   pendingComponent: HistoryLoading,
 });
 
 type Row = HistoryRow;
+type WorkflowStatusKey = "analyzed" | "prepped" | "applied" | "interviewed" | "hired";
+
+const workflowSteps: Array<{
+  key: WorkflowStatusKey;
+  label: string;
+  note: string;
+  dotClass: string;
+  pillClass: string;
+}> = [
+  {
+    key: "analyzed",
+    label: "Analyzed",
+    note: "Fit reviewed",
+    dotClass: "bg-slate-400",
+    pillClass: "border-slate-200 bg-slate-50 text-slate-600",
+  },
+  {
+    key: "prepped",
+    label: "Prepped",
+    note: "Docs generated",
+    dotClass: "bg-violet-500",
+    pillClass: "border-violet-100 bg-violet-50 text-violet-700",
+  },
+  {
+    key: "applied",
+    label: "Applied",
+    note: "Submitted",
+    dotClass: "bg-emerald-500",
+    pillClass: "border-emerald-100 bg-emerald-50 text-emerald-700",
+  },
+  {
+    key: "interviewed",
+    label: "Interviewed",
+    note: "Conversation started",
+    dotClass: "bg-sky-500",
+    pillClass: "border-sky-100 bg-sky-50 text-sky-700",
+  },
+  {
+    key: "hired",
+    label: "Hired",
+    note: "Offer won",
+    dotClass: "bg-amber-500",
+    pillClass: "border-amber-100 bg-amber-50 text-amber-700",
+  },
+];
 
 async function triggerDownload(r2Key: string, fileName: string) {
   const result = await getDocumentDownload({ data: { r2Key } });
@@ -61,21 +113,54 @@ async function triggerDownload(r2Key: string, fileName: string) {
 
 function HistoryPage() {
   const loaderData = Route.useLoaderData();
-  const { page } = Route.useSearch();
+  const { page, query } = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
 
+  const [inputValue, setInputValue] = useState(query);
   const [rows, setRows] = useState(loaderData.rows);
   const [total, setTotal] = useState(loaderData.total);
   const [totalApplied, setTotalApplied] = useState(loaderData.totalApplied);
-  const [totalPursued] = useState(loaderData.totalPursued);
-  const [totalDocuments] = useState(loaderData.totalDocuments);
+  const [totalPursued, setTotalPursued] = useState(loaderData.totalPursued);
+  const [totalDocuments, setTotalDocuments] = useState(loaderData.totalDocuments);
+  const [pipelineCounts, setPipelineCounts] = useState(loaderData.pipelineCounts);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+  const [updatingOutcomeId, setUpdatingOutcomeId] = useState<number | null>(null);
   const [confirmingRow, setConfirmingRow] = useState<Row | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const didMount = useRef(false);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  useEffect(() => {
+    setRows(loaderData.rows);
+    setTotal(loaderData.total);
+    setTotalApplied(loaderData.totalApplied);
+    setTotalPursued(loaderData.totalPursued);
+    setTotalDocuments(loaderData.totalDocuments);
+    setPipelineCounts(loaderData.pipelineCounts);
+  }, [loaderData]);
+
+  useEffect(() => {
+    setInputValue(query);
+  }, [query]);
+
+  useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (inputValue.trim() !== query) {
+        navigate({
+          to: "/history",
+          search: (prev) => ({ ...prev, query: inputValue.trim(), page: 1 }),
+        });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue, navigate, query]);
 
   const avgScore = useMemo(() =>
     rows.length
@@ -89,11 +174,49 @@ function HistoryPage() {
     finally { setDownloadingKey(null); }
   }
 
-  function handleAppliedChange(id: number, applied: boolean) {
-    setRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, applied } : r))
-    );
-    setTotalApplied((prev) => Math.max(0, prev + (applied ? 1 : -1)));
+  async function handleApplicationOutcomeChange(id: number, status: ApplicationOutcome) {
+    const currentRow = rows.find((r) => r.id === id);
+    if (!currentRow) return;
+
+    const previousRows = rows;
+    const wasApplied = currentRow.applied;
+    const nextRow = {
+      ...currentRow,
+      applied: status !== null,
+      applicationStatus: status,
+      appliedAt: status ? new Date().toISOString() : null,
+    };
+    const from = getWorkflowStatus(currentRow).key;
+    const to = getWorkflowStatus(nextRow).key;
+
+    setUpdatingOutcomeId(id);
+    setRows((prev) => prev.map((row) => (row.id === id ? nextRow : row)));
+    setPipelineCounts((prev) => movePipelineCount(prev, from, to));
+    setTotalApplied((prev) => Math.max(0, prev + (!wasApplied && status ? 1 : wasApplied && !status ? -1 : 0)));
+
+    try {
+      const result = await setApplicationOutcome({ data: { id, status } });
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? {
+                ...row,
+                applied: result.applied,
+                applicationStatus: result.applicationStatus,
+                appliedAt: result.appliedAt,
+              }
+            : row,
+        ),
+      );
+      await router.invalidate();
+    } catch (error) {
+      setRows(previousRows);
+      setPipelineCounts((prev) => movePipelineCount(prev, to, from));
+      setTotalApplied((prev) => Math.max(0, prev + (!wasApplied && status ? -1 : wasApplied && !status ? 1 : 0)));
+      alert(error instanceof Error ? error.message : "Unable to update application status.");
+    } finally {
+      setUpdatingOutcomeId(null);
+    }
   }
 
   async function handleDeleteConfirmed() {
@@ -108,9 +231,9 @@ function HistoryPage() {
       setConfirmingRow(null);
       const nextTotalPages = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
       if (page > nextTotalPages) {
-        await navigate({ to: "/history", search: { page: nextTotalPages } });
+        await navigate({ to: "/history", search: { page: nextTotalPages, query } });
       } else if (nextRows.length === 0 && page > 1) {
-        await navigate({ to: "/history", search: { page: page - 1 } });
+        await navigate({ to: "/history", search: { page: page - 1, query } });
       } else {
         await router.invalidate();
       }
@@ -160,18 +283,18 @@ function HistoryPage() {
         accessorKey: "pursue",
         header: "Status",
         cell: ({ row }) => (
-          <StatusPill applied={row.original.applied} pursue={row.original.pursue} />
+          <StatusPill row={row.original} />
         ),
-        size: 90,
+        size: 132,
       },
       {
-        accessorKey: "applied",
-        header: "Applied",
+        accessorKey: "applicationStatus",
+        header: "Outcome",
         cell: ({ row }) => (
-          <AppliedToggle
-            analysisId={row.original.id}
-            initialApplied={row.original.applied}
-            onAppliedChange={(applied) => handleAppliedChange(row.original.id, applied)}
+          <ApplicationOutcomeSelect
+            value={row.original.applicationStatus}
+            pending={updatingOutcomeId === row.original.id}
+            onChange={(status) => handleApplicationOutcomeChange(row.original.id, status)}
           />
         ),
         size: 150,
@@ -197,7 +320,7 @@ function HistoryPage() {
           const resumeDoc = row.original.documents.find((d) => d.docType === "resume");
           const coverDoc = row.original.documents.find((d) => d.docType === "cover_letter");
           return (
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-col gap-1">
               {resumeDoc ? (
                 <DocButton
                   icon={downloadingKey === resumeDoc.r2Key
@@ -223,7 +346,7 @@ function HistoryPage() {
             </div>
           );
         },
-        size: 160,
+        size: 92,
       },
       {
         id: "actions",
@@ -260,7 +383,7 @@ function HistoryPage() {
         size: 100,
       },
     ],
-    [downloadingKey]
+    [downloadingKey, rows, updatingOutcomeId]
   );
 
   const table = useReactTable({
@@ -326,16 +449,57 @@ function HistoryPage() {
         </Link>
       </div>
 
+      <section className="rounded-2xl border border-slate-200/80 bg-white/85 p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">Application Pipeline</h2>
+            <p className="text-xs text-slate-500">Status is derived from generated documents and the selected application outcome.</p>
+          </div>
+          <span className="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500 sm:inline-flex">
+            {total} total
+          </span>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {workflowSteps.map((step, index) => (
+            <div
+              key={step.key}
+              className={`rounded-xl border px-3 py-3 ${step.pillClass}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+                  <span className={`h-2 w-2 rounded-full ${step.dotClass}`} />
+                  {step.label}
+                </span>
+                <span className="text-lg font-bold">{pipelineCounts[step.key]}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[11px] opacity-80">
+                <span>{step.note}</span>
+                <span>Step {index + 1}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Table */}
       {rows.length === 0 ? (
         <PageSection>
+          <HistorySearchBar
+            value={inputValue}
+            query={query}
+            total={total}
+            onChange={setInputValue}
+            onClear={() => setInputValue("")}
+          />
           <div className="flex flex-col items-center py-14 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
               <History className="h-6 w-6 text-slate-500" />
             </div>
             <h2 className="mt-5 text-xl font-semibold text-slate-900">No analyses yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Start by analyzing a job posting. Your saved analyses, generated resumes, and cover letters will show up here.
+              {query
+                ? "No saved analyses match that search."
+                : "Start by analyzing a job posting. Your saved analyses, generated resumes, and cover letters will show up here."}
             </p>
             <Link
               to="/analyze"
@@ -349,8 +513,15 @@ function HistoryPage() {
       ) : (
         <PageSection
           title={`Analyses — page ${page} of ${totalPages}`}
-          description={`${total} total saved analyses`}
+          description={query ? `${total} matching saved analyses` : `${total} total saved analyses`}
         >
+          <HistorySearchBar
+            value={inputValue}
+            query={query}
+            total={total}
+            onChange={setInputValue}
+            onClear={() => setInputValue("")}
+          />
           <div className="overflow-x-auto -mx-6">
             <table className="w-full min-w-[720px]">
               <thead>
@@ -401,14 +572,14 @@ function HistoryPage() {
           <div className="flex gap-2">
             <button
               disabled={page <= 1}
-              onClick={() => navigate({ to: "/history", search: { page: page - 1 } })}
+              onClick={() => navigate({ to: "/history", search: { page: page - 1, query } })}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Previous
             </button>
             <button
               disabled={page >= totalPages}
-              onClick={() => navigate({ to: "/history", search: { page: page + 1 } })}
+              onClick={() => navigate({ to: "/history", search: { page: page + 1, query } })}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next
@@ -467,26 +638,109 @@ function ScorePill({ score }: { score: number }) {
   );
 }
 
-function StatusPill({ applied, pursue }: { applied: boolean; pursue: boolean }) {
-  if (applied)
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Applied
-      </span>
-    );
-  if (pursue)
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-sky-100 bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-        Pursue
-      </span>
-    );
+function HistorySearchBar({
+  value,
+  query,
+  total,
+  onChange,
+  onClear,
+}: {
+  value: string;
+  query: string;
+  total: number;
+  onChange: (value: string) => void;
+  onClear: () => void;
+}) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-      Review
+    <div className="mb-5 flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex h-9 min-w-0 flex-1 items-center rounded-lg border border-slate-200 bg-white px-3 shadow-sm focus-within:ring-1 focus-within:ring-primary-300">
+        <Search className="h-4 w-4 shrink-0 text-slate-400" />
+        <Input
+          value={value}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+          placeholder="Search by title, company, status, or outcome"
+          className="h-auto border-0 bg-transparent px-2 py-0 shadow-none focus-visible:ring-0"
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3 sm:justify-end">
+        <span className="text-xs font-medium text-slate-500">
+          {query ? `${total} match${total === 1 ? "" : "es"}` : "Search all analyses"}
+        </span>
+        {query ? (
+          <button
+            type="button"
+            onClick={onClear}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function getWorkflowStatus(row: Pick<Row, "applied" | "applicationStatus" | "documents">) {
+  const hasDocs = row.documents.length > 0;
+  if (row.applicationStatus === "Hired") return workflowSteps.find((step) => step.key === "hired")!;
+  if (row.applicationStatus === "Interviewed") return workflowSteps.find((step) => step.key === "interviewed")!;
+  if (row.applicationStatus === "Applied" || row.applied) return workflowSteps.find((step) => step.key === "applied")!;
+  if (hasDocs) return workflowSteps.find((step) => step.key === "prepped")!;
+  return workflowSteps.find((step) => step.key === "analyzed")!;
+}
+
+function movePipelineCount(
+  counts: HistoryPipelineCounts,
+  from: WorkflowStatusKey,
+  to: WorkflowStatusKey,
+): HistoryPipelineCounts {
+  if (from === to) return counts;
+  return (
+    {
+      ...counts,
+      [from]: Math.max(0, counts[from] - 1),
+      [to]: counts[to] + 1,
+    }
+  );
+}
+
+function StatusPill({ row }: { row: Row }) {
+  const status = getWorkflowStatus(row);
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${status.pillClass}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${status.dotClass}`} />
+      {status.label}
     </span>
+  );
+}
+
+function ApplicationOutcomeSelect({
+  value,
+  pending,
+  onChange,
+}: {
+  value: ApplicationOutcome;
+  pending: boolean;
+  onChange: (status: ApplicationOutcome) => void;
+}) {
+  return (
+    <div className="relative inline-flex items-center">
+      <select
+        value={value ?? ""}
+        onChange={(event) => onChange((event.target.value || null) as ApplicationOutcome)}
+        disabled={pending}
+        className="h-8 min-w-[132px] rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+        aria-label="Application outcome"
+      >
+        <option value="">Track outcome</option>
+        <option value="Applied">Applied</option>
+        <option value="Interviewed">Interviewed</option>
+        <option value="Hired">Hired</option>
+      </select>
+      {pending ? (
+        <Loader2 className="pointer-events-none absolute right-2 h-3.5 w-3.5 animate-spin text-slate-400" />
+      ) : null}
+    </div>
   );
 }
 
@@ -494,7 +748,7 @@ function DocButton({ icon, label, onClick }: { icon: ReactNode; label: string; o
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+      className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
     >
       {icon}
       {label}
@@ -504,7 +758,7 @@ function DocButton({ icon, label, onClick }: { icon: ReactNode; label: string; o
 
 function DocButtonDisabled({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-300">
+    <span className="inline-flex h-7 items-center justify-center gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 text-[11px] font-medium text-slate-300">
       <FileText className="h-3.5 w-3.5" />
       {label}
     </span>

@@ -81,18 +81,6 @@ function dedupeJobsByCanonicalUrl(jobs: LinkedInScrapedJob[]) {
 
 async function extractSearchCards(page: BrowserPage, limit: number): Promise<LinkedInScrapedJob[]> {
   const jobs = await page.evaluate((maxResults: number) => {
-    function inferWorkplaceType(row: Element, location: string, snippet: string | null) {
-      const rowText = row.textContent?.replace(/\s+/g, " ").trim().toLowerCase() || "";
-      const locationText = location.toLowerCase();
-      const snippetText = (snippet || "").toLowerCase();
-      const combined = `${rowText} ${locationText} ${snippetText}`;
-
-      if (/\bhybrid\b/.test(combined)) return "hybrid";
-      if (/\bon[\s-]?site\b/.test(combined)) return "on-site";
-      if (/\bremote\b/.test(combined) || /\bwork from home\b/.test(combined)) return "remote";
-      return null;
-    }
-
     const rows = Array.from(
       document.querySelectorAll("li, .base-card, .jobs-search__results-list li, .jobs-search-results__list-item"),
     );
@@ -150,7 +138,16 @@ async function extractSearchCards(page: BrowserPage, limit: number): Promise<Lin
         row.querySelector(".base-search-card__snippet")?.textContent ||
         ""
       ).replace(/\s+/g, " ").trim() || null;
-      const workplaceType = inferWorkplaceType(row, location, snippet);
+      const wpCombined = (row.textContent || "").replace(/\s+/g, " ").trim().toLowerCase()
+        + " " + location.toLowerCase()
+        + " " + (snippet || "").toLowerCase();
+      const workplaceType = /\bhybrid\b/.test(wpCombined)
+        ? "hybrid"
+        : /\bon[\s-]?site\b/.test(wpCombined)
+        ? "on-site"
+        : /\bremote\b/.test(wpCombined) || /\bwork from home\b/.test(wpCombined)
+        ? "remote"
+        : null;
 
       results.push({
         id,
@@ -213,11 +210,16 @@ async function extractJobDescription(page: BrowserPage): Promise<string | null> 
   });
 }
 
+// Fetching full descriptions for every job burns the browser session budget quickly.
+// We cap uncached fetches per request; the rest fall back to the snippet for scoring.
+const MAX_DESCRIPTION_FETCHES = 4;
+
 async function enrichJobDescriptions(
   browser: Awaited<ReturnType<typeof import("@cloudflare/puppeteer")["default"]["launch"]>>,
   kv: KVNamespace | undefined,
   jobs: LinkedInScrapedJob[],
 ) {
+  let fetchedCount = 0;
   for (const job of jobs) {
     const key = `linkedin:job:${await sha256(job.sourceUrl)}`;
     const cached = await getCachedJson<{ description: string | null }>(kv, key);
@@ -226,10 +228,16 @@ async function enrichJobDescriptions(
       continue;
     }
 
+    if (fetchedCount >= MAX_DESCRIPTION_FETCHES) {
+      job.description = job.snippet;
+      continue;
+    }
+
+    fetchedCount++;
     const page = await browser.newPage();
     try {
-      await page.goto(job.sourceUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await page.goto(job.sourceUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const description = await extractJobDescription(page);
       job.description = description;
       await putCachedJson(kv, key, { description }, 24 * 60 * 60);

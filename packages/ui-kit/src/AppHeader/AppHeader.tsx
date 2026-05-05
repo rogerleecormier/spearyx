@@ -495,24 +495,15 @@ export function AppHeader({
       ? [
           {
             type: "link",
-            key: "linkedin-search",
-            label: "LinkedIn Search",
-            href: "https://jobs.spearyx.com/linkedin-search",
-            path: "/linkedin-search",
-            icon: Search,
+            key: "linkedin-hub",
+            label: "LinkedIn Hub",
+            sublabel: "Job pipeline & search",
+            href: "https://jobs.spearyx.com/linkedin-hub",
+            path: "/linkedin-hub",
+            icon: Briefcase,
             tone: "indigo",
             appScope: "jobs",
-          },
-          {
-            type: "link",
-            key: "linkedin-jobs",
-            label: "LinkedIn Results",
-            href: "https://jobs.spearyx.com/linkedin-jobs",
-            path: "/linkedin-jobs",
-            icon: History,
-            tone: "info",
-            appScope: "jobs",
-          },
+          } as MenuEntry,
         ]
       : []),
     ...(resolvedUser?.role === "admin"
