@@ -1,0 +1,33 @@
+# Spearyx AI Agent Guardrails & Architecture
+
+This document provides the foundational rules, tech stack, and architecture guidelines for any autonomous AI agent (e.g., AutoGPT, Aider, Devin) operating within the Spearyx monorepo.
+
+## 1. Tech Stack Overview
+- **Monorepo:** npm workspaces + Turborepo (`apps/app-web`, `apps/corporate`, `apps/tools`, `apps/jobs`, `packages/ui-kit`, `packages/shared-config`).
+- **Frontend:** TanStack Start (SSR React), TanStack Query, Vite.
+- **Backend / Infrastructure:** Cloudflare Workers, Cloudflare D1 (SQLite).
+- **Database / ORM:** Drizzle ORM (Direct D1 access from Workers).
+- **Rate Limiting:** TanStack Pacer (strictly used for 3rd-party API throttling).
+- **Styling:** Tailwind CSS v4 (CSS-first architecture), shadcn/ui.
+
+## 2. Monorepo & Import Standards
+- **UI Components:** ALWAYS import UI components from `@spearyx/ui-kit` (e.g., `import { Button, Hero } from '@spearyx/ui-kit';`). Do not build new base components in the `apps/*` directories.
+- **Shared Config:** All global styles and design tokens live in `@spearyx/shared-config/styles.css`.
+- **No Cross-App Imports:** Apps should not import directly from other apps. Use shared packages for common logic.
+
+## 3. Styling & UI Guardrails (STRICT)
+- **Tailwind v4 (CSS-first):** Do NOT modify `tailwind.config.ts` files to add themes or plugins. They are compatibility stubs only. All tokens must be added to `packages/shared-config/styles.css` using `@theme`, `@plugin`, and `@source`.
+- **Light Mode Only:** Do NOT add `dark:` utility classes. The design system is single-theme.
+- **Color Palette:** Do not hardcode hex colors. Use semantic classes like `bg-primary-500`, `text-slate-600`, `text-success-700`.
+- **Typography:** Use the semantic typography components from the UI kit (`<Hero>`, `<Display>`, `<Headline>`, `<Title>`, `<Body>`, `<Caption>`, `<Label>`, `<Overline>`). Do not use raw HTML heading tags with custom sizing classes.
+- **Spacing:** Use the standard 4px Tailwind scale, plus our custom extended tokens (`p-18`, `p-88`, etc.).
+
+## 4. Backend & Database Architecture
+- **Direct D1 Access:** Cloudflare Workers bypass traditional internal HTTP APIs and access D1 directly via Drizzle ORM (`const db = drizzle(env.DB, { schema });`).
+- **Scheduled Jobs:** Workers are triggered via Cloudflare Cron (`wrangler.toml` schedules). Ensure staggered scheduling to prevent collisions.
+- **Rate Limiting:** When interacting with external APIs (like ATS systems), you MUST wrap `fetch` calls with `@tanstack/pacer`'s `asyncThrottle`.
+
+## 5. Code Quality & Accessibility
+- **TypeScript:** Strict typing is required. Use explicit interfaces. Avoid `any`.
+- **Accessibility:** WCAG 2.1 AA compliance is mandatory. Ensure semantic HTML, proper ARIA labels, and keyboard navigability.
+- **Testing:** Maintain clean, predictable component shells before adding logic. Ensure responsive layout using CSS Grid and standard Tailwind breakpoints (`md:`, `lg:`).
