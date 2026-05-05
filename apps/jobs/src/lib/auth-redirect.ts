@@ -6,7 +6,7 @@ const JOBS_ORIGIN = "https://jobs.spearyx.com";
 type RedirectLocation = {
   href?: string;
   pathname?: string;
-  search?: string;
+  search?: string | Record<string, unknown>;
   searchStr?: string;
   hash?: string;
 };

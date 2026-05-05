@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, like, lte, or, sql } from "drizzle-orm";
 import { getDb } from "@/db/db";
 import {
   appSettings,
@@ -479,6 +479,10 @@ export async function listLinkedinHistory(args: {
   user: SessionUser;
   page?: number;
   pageSize?: number;
+  query?: string;
+  remote?: boolean;
+  green?: boolean;
+  sortBy?: string;
 }) {
   const env = getCloudflareEnv();
   if (!env.DB) return { rows: [], total: 0, canViewAllUsers: false };
@@ -489,7 +493,36 @@ export async function listLinkedinHistory(args: {
   const offset = (page - 1) * pageSize;
   const canViewAllUsers = settings.linkedinAllowAllUsersView;
 
-  const whereClause = canViewAllUsers ? undefined : eq(linkedinJobResults.userId, args.user.id);
+  const q = args.query?.trim();
+  const whereClause = and(
+    canViewAllUsers ? undefined : eq(linkedinJobResults.userId, args.user.id),
+    q ? or(like(linkedinJobResults.title, `%${q}%`), like(linkedinJobResults.company, `%${q}%`)) : undefined,
+    args.remote
+      ? or(
+          like(linkedinJobResults.workplaceType, "%remote%"),
+          like(linkedinJobResults.location, "%remote%"),
+          like(linkedinJobResults.snippet, "%remote%"),
+          like(linkedinJobResults.title, "%remote%"),
+        )
+      : undefined,
+    args.green ? gte(linkedinJobResults.masterScore, 80) : undefined,
+  );
+
+  const orderBy = (() => {
+    switch (args.sortBy) {
+      case "title":
+        return [asc(linkedinJobResults.title)];
+      case "score":
+        return [desc(linkedinJobResults.masterScore), asc(linkedinJobResults.title)];
+      case "company":
+        return [asc(linkedinJobResults.company), asc(linkedinJobResults.title)];
+      case "location":
+        return [asc(linkedinJobResults.location), asc(linkedinJobResults.title)];
+      default:
+        return [desc(linkedinJobResults.lastSeenAt), desc(linkedinJobResults.masterScore)];
+    }
+  })();
+
   const rows = await db
     .select({
       id: linkedinJobResults.id,
@@ -526,7 +559,7 @@ export async function listLinkedinHistory(args: {
     })
     .from(linkedinJobResults)
     .where(whereClause)
-    .orderBy(desc(linkedinJobResults.lastSeenAt), desc(linkedinJobResults.masterScore))
+    .orderBy(...orderBy)
     .limit(pageSize)
     .offset(offset);
 

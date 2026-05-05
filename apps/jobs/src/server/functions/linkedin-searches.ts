@@ -51,7 +51,16 @@ export const toggleLinkedinSearchCron = createServerFn({ method: "POST" })
   });
 
 export const getLinkedinJobHistory = createServerFn({ method: "GET" })
-  .inputValidator((data: { page?: number; pageSize?: number }) => data)
+  .inputValidator(
+    (data: {
+      page?: number;
+      pageSize?: number;
+      query?: string;
+      remote?: boolean;
+      green?: boolean;
+      sortBy?: string;
+    }) => data,
+  )
   .handler(async ({ data }) => {
     const user = await resolveSessionUser();
     if (!user) throw new Error("Not authenticated");
@@ -59,5 +68,9 @@ export const getLinkedinJobHistory = createServerFn({ method: "GET" })
       user,
       page: data.page ?? 1,
       pageSize: data.pageSize ?? 20,
+      query: data.query,
+      remote: data.remote,
+      green: data.green,
+      sortBy: data.sortBy,
     });
   });

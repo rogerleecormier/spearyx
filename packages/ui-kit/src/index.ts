@@ -12,6 +12,9 @@ export * from "./PageHero";
 export * from "./PageSection";
 export * from "./PageActionBar";
 
+// Pagination
+export * from "./Pagination";
+
 // UI Components
 export * from "./ui/avatar";
 export * from "./ui/badge";
